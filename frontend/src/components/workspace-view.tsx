@@ -223,7 +223,7 @@ function Landing({
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
           What would you like to build?
         </h1>
-        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
           Ask mncode anything about your codebase. Use{" "}
           <span className="font-mono text-[var(--mn-accent-strong)]">@</span> for context or{" "}
           <span className="font-mono text-[var(--mn-accent-strong)]">/</span> for commands.
