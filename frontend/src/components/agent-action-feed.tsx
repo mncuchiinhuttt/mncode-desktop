@@ -59,7 +59,7 @@ export function AgentActionFeed({ activities }: { activities: ActivityItem[] }) 
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium">{item.label}</span>
               {item.detail && (
-                <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">
+                <span className="mt-0.5 block truncate text-[0.6875rem] text-muted-foreground">
                   {item.detail}
                 </span>
               )}

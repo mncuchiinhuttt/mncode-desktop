@@ -86,7 +86,7 @@ function inline(text: string): ReactNode[] {
 export function MarkdownRenderer({ content }: { content: string }) {
   return <div className="mn-markdown space-y-4">{parseBlocks(content).map((block, index) => {
     if (block.type === "rule") return <hr key={index} className="border-[var(--mn-line)]" />;
-    if (block.type === "code") return <pre key={index} className="overflow-x-auto rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4 font-mono text-[12px] leading-6"><code>{block.text}</code></pre>;
+    if (block.type === "code") return <pre key={index} className="overflow-x-auto rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4 font-mono text-[0.8125rem] leading-6"><code>{block.text}</code></pre>;
     if (block.type === "heading") {
       const Tag = (`h${Math.min(block.level, 4)}`) as "h1" | "h2" | "h3" | "h4";
       return <Tag key={index} className="font-semibold tracking-tight">{inline(block.text)}</Tag>;

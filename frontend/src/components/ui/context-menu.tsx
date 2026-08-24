@@ -45,7 +45,7 @@ function ContextMenuLabel({ className, inset, ...props }: React.ComponentProps<t
     <ContextMenuPrimitive.Label
       data-slot="context-menu-label"
       data-inset={inset}
-      className={cn("px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground", inset && "pl-8", className)}
+      className={cn("px-2.5 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground", inset && "pl-8", className)}
       {...props}
     />
   );

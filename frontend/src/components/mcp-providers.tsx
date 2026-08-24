@@ -122,7 +122,7 @@ export function McpProviders({
                 <DialogDescription>
                   Add a local MCP connection for this desktop. The token is
                   saved in
-                  <code className="mx-1 rounded bg-[var(--mn-surface-muted)] px-1.5 py-0.5 text-[11px]">
+                  <code className="mx-1 rounded bg-[var(--mn-surface-muted)] px-1.5 py-0.5 text-[0.75rem]">
                     ~/.mncode/mcp.json
                   </code>
                   with restricted file permissions.
@@ -130,13 +130,13 @@ export function McpProviders({
               </DialogHeader>
               <div className="space-y-5">
                 <div className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
-                  <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="mb-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Connection guide
                   </p>
                   <ol className="space-y-3 text-sm leading-6 text-muted-foreground">
                     {meta.guide.map((step, index) => (
                       <li key={step} className="flex gap-3">
-                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[var(--mn-accent-soft)] font-mono text-[10px] text-[var(--mn-accent-strong)]">
+                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[var(--mn-accent-soft)] font-mono text-[0.6875rem] text-[var(--mn-accent-strong)]">
                           {index + 1}
                         </span>
                         <span>{step}</span>

@@ -28,7 +28,7 @@ export function ManagementView({
         <div>
           <Badge
             variant="outline"
-            className="border-[var(--mn-line)] bg-[var(--mn-surface)] text-[11px] uppercase tracking-[0.16em]"
+            className="border-[var(--mn-line)] bg-[var(--mn-surface)] text-[0.75rem] uppercase tracking-[0.16em]"
           >
             {automations ? "agent routines" : "capability bridge"}
           </Badge>
@@ -65,7 +65,7 @@ function AutomationContent() {
           </div>
           <Badge
             variant="outline"
-            className="mt-6 border-[var(--mn-accent)]/40 bg-[var(--mn-accent-soft)] text-[10px] uppercase tracking-[0.16em] text-[var(--mn-accent-strong)]"
+            className="mt-6 border-[var(--mn-accent)]/40 bg-[var(--mn-accent-soft)] text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--mn-accent-strong)]"
           >
             Coming soon
           </Badge>

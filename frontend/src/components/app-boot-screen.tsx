@@ -27,7 +27,7 @@ export function AppBootScreen({
               <Loader2 className="size-3 animate-spin" />
             )}
           </span>
-          <span className="font-mono text-[11px] uppercase tracking-[0.14em]">
+          <span className="font-mono text-[0.75rem] uppercase tracking-[0.14em]">
             {exiting ? "[ Ready ]" : "[ Booting local workspace ]"}
           </span>
           <span className="mn-boot-status-code">mncode desktop</span>

@@ -86,7 +86,7 @@ const emptySettings: DesktopSettings = {
   permissionMode: "ask",
   defaultPermissionMode: "latest",
   theme: "light",
-  uiFontSize: 14,
+  uiFontSize: 16,
   codeFontSize: 12,
   lightCodeTheme: "catppuccin-latte",
   darkCodeTheme: "github-dark",
@@ -637,7 +637,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--mn-ui-font-size",
-      `${settings.uiFontSize || 14}px`,
+      `${settings.uiFontSize || 16}px`,
     );
     document.documentElement.style.setProperty(
       "--mn-code-font-size",
@@ -2135,7 +2135,7 @@ function ShortcutDialog({
         <div className="divide-y divide-[var(--mn-line)] rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3">
           {shortcuts.map(([keys, label]) => (
             <div key={keys} className="flex items-center gap-3 py-2.5 text-sm">
-              <kbd className="min-w-16 rounded-md border border-[var(--mn-line)] bg-[var(--mn-surface)] px-2 py-1 text-center font-mono text-[11px] text-foreground shadow-sm">
+              <kbd className="min-w-16 rounded-md border border-[var(--mn-line)] bg-[var(--mn-surface)] px-2 py-1 text-center font-mono text-[0.75rem] text-foreground shadow-sm">
                 {keys}
               </kbd>
               <span className="text-muted-foreground">{label}</span>
@@ -2269,7 +2269,7 @@ function UpdateDialog({
             </span>
           </div>
           {update.releaseDate && (
-            <p className="mt-3 text-[10px] text-muted-foreground">
+            <p className="mt-3 text-[0.6875rem] text-muted-foreground">
               Released {update.releaseDate}
             </p>
           )}

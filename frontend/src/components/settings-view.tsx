@@ -241,7 +241,7 @@ export function SettingsView({
           Back to workspace
         </button>
         <div className="mb-6 px-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Settings
           </p>
         </div>
@@ -302,8 +302,8 @@ export function SettingsView({
           />
         </nav>
         <div className="mt-auto rounded-xl border border-dashed border-[var(--mn-line)] p-3">
-          <p className="text-[11px] font-medium">Settings sync with CLI</p>
-          <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
+          <p className="text-[0.75rem] font-medium">Settings sync with CLI</p>
+          <p className="mt-1 text-[0.6875rem] leading-4 text-muted-foreground">
             Model and agent modes use the shared mncode config.
           </p>
         </div>
@@ -317,7 +317,7 @@ export function SettingsView({
             <div className="min-w-0">
               <Badge
                 variant="outline"
-                className="border-[var(--mn-line)] bg-[var(--mn-surface)] text-[10px] uppercase tracking-[0.16em]"
+                className="border-[var(--mn-line)] bg-[var(--mn-surface)] text-[0.6875rem] uppercase tracking-[0.16em]"
               >
                 {sectionMeta[section].label}
               </Badge>
@@ -754,7 +754,7 @@ function InterfaceAppearance({
           prominent
           control={
             <FontSizeInput
-              value={settings.uiFontSize || 14}
+              value={settings.uiFontSize || 16}
               min={11}
               max={20}
               onChange={(value) => onSettingsChange({ uiFontSize: value })}
@@ -1067,14 +1067,14 @@ function CodePreview({
             {theme}
           </CardDescription>
         </div>
-        <span className="rounded-md bg-current/10 px-2 py-1 text-[10px] font-medium">
+        <span className="rounded-md bg-current/10 px-2 py-1 text-[0.6875rem] font-medium">
           {dark ? "Dark" : "Active"}
         </span>
       </CardHeader>
       <CardContent className="p-4 sm:p-5">
         <pre
           className={
-            "overflow-auto rounded-lg p-3 font-mono text-[12px] leading-5 " +
+            "overflow-auto rounded-lg p-3 font-mono text-[0.8125rem] leading-5 " +
             (dark
               ? "bg-black/25 text-[#f4f2f0]/85"
               : "bg-[var(--mn-surface-muted)] text-[var(--mn-code)]")
@@ -1286,7 +1286,7 @@ function PersonalizationSection({
               maxLength={20000}
               aria-label="Custom instructions"
             />
-            <p className="border-t border-[var(--mn-line)] px-4 py-2 text-[10px] text-muted-foreground">
+            <p className="border-t border-[var(--mn-line)] px-4 py-2 text-[0.6875rem] text-muted-foreground">
               {instructions.length.toLocaleString()} / 20,000 characters ·
               Applied to future agent turns.
             </p>
@@ -1369,7 +1369,7 @@ function PersonalizationSection({
                         <span className="text-sm font-medium">
                           {option.label}
                         </span>
-                        <span className="text-[11px] leading-4 text-muted-foreground">
+                        <span className="text-[0.75rem] leading-4 text-muted-foreground">
                           {option.description} Best for {option.fit}.
                         </span>
                       </span>
@@ -1516,7 +1516,7 @@ function BrowserSection({
               />
             }
           />
-          <div className="flex items-center gap-2 border-t border-[var(--mn-line)] px-5 py-3 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 border-t border-[var(--mn-line)] px-5 py-3 text-[0.75rem] text-muted-foreground">
             <Globe2 className="size-3.5 text-[var(--mn-accent-strong)]" />
             {settings.builtInBrowserAvailable
               ? "Built-in browser is ready for new sessions."
@@ -1570,7 +1570,7 @@ function BrowserSection({
             description="Delete cookies, site data, and cache from the built-in browser."
             destructive
           />
-          <div className="border-t border-[var(--mn-line)] px-5 py-3 text-[11px] text-muted-foreground">
+          <div className="border-t border-[var(--mn-line)] px-5 py-3 text-[0.75rem] text-muted-foreground">
             These actions will be enabled when mncode ships its isolated
             built-in browser data store. Your Chrome profile is never modified
             by this screen.

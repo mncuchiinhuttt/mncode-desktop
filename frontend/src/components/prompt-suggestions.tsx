@@ -112,7 +112,7 @@ export function PromptSuggestionMenu({
       className="mn-prompt-suggestions absolute bottom-full left-2 right-2 z-50 mb-2 overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground shadow-2xl animate-in fade-in-0 slide-in-from-bottom-1"
     >
       <div className="flex items-center justify-between border-b border-[var(--mn-line)] px-3 py-2">
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {trigger === "@" ? (
             <AtSign className="size-3.5 text-[var(--mn-accent-strong)]" />
           ) : (
@@ -120,13 +120,13 @@ export function PromptSuggestionMenu({
           )}
           {trigger === "@" ? "Add context" : "Commands & skills"}
         </div>
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="font-mono text-[0.6875rem] text-muted-foreground">
           {countLabel} matches
         </span>
       </div>
       <div className="max-h-64 overflow-y-auto p-1">
         {options.length === 0 ? (
-          <p className="px-3 py-5 text-center text-[13px] text-muted-foreground">
+          <p className="px-3 py-5 text-center text-[0.875rem] text-muted-foreground">
             No matching{" "}
             {trigger === "@" ? "files or context" : "commands or skills"}
           </p>
@@ -153,15 +153,15 @@ export function PromptSuggestionMenu({
                   <Icon className="size-3.5" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] font-medium">
+                  <span className="block truncate text-[0.875rem] font-medium">
                     {option.label}
                   </span>
-                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                  <span className="mt-0.5 block truncate text-[0.75rem] text-muted-foreground">
                     {option.detail}
                   </span>
                 </span>
                 {option.category && (
-                  <span className="shrink-0 text-[10px] text-muted-foreground">
+                  <span className="shrink-0 text-[0.6875rem] text-muted-foreground">
                     {option.category}
                   </span>
                 )}
@@ -170,7 +170,7 @@ export function PromptSuggestionMenu({
           })
         )}
       </div>
-      <div className="border-t border-[var(--mn-line)] px-3 py-2 text-[10px] text-muted-foreground">
+      <div className="border-t border-[var(--mn-line)] px-3 py-2 text-[0.6875rem] text-muted-foreground">
         ↑↓ navigate <span className="mx-1">·</span> Enter select{" "}
         <span className="mx-1">·</span> Esc close
       </div>

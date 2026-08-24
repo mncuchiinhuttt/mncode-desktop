@@ -248,7 +248,7 @@ export function AppSidebar({
                           chat.unread && "font-semibold",
                         )}
                       >
-                        <span className="grid size-5 shrink-0 place-items-center rounded-md bg-[var(--mn-surface-muted)] font-mono text-[10px] text-muted-foreground">
+                        <span className="grid size-5 shrink-0 place-items-center rounded-md bg-[var(--mn-surface-muted)] font-mono text-[0.6875rem] text-muted-foreground">
                           {index + 1}
                         </span>
                         <span className="min-w-0 flex-1 truncate">
@@ -261,7 +261,7 @@ export function AppSidebar({
                           <span className="size-1.5 shrink-0 rounded-full bg-[var(--mn-accent-strong)]" />
                         )}
                         {index < 9 && (
-                          <span className="font-mono text-[10px] text-muted-foreground/60">
+                          <span className="font-mono text-[0.6875rem] text-muted-foreground/60">
                             ⌘{index + 1}
                           </span>
                         )}
@@ -395,7 +395,7 @@ function SidebarAction({
         <>
           <span>{label}</span>
           {shortcut && (
-            <span className="ml-auto font-mono text-[10px] opacity-50">
+            <span className="ml-auto font-mono text-[0.6875rem] opacity-50">
               {shortcut}
             </span>
           )}
@@ -457,7 +457,7 @@ function AccountMenu({
         align="start"
         className="w-56 border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground"
       >
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        <DropdownMenuLabel className="text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">
           ACCOUNT
         </DropdownMenuLabel>
         {account.connected ? (
@@ -465,12 +465,12 @@ function AccountMenu({
             <div className="px-2 py-1 text-xs">
               <p className="font-medium">{identity}</p>
               {account.email && (
-                <p className="mt-1 truncate text-[10px] text-muted-foreground">
+                <p className="mt-1 truncate text-[0.6875rem] text-muted-foreground">
                   {account.email}
                 </p>
               )}
               {account.status === "offline" && (
-                <p className="mt-1 text-[10px] text-amber-600 dark:text-amber-300">
+                <p className="mt-1 text-[0.6875rem] text-amber-600 dark:text-amber-300">
                   Offline cache
                 </p>
               )}

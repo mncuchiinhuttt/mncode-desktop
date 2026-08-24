@@ -258,7 +258,7 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 	if effort == "" {
 		effort = "high"
 	}
-	uiFontSize := settingInt(cfg, "ui_font_size", 14)
+	uiFontSize := settingInt(cfg, "ui_font_size", 16)
 	codeFontSize := settingInt(cfg, "code_font_size", 12)
 	lightCodeTheme := cfg.GetSetting("light_code_theme", "catppuccin-latte")
 	darkCodeTheme := cfg.GetSetting("dark_code_theme", "github-dark")

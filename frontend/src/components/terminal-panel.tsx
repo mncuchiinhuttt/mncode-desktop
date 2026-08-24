@@ -39,7 +39,7 @@ export function TerminalPanel({
       <header className="flex h-11 shrink-0 items-center gap-2 border-b border-[var(--mn-line)] bg-[var(--mn-surface)] px-4">
         <Terminal className="size-4 text-[var(--mn-accent)]" />
         <span className="text-xs font-medium">Terminal</span>
-        <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-muted-foreground">
+        <span className="min-w-0 flex-1 truncate font-mono text-[0.6875rem] text-muted-foreground">
           {cwd || "No workspace"}
         </span>
         <Button
@@ -74,7 +74,7 @@ export function TerminalPanel({
       </header>
       <pre
         ref={outputRef}
-        className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap px-4 py-3 font-mono text-[12px] leading-5 text-foreground"
+        className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap px-4 py-3 font-mono text-[0.8125rem] leading-5 text-foreground"
       >
         {output || (
           <span className="text-muted-foreground">Run a command in the workspace…</span>
@@ -92,7 +92,7 @@ export function TerminalPanel({
           placeholder={
             running ? "Command running…" : "Type a command and press Enter"
           }
-          className="min-w-0 flex-1 bg-transparent font-mono text-[12px] text-foreground outline-none placeholder:text-muted-foreground"
+          className="min-w-0 flex-1 bg-transparent font-mono text-[0.8125rem] text-foreground outline-none placeholder:text-muted-foreground"
           aria-label="Terminal command"
           autoComplete="off"
         />

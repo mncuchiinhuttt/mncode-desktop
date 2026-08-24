@@ -92,11 +92,11 @@ export function TopBar({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              Search <span className="font-mono text-[10px]">⌘K</span>
+              Search <span className="font-mono text-[0.6875rem]">⌘K</span>
             </TooltipContent>
           </Tooltip>
           <span
-            className="mr-1 hidden items-center gap-0.5 font-mono text-[10px] text-muted-foreground sm:flex"
+            className="mr-1 hidden items-center gap-0.5 font-mono text-[0.6875rem] text-muted-foreground sm:flex"
             aria-label="Search shortcut"
           >
             <Command className="size-3" />K
@@ -114,7 +114,7 @@ export function TopBar({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              Toggle terminal <span className="font-mono text-[10px]">⌘J</span>
+              Toggle terminal <span className="font-mono text-[0.6875rem]">⌘J</span>
             </TooltipContent>
           </Tooltip>
           <Tooltip>

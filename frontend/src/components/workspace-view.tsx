@@ -505,7 +505,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 gap-2 px-2 text-[10px] text-foreground/75 hover:bg-[var(--mn-surface-muted)]"
+                    className="h-8 gap-2 px-2 text-[0.6875rem] text-foreground/75 hover:bg-[var(--mn-surface-muted)]"
                   >
                     <Folder className="size-3.5 text-[var(--mn-accent-strong)]" />
                     {workspace.ready ? workspace.name : "Chat without workspace"}
@@ -552,7 +552,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
                 )
               }
               placeholder="Ask mncode anything, @ to add context, / for commands or capabilities"
-              className="min-h-[88px] w-full resize-none bg-transparent px-4 py-3.5 text-[13px] leading-6 text-foreground outline-none placeholder:text-muted-foreground/65"
+              className="min-h-[88px] w-full resize-none bg-transparent px-4 py-3.5 text-[0.875rem] leading-6 text-foreground outline-none placeholder:text-muted-foreground/65"
             />
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--mn-line)] px-3 py-2">
               <div className="flex items-center gap-1">
@@ -645,7 +645,7 @@ function ContextMenu({
         align="start"
         className="w-64 border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground"
       >
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        <DropdownMenuLabel className="text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">
           Add context
         </DropdownMenuLabel>
         <DropdownMenuItem onClick={onAttach}>
@@ -707,11 +707,11 @@ function ContextRing({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold">Context window</p>
-              <p className="mt-1 max-w-[220px] truncate text-[11px] text-muted-foreground">
+              <p className="mt-1 max-w-[220px] truncate text-[0.75rem] text-muted-foreground">
                 {modelName || "Current model"}
               </p>
             </div>
-            <span className="rounded-full bg-[var(--mn-accent-soft)] px-2 py-1 font-mono text-[10px] font-semibold text-[var(--mn-accent-strong)]">
+            <span className="rounded-full bg-[var(--mn-accent-soft)] px-2 py-1 font-mono text-[0.6875rem] font-semibold text-[var(--mn-accent-strong)]">
               {Math.round(safe)}% used
             </span>
           </div>
@@ -726,7 +726,7 @@ function ContextRing({
             />
           </div>
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <div className="flex items-center justify-between text-[0.75rem] text-muted-foreground">
               <span>Current load</span>
               <span>{formatTokenCount(remaining)} remaining</span>
             </div>
@@ -753,7 +753,7 @@ function ContextRing({
 function ContextStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 py-2">
-      <p className="text-[10px] text-muted-foreground">{label}</p>
+      <p className="text-[0.6875rem] text-muted-foreground">{label}</p>
       <p className="mt-1 font-mono text-xs font-semibold text-foreground">
         {value}
       </p>
@@ -798,7 +798,7 @@ function ModeMenu({
           variant="ghost"
           size="sm"
           className={cn(
-            "h-8 gap-1.5 px-2 text-[10px] text-muted-foreground hover:bg-[var(--mn-surface-muted)] hover:text-foreground",
+            "h-8 gap-1.5 px-2 text-[0.6875rem] text-muted-foreground hover:bg-[var(--mn-surface-muted)] hover:text-foreground",
             danger && "text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200",
           )}
         >
@@ -816,7 +816,7 @@ function ModeMenu({
         align="start"
         className="max-h-80 w-72 overflow-y-auto border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground"
       >
-        <DropdownMenuLabel className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        <DropdownMenuLabel className="text-[0.75rem] uppercase tracking-[0.14em] text-muted-foreground">
           {menuTitle}
         </DropdownMenuLabel>
         {options.map((option) => (
@@ -871,7 +871,7 @@ function ModelMenu({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 max-w-52 gap-1.5 px-2 text-[10px] text-muted-foreground hover:bg-[var(--mn-surface-muted)] hover:text-foreground"
+          className="h-8 max-w-52 gap-1.5 px-2 text-[0.6875rem] text-muted-foreground hover:bg-[var(--mn-surface-muted)] hover:text-foreground"
         >
           <Sparkles className="size-3.5 text-[var(--mn-accent-strong)]" />
           <span className="truncate">
@@ -884,7 +884,7 @@ function ModelMenu({
         align="end"
         className="max-h-80 w-80 overflow-y-auto border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground"
       >
-        <DropdownMenuLabel className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        <DropdownMenuLabel className="text-[0.75rem] uppercase tracking-[0.14em] text-muted-foreground">
           Models
         </DropdownMenuLabel>
         {models.length === 0 ? (
@@ -906,7 +906,7 @@ function ModelMenu({
               />
               <span className="min-w-0">
                 <span className="block truncate text-sm">{model.name}</span>
-                <span className="mt-0.5 block truncate font-mono text-[11px] text-muted-foreground">
+                <span className="mt-0.5 block truncate font-mono text-[0.75rem] text-muted-foreground">
                   {model.id} · {model.tag}
                 </span>
               </span>
@@ -1026,8 +1026,8 @@ function QuestionCard({
       <div className="flex w-full items-start gap-3 rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] px-4 py-3">
         <Sparkles className="mt-0.5 size-4 shrink-0 text-[var(--mn-accent-strong)]" />
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-medium">mncode needs your input</p>
-          <p className="mt-1 break-words text-[13px] text-muted-foreground">
+          <p className="text-[0.875rem] font-medium">mncode needs your input</p>
+          <p className="mt-1 break-words text-[0.875rem] text-muted-foreground">
             {question.question}
           </p>
           <div className="mt-3 grid w-full gap-2">
@@ -1064,11 +1064,11 @@ function PermissionCard({
       <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-50/50 px-4 py-3 dark:bg-amber-300/[0.08]">
         <ShieldCheck className="size-4 shrink-0 text-amber-600 dark:text-amber-200" />
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-medium">
+          <p className="text-[0.875rem] font-medium">
             Permission requested for{" "}
             <span className="font-mono">{permission.tool}</span>
           </p>
-          <p className="mt-1 truncate text-[11px] text-muted-foreground">
+          <p className="mt-1 truncate text-[0.75rem] text-muted-foreground">
             {permission.summary}
           </p>
         </div>

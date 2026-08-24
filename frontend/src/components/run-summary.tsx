@@ -36,7 +36,7 @@ export function RunSummary({ running, summary, usage, startedAt, activities }: {
         {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
         <Clock3 className="size-3.5" />
         <span>{running ? "Working for" : hasMetrics ? `Worked for ${formatDuration(duration)}` : "Run details"}</span>
-        {tokens > 0 && <span className="ml-auto font-mono text-[11px]">Used {formatTokens(tokens)} tokens</span>}
+        {tokens > 0 && <span className="ml-auto font-mono text-[0.75rem]">Used {formatTokens(tokens)} tokens</span>}
       </button>
       {open && <AgentActionFeed activities={activities} />}
     </div>
