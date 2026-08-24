@@ -32,9 +32,7 @@ interface WailsWindow extends Window {
 function appMethod(name: string): WailsMethod {
   const method = (window as WailsWindow).go?.main?.App?.[name];
   if (!method) {
-    throw new Error(
-      "Wails runtime is not connected. Start the app with wails dev.",
-    );
+    throw new Error("Wails runtime is not connected. Start the app with wails dev.");
   }
   return method;
 }
@@ -62,16 +60,13 @@ export const desktop = {
   getPersonalization: () => call<DesktopPersonalization>("GetPersonalization"),
   savePersonalization: (input: DesktopPersonalizationInput) =>
     call<DesktopPersonalization>("SavePersonalization", input),
-  deleteLocalMemories: () =>
-    call<DesktopPersonalization>("DeleteLocalMemories"),
+  deleteLocalMemories: () => call<DesktopPersonalization>("DeleteLocalMemories"),
   openTerminal: () => call<void>("OpenTerminal"),
-  runTerminalCommand: (command: string) =>
-    call<void>("RunTerminalCommand", command),
+  runTerminalCommand: (command: string) => call<void>("RunTerminalCommand", command),
   interruptTerminal: () => call<void>("InterruptTerminal"),
   closeTerminal: () => call<void>("CloseTerminal"),
   getProviderSettings: () => call<ProviderSettings>("GetProviderSettings"),
-  getActiveAntigravityQuota: () =>
-    call<ProviderQuota | null>("GetActiveAntigravityQuota"),
+  getActiveAntigravityQuota: () => call<ProviderQuota | null>("GetActiveAntigravityQuota"),
   getAppInfo: () => call<AppInfo>("GetAppInfo"),
   getSkillsMarketplace: () => call<DesktopSkillsMarketplace>("GetSkillsMarketplace"),
   installMarketplaceSkill: (slug: string) => call<DesktopSkill>("InstallMarketplaceSkill", slug),
@@ -81,14 +76,10 @@ export const desktop = {
   openExternalURL: (url: string) => call<void>("OpenExternalURL", url),
   loginProvider: (provider: string, accountID: string, token: string) =>
     call<void>("LoginProvider", provider, accountID, token),
-  useProviderAccount: (accountID: string) =>
-    call<void>("UseProviderAccount", accountID),
-  configureOpenCode: (apiKey: string) =>
-    call<void>("ConfigureOpenCode", apiKey),
-  saveCustomProvider: (input: CustomProviderInput) =>
-    call<unknown>("SaveCustomProvider", input),
-  deleteCustomProvider: (providerID: string) =>
-    call<void>("DeleteCustomProvider", providerID),
+  useProviderAccount: (accountID: string) => call<void>("UseProviderAccount", accountID),
+  configureOpenCode: (apiKey: string) => call<void>("ConfigureOpenCode", apiKey),
+  saveCustomProvider: (input: CustomProviderInput) => call<unknown>("SaveCustomProvider", input),
+  deleteCustomProvider: (providerID: string) => call<void>("DeleteCustomProvider", providerID),
   loginAccount: () => call<DesktopAccount>("LoginAccount"),
   logoutAccount: () => call<DesktopAccount>("LogoutAccount"),
   getCatalog: () => call<DesktopCatalog>("GetCatalog"),
@@ -101,10 +92,8 @@ export const desktop = {
   setModel: (model: string) => call<void>("SetModel", model),
   updateSettings: (settings: Partial<DesktopSettings>) =>
     call<DesktopSettings>("UpdateSettings", settings),
-  resolvePermission: (id: string, allowed: boolean) =>
-    call<void>("ResolvePermission", id, allowed),
-  answerQuestion: (id: string, answer: string) =>
-    call<void>("AnswerQuestion", id, answer),
+  resolvePermission: (id: string, allowed: boolean) => call<void>("ResolvePermission", id, allowed),
+  answerQuestion: (id: string, answer: string) => call<void>("AnswerQuestion", id, answer),
 };
 
 export function listen<T>(eventName: string, handler: (payload: T) => void) {

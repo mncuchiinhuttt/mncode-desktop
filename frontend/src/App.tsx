@@ -48,10 +48,7 @@ import { TerminalPanel } from "./components/terminal-panel";
 import { TopBar } from "./components/top-bar";
 import { RightSidebar, type RightPanel } from "./components/right-sidebar";
 import { RemoteCompanionDialog } from "./components/remote-companion-dialog";
-import {
-  OnboardingFlow,
-  type OnboardingPhase,
-} from "./components/onboarding-flow";
+import { OnboardingFlow, type OnboardingPhase } from "./components/onboarding-flow";
 import { WorkspaceView } from "./components/workspace-view";
 import "./style.css";
 
@@ -171,9 +168,7 @@ function readChatHistory(): ChatSession[] {
             ...chat,
             messages: Array.isArray(chat.messages) ? chat.messages : [],
             activities: Array.isArray(chat.activities) ? chat.activities : [],
-            runUsage: chat.runUsage
-              ? { ...emptyRunUsage, ...chat.runUsage }
-              : { ...emptyRunUsage },
+            runUsage: chat.runUsage ? { ...emptyRunUsage, ...chat.runUsage } : { ...emptyRunUsage },
           }))
       : [];
   } catch {
@@ -194,11 +189,7 @@ type ChatSnapshot = {
   runUsage: AgentRunUsage;
 };
 
-function upsertChatHistory(
-  current: ChatSession[],
-  id: string,
-  snapshot: ChatSnapshot,
-) {
+function upsertChatHistory(current: ChatSession[], id: string, snapshot: ChatSnapshot) {
   const previous = current.find((chat) => chat.id === id);
   const next = {
     ...previous,
@@ -251,10 +242,7 @@ function prettyToolName(name: string) {
   return name.replace(/[_-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-function describeToolAction(
-  name: string,
-  args?: Record<string, unknown>,
-): ToolActivityDescriptor {
+function describeToolAction(name: string, args?: Record<string, unknown>): ToolActivityDescriptor {
   const target = shortPath(toolArgument(args, "TargetFile", "path"));
   if (name === "write_to_file") {
     const overwrite = args?.Overwrite === true;
@@ -320,9 +308,7 @@ function completedToolLabel(item: ActivityItem, name: string, isError: boolean) 
 
 export default function App() {
   const [view, setView] = useState<ViewName>("workspace");
-  const [viewDirection, setViewDirection] = useState<"forward" | "back">(
-    "forward",
-  );
+  const [viewDirection, setViewDirection] = useState<"forward" | "back">("forward");
   const [settingsExiting, setSettingsExiting] = useState(false);
   const [workspace, setWorkspace] = useState<WorkspaceInfo>(emptyWorkspace);
   const [account, setAccount] = useState<DesktopAccount>(emptyAccount);
@@ -333,8 +319,7 @@ export default function App() {
   const [runSummary, setRunSummary] = useState<AgentRunSummary>();
   const [runStartedAt, setRunStartedAt] = useState<number>();
   const [catalog, setCatalog] = useState<DesktopCatalog>(emptyCatalog);
-  const [chatSessions, setChatSessions] =
-    useState<ChatSession[]>(readChatHistory);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>(readChatHistory);
   const [activeChatId, setActiveChatId] = useState(() => `chat-${Date.now()}`);
   const [renameChatID, setRenameChatID] = useState<string>();
   const [renameDraft, setRenameDraft] = useState("");
@@ -342,9 +327,7 @@ export default function App() {
   const [prompt, setPrompt] = useState("");
   const [theme, setTheme] = useState<"system" | "light" | "dark">(() => {
     const stored = localStorage.getItem("mncode-theme");
-    return stored === "light" || stored === "dark" || stored === "system"
-      ? stored
-      : "light";
+    return stored === "light" || stored === "dark" || stored === "system" ? stored : "light";
   });
   const [running, setRunning] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -383,15 +366,11 @@ export default function App() {
   const [remoteOpen, setRemoteOpen] = useState(false);
   const [remoteBusy, setRemoteBusy] = useState(false);
   const [remoteError, setRemoteError] = useState("");
-  const [remoteSession, setRemoteSession] =
-    useState<DesktopRemoteSession>(emptyRemoteSession);
-  const [bootPhase, setBootPhase] = useState<
-    "loading" | "exiting" | "done"
-  >("loading");
+  const [remoteSession, setRemoteSession] = useState<DesktopRemoteSession>(emptyRemoteSession);
+  const [bootPhase, setBootPhase] = useState<"loading" | "exiting" | "done">("loading");
   const [accountHydrated, setAccountHydrated] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const [onboardingPhase, setOnboardingPhase] =
-    useState<OnboardingPhase>("welcome");
+  const [onboardingPhase, setOnboardingPhase] = useState<OnboardingPhase>("welcome");
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const chatSaveTimer = useRef<number | undefined>(undefined);
@@ -401,21 +380,21 @@ export default function App() {
   const runUsageRef = useRef<AgentRunUsage>(emptyRunUsage);
   const providerUsageRef = useRef<AgentRunUsage>(emptyRunUsage);
   const hasProviderUsageRef = useRef(false);
-  const resizeRef = useRef<{
-    side: "left" | "right";
-    startX: number;
-    startWidth: number;
-  } | undefined>(undefined);
+  const resizeRef = useRef<
+    | {
+        side: "left" | "right";
+        startX: number;
+        startWidth: number;
+      }
+    | undefined
+  >(undefined);
 
   const settings = catalog.settings;
   const standaloneSettings = view === "settings" || view === "skills";
-  const notify = useCallback(
-    (message: string, kind: "error" | "success" = "error") => {
-      setToast({ message, kind });
-      window.setTimeout(() => setToast(undefined), 3600);
-    },
-    [],
-  );
+  const notify = useCallback((message: string, kind: "error" | "success" = "error") => {
+    setToast({ message, kind });
+    window.setTimeout(() => setToast(undefined), 3600);
+  }, []);
 
   const openTerminal = useCallback(async () => {
     if (!workspace.ready || !workspace.path) {
@@ -429,9 +408,7 @@ export default function App() {
       return true;
     } catch (error) {
       setTerminalOpen(false);
-      notify(
-        error instanceof Error ? error.message : "Could not open terminal",
-      );
+      notify(error instanceof Error ? error.message : "Could not open terminal");
       return false;
     }
   }, [notify, workspace.path, workspace.ready]);
@@ -458,9 +435,7 @@ export default function App() {
       return next;
     } catch (error) {
       setRemoteError(
-        error instanceof Error
-          ? error.message
-          : "Could not load remote companion status",
+        error instanceof Error ? error.message : "Could not load remote companion status",
       );
       return emptyRemoteSession;
     }
@@ -473,16 +448,12 @@ export default function App() {
     if (!workspace.ready) {
       setRemoteBusy(false);
       setRemoteSession(emptyRemoteSession);
-      setRemoteError(
-        "Open a workspace before starting the remote companion",
-      );
+      setRemoteError("Open a workspace before starting the remote companion");
       return;
     }
     try {
       const existing = await desktop.getRemoteSession();
-      const next = existing.active
-        ? existing
-        : await desktop.startRemoteSession();
+      const next = existing.active ? existing : await desktop.startRemoteSession();
       setRemoteSession(next);
     } catch (error) {
       setRemoteSession(emptyRemoteSession);
@@ -508,9 +479,7 @@ export default function App() {
       setRemoteError("");
     } catch (error) {
       setRemoteError(
-        error instanceof Error
-          ? error.message
-          : "Could not disconnect remote companion",
+        error instanceof Error ? error.message : "Could not disconnect remote companion",
       );
     } finally {
       setRemoteBusy(false);
@@ -526,11 +495,9 @@ export default function App() {
   }, [notify]);
 
   function openExternalURL(url: string) {
-    void desktop.openExternalURL(url).catch((error) =>
-      notify(
-        error instanceof Error ? error.message : "Could not open browser",
-      ),
-    );
+    void desktop
+      .openExternalURL(url)
+      .catch((error) => notify(error instanceof Error ? error.message : "Could not open browser"));
   }
 
   useEffect(() => {
@@ -553,11 +520,17 @@ export default function App() {
       const resize = resizeRef.current;
       if (!resize) return;
       if (resize.side === "left") {
-        const next = Math.min(420, Math.max(220, resize.startWidth + event.clientX - resize.startX));
+        const next = Math.min(
+          420,
+          Math.max(220, resize.startWidth + event.clientX - resize.startX),
+        );
         setSidebarWidth(next);
         localStorage.setItem(leftSidebarWidthKey, String(Math.round(next)));
       } else {
-        const next = Math.min(440, Math.max(240, resize.startWidth - event.clientX + resize.startX));
+        const next = Math.min(
+          440,
+          Math.max(240, resize.startWidth - event.clientX + resize.startX),
+        );
         setRightSidebarWidth(next);
         localStorage.setItem(rightSidebarWidthKey, String(Math.round(next)));
       }
@@ -578,14 +551,8 @@ export default function App() {
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const exitTimer = window.setTimeout(
-      () => setBootPhase("exiting"),
-      reducedMotion ? 120 : 900,
-    );
-    const finishTimer = window.setTimeout(
-      () => setBootPhase("done"),
-      reducedMotion ? 260 : 1260,
-    );
+    const exitTimer = window.setTimeout(() => setBootPhase("exiting"), reducedMotion ? 120 : 900);
+    const finishTimer = window.setTimeout(() => setBootPhase("done"), reducedMotion ? 260 : 1260);
     return () => {
       window.clearTimeout(exitTimer);
       window.clearTimeout(finishTimer);
@@ -609,8 +576,7 @@ export default function App() {
 
   useEffect(
     () => () => {
-      if (onboardingCloseTimer.current)
-        window.clearTimeout(onboardingCloseTimer.current);
+      if (onboardingCloseTimer.current) window.clearTimeout(onboardingCloseTimer.current);
     },
     [],
   );
@@ -849,9 +815,7 @@ export default function App() {
       listen<{ text: string }>("agent:token", ({ text }) => {
         setMessages((items) =>
           items.map((item) =>
-            item.id === "streaming"
-              ? { ...item, content: item.content + text }
-              : item,
+            item.id === "streaming" ? { ...item, content: item.content + text } : item,
           ),
         );
         if (!hasProviderUsageRef.current) {
@@ -902,24 +866,19 @@ export default function App() {
           setActivities((items) => {
             const action = describeToolAction(name, args);
             const nextItem: ActivityItem = {
-                id: id || `tool-${Date.now()}`,
-                toolName: name,
-                label: action.runningLabel,
-                detail: action.detail,
-                tone: action.tone,
-                kind: action.kind,
-                status: "running",
-                active: true,
-                createdAt: Date.now(),
-                filePath:
-                  action.kind === "file"
-                    ? toolArgument(args, "TargetFile", "path")
-                    : undefined,
+              id: id || `tool-${Date.now()}`,
+              toolName: name,
+              label: action.runningLabel,
+              detail: action.detail,
+              tone: action.tone,
+              kind: action.kind,
+              status: "running",
+              active: true,
+              createdAt: Date.now(),
+              filePath:
+                action.kind === "file" ? toolArgument(args, "TargetFile", "path") : undefined,
             };
-            return [
-              nextItem,
-              ...items,
-            ].slice(0, 80);
+            return [nextItem, ...items].slice(0, 80);
           }),
       ),
       listen<{
@@ -934,53 +893,46 @@ export default function App() {
           beforeSnippet?: string;
           afterSnippet?: string;
         };
-      }>(
-        "agent:tool-result",
-        ({ name, result, isError, summary }) =>
-          setActivities((items) => {
-            const index = items.findIndex(
-              (item) => item.toolName === name && item.active,
-            );
-            const action = describeToolAction(name);
-            if (index < 0) {
-              const resultItem: ActivityItem = {
-                id: `result-${Date.now()}`,
-                toolName: name,
-                label: isError ? `Failed ${prettyToolName(name)}` : action.completeLabel,
-                detail: compactText(result),
-                tone: isError ? "pink" : "green",
-                kind: action.kind,
-                status: isError ? "error" : "complete",
-                active: false,
-                createdAt: Date.now(),
-                filePath: summary?.filePath,
-                linesAdded: summary?.linesAdded,
-                linesRemoved: summary?.linesRemoved,
-                beforeSnippet: summary?.beforeSnippet,
-                afterSnippet: summary?.afterSnippet,
-              };
-              return [
-                resultItem,
-                ...items,
-              ].slice(0, 80);
-            }
-            const next = [...items];
-            const current = next[index];
-            next[index] = {
-              ...current,
-              label: completedToolLabel(current, name, isError),
-              detail: compactText(result) || current.detail,
+      }>("agent:tool-result", ({ name, result, isError, summary }) =>
+        setActivities((items) => {
+          const index = items.findIndex((item) => item.toolName === name && item.active);
+          const action = describeToolAction(name);
+          if (index < 0) {
+            const resultItem: ActivityItem = {
+              id: `result-${Date.now()}`,
+              toolName: name,
+              label: isError ? `Failed ${prettyToolName(name)}` : action.completeLabel,
+              detail: compactText(result),
               tone: isError ? "pink" : "green",
+              kind: action.kind,
               status: isError ? "error" : "complete",
               active: false,
-              filePath: summary?.filePath ?? current.filePath,
-              linesAdded: summary?.linesAdded ?? current.linesAdded,
-              linesRemoved: summary?.linesRemoved ?? current.linesRemoved,
-              beforeSnippet: summary?.beforeSnippet ?? current.beforeSnippet,
-              afterSnippet: summary?.afterSnippet ?? current.afterSnippet,
+              createdAt: Date.now(),
+              filePath: summary?.filePath,
+              linesAdded: summary?.linesAdded,
+              linesRemoved: summary?.linesRemoved,
+              beforeSnippet: summary?.beforeSnippet,
+              afterSnippet: summary?.afterSnippet,
             };
-            return next;
-          }),
+            return [resultItem, ...items].slice(0, 80);
+          }
+          const next = [...items];
+          const current = next[index];
+          next[index] = {
+            ...current,
+            label: completedToolLabel(current, name, isError),
+            detail: compactText(result) || current.detail,
+            tone: isError ? "pink" : "green",
+            status: isError ? "error" : "complete",
+            active: false,
+            filePath: summary?.filePath ?? current.filePath,
+            linesAdded: summary?.linesAdded ?? current.linesAdded,
+            linesRemoved: summary?.linesRemoved ?? current.linesRemoved,
+            beforeSnippet: summary?.beforeSnippet ?? current.beforeSnippet,
+            afterSnippet: summary?.afterSnippet ?? current.afterSnippet,
+          };
+          return next;
+        }),
       ),
       listen<{ name: string; role: string; prompt: string }>(
         "agent:subagent-start",
@@ -988,31 +940,26 @@ export default function App() {
           setInspectorOpen(true);
           setRightPanel("activity");
           const subagentItem: ActivityItem = {
-              id: `subagent-${name}-${Date.now()}`,
-              label: `Spawned ${name}`,
-              detail: role || "Delegated task",
-              tone: "cyan",
-              kind: "subagent",
-              subagentName: name,
-              subagentRole: role,
-              subagentPrompt,
-              status: "running",
-              active: true,
-              createdAt: Date.now(),
+            id: `subagent-${name}-${Date.now()}`,
+            label: `Spawned ${name}`,
+            detail: role || "Delegated task",
+            tone: "cyan",
+            kind: "subagent",
+            subagentName: name,
+            subagentRole: role,
+            subagentPrompt,
+            status: "running",
+            active: true,
+            createdAt: Date.now(),
           };
-          setActivities((items) => [
-            subagentItem,
-            ...items,
-          ].slice(0, 80));
+          setActivities((items) => [subagentItem, ...items].slice(0, 80));
         },
       ),
       listen<{ name: string; summary: string; result?: string }>(
         "agent:subagent-complete",
         ({ name, summary, result }) =>
           setActivities((items) => {
-            const index = items.findIndex(
-              (item) => item.subagentName === name && item.active,
-            );
+            const index = items.findIndex((item) => item.subagentName === name && item.active);
             if (index < 0) return items;
             const next = [...items];
             next[index] = {
@@ -1031,19 +978,16 @@ export default function App() {
         "agent:goal-done",
         ({ goal, elapsed, turns, tools }) => {
           const goalItem: ActivityItem = {
-              id: `goal-${Date.now()}`,
-              label: "Completed goal",
-              detail: `${compactText(goal)} · ${turns} turns · ${tools} tools · ${elapsed.toFixed(1)}s`,
-              tone: "green",
-              kind: "system",
-              status: "complete",
-              active: false,
-              createdAt: Date.now(),
+            id: `goal-${Date.now()}`,
+            label: "Completed goal",
+            detail: `${compactText(goal)} · ${turns} turns · ${tools} tools · ${elapsed.toFixed(1)}s`,
+            tone: "green",
+            kind: "system",
+            status: "complete",
+            active: false,
+            createdAt: Date.now(),
           };
-          setActivities((items) => [
-            goalItem,
-            ...items,
-          ].slice(0, 80));
+          setActivities((items) => [goalItem, ...items].slice(0, 80));
         },
       ),
       listen<PermissionRequest>("agent:permission", setPermission),
@@ -1053,9 +997,7 @@ export default function App() {
         setTerminalRunning(false);
       }),
       listen<{ command: string }>("terminal:command", ({ command }) => {
-        setTerminalOutput(
-          (output) => `${output}${output ? "\n" : ""}$ ${command}\n`,
-        );
+        setTerminalOutput((output) => `${output}${output ? "\n" : ""}$ ${command}\n`);
         setTerminalRunning(true);
       }),
       listen<{ text: string }>("terminal:output", ({ text }) =>
@@ -1063,9 +1005,7 @@ export default function App() {
       ),
       listen<{ code: number }>("terminal:exit", ({ code }) => {
         setTerminalRunning(false);
-        setTerminalOutput(
-          (output) => `${output}\n[process exited with code ${code}]\n`,
-        );
+        setTerminalOutput((output) => `${output}\n[process exited with code ${code}]\n`);
       }),
       listen<{ error: string }>("terminal:closed", ({ error }) => {
         setTerminalOpen(false);
@@ -1123,21 +1063,23 @@ export default function App() {
         setQuestion(undefined);
         notify(message);
         const errorItem: ActivityItem = {
-            id: `error-${Date.now()}`,
-            label: "Agent error",
-            detail: message,
-            tone: "pink",
-            kind: "system",
-            status: "error",
-            active: false,
-            createdAt: Date.now(),
+          id: `error-${Date.now()}`,
+          label: "Agent error",
+          detail: message,
+          tone: "pink",
+          kind: "system",
+          status: "error",
+          active: false,
+          createdAt: Date.now(),
         };
-        setActivities((items) => [
-          errorItem,
-          ...items.map((item) =>
-            item.active ? { ...item, active: false, status: "error" as const } : item,
-          ),
-        ].slice(0, 80));
+        setActivities((items) =>
+          [
+            errorItem,
+            ...items.map((item) =>
+              item.active ? { ...item, active: false, status: "error" as const } : item,
+            ),
+          ].slice(0, 80),
+        );
         setMessages((items) => [
           ...items.filter((item) => item.id !== "streaming"),
           {
@@ -1177,14 +1119,7 @@ export default function App() {
       cancelled = true;
       cleanups.forEach((cleanup) => cleanup());
     };
-  }, [
-    applyWorkspace,
-    hydrateAccount,
-    hydrateCatalog,
-    hydrateMCP,
-    loadPersonalization,
-    notify,
-  ]);
+  }, [applyWorkspace, hydrateAccount, hydrateCatalog, hydrateMCP, loadPersonalization, notify]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -1203,13 +1138,13 @@ export default function App() {
         navigateView("settings");
         return;
       }
-      if ((event.metaKey || event.ctrlKey) && (event.key === "=" || event.key === "+" || event.key === "-")) {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        (event.key === "=" || event.key === "+" || event.key === "-")
+      ) {
         event.preventDefault();
         const current = settings.uiFontSize || 15;
-        const next =
-          event.key === "-"
-            ? Math.max(11, current - 1)
-            : Math.min(20, current + 1);
+        const next = event.key === "-" ? Math.max(11, current - 1) : Math.min(20, current + 1);
         if (next !== current) {
           void updateSettings({ uiFontSize: next });
           notify(`UI font size: ${next}px`, "success");
@@ -1228,8 +1163,9 @@ export default function App() {
         return;
       }
       if ((event.metaKey || event.ctrlKey) && /^[1-9]$/.test(event.key)) {
-        const visibleChats = [...chatSessions]
-          .sort((left, right) => Number(right.pinned) - Number(left.pinned));
+        const visibleChats = [...chatSessions].sort(
+          (left, right) => Number(right.pinned) - Number(left.pinned),
+        );
         const selected = visibleChats[Number(event.key) - 1];
         if (!selected) return;
         event.preventDefault();
@@ -1246,9 +1182,7 @@ export default function App() {
       }
       const target = event.target as HTMLElement | null;
       const isTyping =
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable;
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
       if (event.key === "?" && !isTyping) {
         event.preventDefault();
         setShortcutOpen(true);
@@ -1287,9 +1221,7 @@ export default function App() {
       return;
     }
     setSettingsExiting(false);
-    setViewDirection(
-      inSettingsFlow && !nextInSettingsFlow ? "back" : "forward",
-    );
+    setViewDirection(inSettingsFlow && !nextInSettingsFlow ? "back" : "forward");
     setView(next);
   }
 
@@ -1307,8 +1239,7 @@ export default function App() {
       return;
     }
     setOnboardingPhase("complete");
-    if (onboardingCloseTimer.current)
-      window.clearTimeout(onboardingCloseTimer.current);
+    if (onboardingCloseTimer.current) window.clearTimeout(onboardingCloseTimer.current);
     onboardingCloseTimer.current = window.setTimeout(() => {
       setOnboardingOpen(false);
       setOnboardingDismissed(true);
@@ -1347,11 +1278,7 @@ export default function App() {
       setFiles([]);
       notify("Chat without workspace enabled", "success");
     } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Could not start standalone chat",
-      );
+      notify(error instanceof Error ? error.message : "Could not start standalone chat");
     }
   }
   async function sendPrompt() {
@@ -1359,9 +1286,7 @@ export default function App() {
     try {
       await desktop.sendPrompt(prompt);
     } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "Could not start agent turn",
-      );
+      notify(error instanceof Error ? error.message : "Could not start agent turn");
     }
   }
   async function steerPrompt() {
@@ -1378,16 +1303,10 @@ export default function App() {
     try {
       const next = await desktop.updateSettings(input);
       setCatalog((current) => ({ ...current, settings: next }));
-      if (
-        input.theme === "system" ||
-        input.theme === "light" ||
-        input.theme === "dark"
-      )
+      if (input.theme === "system" || input.theme === "light" || input.theme === "dark")
         setTheme(input.theme);
     } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "Could not update settings",
-      );
+      notify(error instanceof Error ? error.message : "Could not update settings");
     }
   }
   async function loginAccount(): Promise<boolean> {
@@ -1401,17 +1320,10 @@ export default function App() {
         setOnboardingStep(0);
         setOnboardingOpen(true);
       }
-      notify(
-        `Signed in as ${next.name || next.email || "mncode account"}`,
-        "success",
-      );
+      notify(`Signed in as ${next.name || next.email || "mncode account"}`, "success");
       return true;
     } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Could not sign in to mncode-web",
-      );
+      notify(error instanceof Error ? error.message : "Could not sign in to mncode-web");
       return false;
     } finally {
       setAccountBusy(false);
@@ -1430,14 +1342,8 @@ export default function App() {
     }
   }
   const loadUsage = useCallback(() => desktop.getUsageStats(), []);
-  const loadProviderSettings = useCallback(
-    () => desktop.getProviderSettings(),
-    [],
-  );
-  const loadActiveAntigravityQuota = useCallback(
-    () => desktop.getActiveAntigravityQuota(),
-    [],
-  );
+  const loadProviderSettings = useCallback(() => desktop.getProviderSettings(), []);
+  const loadActiveAntigravityQuota = useCallback(() => desktop.getActiveAntigravityQuota(), []);
   const loadBrowserSettings = useCallback(async () => {
     const next = await desktop.getBrowserSettings();
     setBrowserSettings(next);
@@ -1454,27 +1360,16 @@ export default function App() {
       notify(changed, "success");
       return next;
     } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Could not update browser settings",
-      );
+      notify(error instanceof Error ? error.message : "Could not update browser settings");
       throw error;
     }
   }
   async function configureMCPServer(input: DesktopMCPServerInput) {
     try {
       setMCPServers(await desktop.configureMCPServer(input));
-      notify(
-        `${input.id === "notion" ? "Notion" : "GitHub"} MCP connection saved`,
-        "success",
-      );
+      notify(`${input.id === "notion" ? "Notion" : "GitHub"} MCP connection saved`, "success");
     } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Could not configure MCP server",
-      );
+      notify(error instanceof Error ? error.message : "Could not configure MCP server");
       throw error;
     }
   }
@@ -1485,11 +1380,7 @@ export default function App() {
       notify("Personalization saved", "success");
       return next;
     } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Could not save personalization",
-      );
+      notify(error instanceof Error ? error.message : "Could not save personalization");
       throw error;
     }
   }
@@ -1500,11 +1391,7 @@ export default function App() {
       notify("Local memories deleted", "success");
       return next;
     } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Could not delete local memories",
-      );
+      notify(error instanceof Error ? error.message : "Could not delete local memories");
       throw error;
     }
   }
@@ -1532,9 +1419,7 @@ export default function App() {
     setRunning(false);
     setPrompt("");
     setChatSessions((current) =>
-      current.map((chat) =>
-        chat.id === chatID ? { ...chat, unread: false } : chat,
-      ),
+      current.map((chat) => (chat.id === chatID ? { ...chat, unread: false } : chat)),
     );
     navigateView("workspace");
   }
@@ -1556,9 +1441,7 @@ export default function App() {
     if (!renameChatID || !title) return;
     setChatSessions((current) =>
       current.map((chat) =>
-        chat.id === renameChatID
-          ? { ...chat, title, updatedAt: Date.now() }
-          : chat,
+        chat.id === renameChatID ? { ...chat, title, updatedAt: Date.now() } : chat,
       ),
     );
     closeRenameChat();
@@ -1568,9 +1451,7 @@ export default function App() {
   function toggleChatPin(chatID: string) {
     setChatSessions((current) =>
       current.map((chat) =>
-        chat.id === chatID
-          ? { ...chat, pinned: !chat.pinned, updatedAt: Date.now() }
-          : chat,
+        chat.id === chatID ? { ...chat, pinned: !chat.pinned, updatedAt: Date.now() } : chat,
       ),
     );
     notify("Chat pin updated", "success");
@@ -1589,9 +1470,7 @@ export default function App() {
     const chatID = deleteChatID;
     const isActive = chatID === activeChatId;
     if (isActive && running) void desktop.cancelTurn();
-    setChatSessions((current) =>
-      current.filter((chat) => chat.id !== chatID),
-    );
+    setChatSessions((current) => current.filter((chat) => chat.id !== chatID));
     if (isActive) {
       setMessages([]);
       setActivities([]);
@@ -1610,9 +1489,7 @@ export default function App() {
 
   function markChatUnread(chatID: string) {
     setChatSessions((current) =>
-      current.map((chat) =>
-        chat.id === chatID ? { ...chat, unread: true } : chat,
-      ),
+      current.map((chat) => (chat.id === chatID ? { ...chat, unread: true } : chat)),
     );
   }
 
@@ -1678,28 +1555,18 @@ export default function App() {
       } catch (error) {
         setTerminalOpen(false);
         setTerminalRunning(false);
-        notify(
-          error instanceof Error
-            ? error.message
-            : "Could not run terminal command",
-        );
+        notify(error instanceof Error ? error.message : "Could not run terminal command");
       }
     },
     [notify],
   );
-  async function loginProvider(
-    provider: string,
-    accountID: string,
-    token: string,
-  ) {
+  async function loginProvider(provider: string, accountID: string, token: string) {
     try {
       await desktop.loginProvider(provider, accountID, token);
       await hydrateCatalog();
       notify(`${provider} provider connected`, "success");
     } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "Could not connect provider",
-      );
+      notify(error instanceof Error ? error.message : "Could not connect provider");
       throw error;
     }
   }
@@ -1709,11 +1576,7 @@ export default function App() {
       await hydrateCatalog();
       notify("Provider account selected", "success");
     } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Could not select provider account",
-      );
+      notify(error instanceof Error ? error.message : "Could not select provider account");
       throw error;
     }
   }
@@ -1723,9 +1586,7 @@ export default function App() {
       await hydrateCatalog();
       notify("OpenCode configured", "success");
     } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "Could not configure OpenCode",
-      );
+      notify(error instanceof Error ? error.message : "Could not configure OpenCode");
       throw error;
     }
   }
@@ -1735,9 +1596,7 @@ export default function App() {
       await hydrateCatalog();
       notify("Custom provider saved", "success");
     } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "Could not save provider",
-      );
+      notify(error instanceof Error ? error.message : "Could not save provider");
       throw error;
     }
   }
@@ -1747,9 +1606,7 @@ export default function App() {
       await hydrateCatalog();
       notify("Custom provider deleted", "success");
     } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "Could not delete provider",
-      );
+      notify(error instanceof Error ? error.message : "Could not delete provider");
       throw error;
     }
   }
@@ -1774,10 +1631,7 @@ export default function App() {
     navigateView(automation ? "automations" : "mcp");
     setRightPanel("workspace");
     if (label === "New automation")
-      notify(
-        "Automation editor is waiting for the scheduler bridge",
-        "success",
-      );
+      notify("Automation editor is waiting for the scheduler bridge", "success");
   }
   function changeTheme(next: "system" | "light" | "dark") {
     setTheme(next);
@@ -1787,16 +1641,10 @@ export default function App() {
     void desktop
       .chooseAttachment()
       .then((path) => {
-        if (path)
-          setPrompt(
-            (current) =>
-              `${current}${current ? "\n" : ""}[Attachment: ${path}]`,
-          );
+        if (path) setPrompt((current) => `${current}${current ? "\n" : ""}[Attachment: ${path}]`);
       })
       .catch((error) =>
-        notify(
-          error instanceof Error ? error.message : "Could not add attachment",
-        ),
+        notify(error instanceof Error ? error.message : "Could not add attachment"),
       );
   }
   function promptPreset(value: string) {
@@ -1843,9 +1691,7 @@ export default function App() {
             activeChatId={activeChatId}
             width={sidebarWidth}
             resizing={resizingSide === "left"}
-            remoteConnected={
-              remoteSession.active && remoteSession.connectedDevices > 1
-            }
+            remoteConnected={remoteSession.active && remoteSession.connectedDevices > 1}
             onToggle={() => setSidebarCollapsed((value) => !value)}
             onViewChange={navigateView}
             onOpenWorkspace={openWorkspace}
@@ -1880,10 +1726,10 @@ export default function App() {
               (settingsExiting
                 ? "mn-settings-exit"
                 : standaloneSettings
-                ? viewDirection === "back"
-                  ? "mn-settings-return"
-                  : "mn-settings-enter"
-                : "")
+                  ? viewDirection === "back"
+                    ? "mn-settings-return"
+                    : "mn-settings-enter"
+                  : "")
             }
             aria-label={view}
           >
@@ -1930,10 +1776,7 @@ export default function App() {
               />
             )}
             {view === "insights" && (
-              <InsightsView
-                workspace={workspace}
-                onOpenWorkspace={openWorkspace}
-              />
+              <InsightsView workspace={workspace} onOpenWorkspace={openWorkspace} />
             )}
             {(view === "settings" || view === "skills") && (
               <SettingsView
@@ -2012,9 +1855,7 @@ export default function App() {
               (resizingSide === "right" ? " is-resizing" : "")
             }
             style={
-              inspectorOpen
-                ? { width: rightSidebarWidth, flexBasis: rightSidebarWidth }
-                : undefined
+              inspectorOpen ? { width: rightSidebarWidth, flexBasis: rightSidebarWidth } : undefined
             }
           >
             <RightSidebar
@@ -2031,9 +1872,7 @@ export default function App() {
               onSideSubmit={saveSideNote}
               onPromoteNote={promoteSideNote}
               onOpenWorkspace={openWorkspace}
-              onFileSelect={(node) =>
-                notify("Selected " + node.path, "success")
-              }
+              onFileSelect={(node) => notify("Selected " + node.path, "success")}
               onResizeStart={(event) => beginResize("right", event.clientX)}
             />
           </div>
@@ -2056,21 +1895,14 @@ export default function App() {
         />
         <DeleteChatDialog
           open={Boolean(deleteChatID)}
-          chatTitle={
-            chatSessions.find((chat) => chat.id === deleteChatID)?.title ||
-              "this chat"
-          }
+          chatTitle={chatSessions.find((chat) => chat.id === deleteChatID)?.title || "this chat"}
           onOpenChange={(open) => {
             if (!open) closeDeleteChat();
           }}
           onConfirm={confirmDeleteChat}
         />
         {toast && (
-          <Toast
-            message={toast.message}
-            kind={toast.kind}
-            onClose={() => setToast(undefined)}
-          />
+          <Toast message={toast.message} kind={toast.kind} onClose={() => setToast(undefined)} />
         )}
         <UpdateDialog
           update={updateInfo}
@@ -2081,11 +1913,7 @@ export default function App() {
               .openUpdatePage(url)
               .then(() => setUpdateOpen(false))
               .catch((error) =>
-                notify(
-                  error instanceof Error
-                    ? error.message
-                    : "Could not open update page",
-                ),
+                notify(error instanceof Error ? error.message : "Could not open update page"),
               )
           }
         />
@@ -2236,8 +2064,8 @@ function DeleteChatDialog({
             Delete chat?
           </DialogTitle>
           <DialogDescription>
-            Are you sure you want to permanently delete “{chatTitle}”? This
-            conversation will be removed from this desktop.
+            Are you sure you want to permanently delete “{chatTitle}”? This conversation will be
+            removed from this desktop.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-2">
@@ -2273,9 +2101,7 @@ function UpdateDialog({
             <Download className="size-4 text-[var(--mn-accent-strong)]" />
             Update available
           </DialogTitle>
-          <DialogDescription>
-            A newer mncode desktop release is ready.
-          </DialogDescription>
+          <DialogDescription>A newer mncode desktop release is ready.</DialogDescription>
         </DialogHeader>
         <div className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
           <div className="flex items-center justify-between text-xs">
@@ -2298,10 +2124,7 @@ function UpdateDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Later
           </Button>
-          <Button
-            className="mn-accent-button"
-            onClick={() => onOpenUpdate(update.releaseUrl)}
-          >
+          <Button className="mn-accent-button" onClick={() => onOpenUpdate(update.releaseUrl)}>
             <Download className="mr-2 size-3.5" />
             View update
           </Button>
@@ -2329,11 +2152,7 @@ function Toast({
             : "text-rose-600 dark:text-rose-200"
         }
       >
-        {kind === "success" ? (
-          <Check className="size-4" />
-        ) : (
-          <AlertCircle className="size-4" />
-        )}
+        {kind === "success" ? <Check className="size-4" /> : <AlertCircle className="size-4" />}
       </span>
       <span className="truncate font-medium">{message}</span>
       <Button

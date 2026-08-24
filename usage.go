@@ -1,3 +1,4 @@
+// Local usage telemetry aggregation for the insights dashboard.
 package main
 
 import (
@@ -9,6 +10,7 @@ import (
 	"mncode/pkg/ui"
 )
 
+// GetUsageStats aggregates local token telemetry for the dashboard.
 func (a *App) GetUsageStats() (DesktopUsageStats, error) {
 	a.mu.RLock()
 	var session *sessionRuntime

@@ -1,3 +1,4 @@
+// Custom instructions, personality flags, and local memory management.
 package main
 
 import (
@@ -16,6 +17,7 @@ var supportedPersonalities = map[string]bool{
 	"direct":    true,
 }
 
+// GetPersonalization loads custom instructions, personality, and memory state.
 func (a *App) GetPersonalization() (DesktopPersonalization, error) {
 	cfg, err := a.browserConfig()
 	if err != nil {
@@ -24,6 +26,7 @@ func (a *App) GetPersonalization() (DesktopPersonalization, error) {
 	return personalizationFromConfig(cfg), nil
 }
 
+// SavePersonalization persists personalization and returns the saved snapshot.
 func (a *App) SavePersonalization(input DesktopPersonalizationInput) (DesktopPersonalization, error) {
 	cfg, err := a.browserConfig()
 	if err != nil {
@@ -63,6 +66,7 @@ func (a *App) SavePersonalization(input DesktopPersonalizationInput) (DesktopPer
 	return personalizationFromConfig(cfg), nil
 }
 
+// DeleteLocalMemories removes every locally stored memory.
 func (a *App) DeleteLocalMemories() (DesktopPersonalization, error) {
 	if _, err := memory.Clear(); err != nil {
 		return DesktopPersonalization{}, err

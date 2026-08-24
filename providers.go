@@ -1,3 +1,4 @@
+// Provider accounts, quotas, and custom OpenAI-compatible providers.
 package main
 
 import (
@@ -12,6 +13,7 @@ import (
 
 var providerIDCleaner = regexp.MustCompile(`[^a-z0-9]+`)
 
+// GetProviderSettings returns provider accounts, quotas, and custom providers.
 func (a *App) GetProviderSettings() (DesktopProviderSettings, error) {
 	cfg, _, err := a.providerConfig()
 	if err != nil {
@@ -45,6 +47,8 @@ func (a *App) GetProviderSettings() (DesktopProviderSettings, error) {
 	return result, nil
 }
 
+// GetActiveAntigravityQuota fetches live quota headroom for the active Antigravity
+// account.
 func (a *App) GetActiveAntigravityQuota() (*DesktopProviderQuota, error) {
 	store, err := accounts.NewStore("")
 	if err != nil {
@@ -58,6 +62,7 @@ func (a *App) GetActiveAntigravityQuota() (*DesktopProviderQuota, error) {
 	return nil, nil
 }
 
+// LoginProvider stores a credential for a provider and refreshes the session pool.
 func (a *App) LoginProvider(providerID, accountID, token string) error {
 	store, err := accounts.NewStore("")
 	if err != nil {
@@ -81,6 +86,7 @@ func (a *App) LoginProvider(providerID, accountID, token string) error {
 	return a.activateProviderAccount(store, account)
 }
 
+// UseProviderAccount promotes one pooled account to the active slot.
 func (a *App) UseProviderAccount(accountID string) error {
 	store, err := accounts.NewStore("")
 	if err != nil {
@@ -94,6 +100,7 @@ func (a *App) UseProviderAccount(accountID string) error {
 	return fmt.Errorf("provider account not found: %s", accountID)
 }
 
+// ConfigureOpenCode connects the OpenCode provider with the given API key.
 func (a *App) ConfigureOpenCode(apiKey string) error {
 	key := strings.TrimSpace(apiKey)
 	if key == "" {
@@ -114,6 +121,7 @@ func (a *App) ConfigureOpenCode(apiKey string) error {
 	return a.refreshSessionProvider(session)
 }
 
+// SaveCustomProvider persists a custom OpenAI-compatible provider.
 func (a *App) SaveCustomProvider(input DesktopCustomProviderInput) (DesktopCustomProvider, error) {
 	cfg, session, err := a.providerConfig()
 	if err != nil {
@@ -167,6 +175,7 @@ func (a *App) SaveCustomProvider(input DesktopCustomProviderInput) (DesktopCusto
 	return DesktopCustomProvider{ID: id, Name: name, BaseURL: baseURL, APIFormat: format, APIKeyConfigured: key != "", Models: input.Models}, nil
 }
 
+// DeleteCustomProvider removes a custom provider by id.
 func (a *App) DeleteCustomProvider(providerID string) error {
 	cfg, session, err := a.providerConfig()
 	if err != nil {

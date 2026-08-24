@@ -38,22 +38,12 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import mncodeLogo from "@/assets/images/mncode-logo.svg";
 import { cn } from "@/lib/utils";
 import { handleTitlebarDoubleClick } from "@/lib/window";
 import { ResizeHandle } from "./resize-handle";
-import type {
-  ChatSession,
-  DesktopAccount,
-  ViewName,
-  WorkspaceInfo,
-} from "@/types";
+import type { ChatSession, DesktopAccount, ViewName, WorkspaceInfo } from "@/types";
 
 interface AppSidebarProps {
   account: DesktopAccount;
@@ -150,11 +140,7 @@ export function AppSidebar({
           )}
           aria-label="Toggle sidebar"
         >
-          {collapsed ? (
-            <PanelLeft className="size-4" />
-          ) : (
-            <ChevronLeft className="size-4" />
-          )}
+          {collapsed ? <PanelLeft className="size-4" /> : <ChevronLeft className="size-4" />}
         </Button>
       </div>
       <TooltipProvider delayDuration={200}>
@@ -213,26 +199,20 @@ export function AppSidebar({
                 className="flex w-full items-center gap-2 rounded-md border border-[var(--mn-line)] bg-[var(--mn-surface)] px-2.5 py-2.5 text-left text-base transition-colors hover:border-[var(--mn-accent)]"
               >
                 <span className="pulse-beacon" />
-                <span className="min-w-0 flex-1 truncate font-medium">
-                  {workspace.name}
-                </span>
+                <span className="min-w-0 flex-1 truncate font-medium">{workspace.name}</span>
                 <span className="hud-mono shrink-0 text-[var(--mn-cyan)]">
                   {workspace.totalFiles}f
                 </span>
               </button>
             ) : (
-              <p className="px-2 py-2.5 text-sm text-muted-foreground">
-                No open projects
-              </p>
+              <p className="px-2 py-2.5 text-sm text-muted-foreground">No open projects</p>
             )}
             <div className="mt-7 flex items-center justify-between py-2">
               <span className="eyebrow-badge">[ Chats ]</span>
               <History className="size-4 text-muted-foreground" />
             </div>
             {visibleChatSessions.length === 0 ? (
-              <p className="px-2 py-2 text-sm text-muted-foreground">
-                No chats yet
-              </p>
+              <p className="px-2 py-2 text-sm text-muted-foreground">No chats yet</p>
             ) : (
               <div className="space-y-1">
                 {visibleChatSessions.map((chat, index) => (
@@ -251,9 +231,7 @@ export function AppSidebar({
                         <span className="grid size-5 shrink-0 place-items-center rounded-md bg-[var(--mn-surface-muted)] font-mono text-[0.6875rem] text-muted-foreground">
                           {index + 1}
                         </span>
-                        <span className="min-w-0 flex-1 truncate">
-                          {chat.title}
-                        </span>
+                        <span className="min-w-0 flex-1 truncate">{chat.title}</span>
                         {chat.pinned && (
                           <Pin className="size-3 shrink-0 text-[var(--mn-accent-strong)]" />
                         )}
@@ -277,10 +255,7 @@ export function AppSidebar({
                         <Pencil />
                         Rename chat
                       </ContextMenuItem>
-                      <ContextMenuItem
-                        variant="destructive"
-                        onSelect={() => onDeleteChat(chat.id)}
-                      >
+                      <ContextMenuItem variant="destructive" onSelect={() => onDeleteChat(chat.id)}>
                         <Trash2 />
                         Delete chat
                       </ContextMenuItem>
@@ -306,8 +281,7 @@ export function AppSidebar({
               <p className="eyebrow-badge mb-1.5">[ Pro Tip ]</p>
               <p className="text-sm font-medium">Keep your workspace tidy</p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Start a task from any project and keep the full agent context in
-                one place.
+                Start a task from any project and keep the full agent context in one place.
               </p>
             </div>
           </div>
@@ -329,9 +303,7 @@ export function AppSidebar({
                     "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/15 hover:text-emerald-700 dark:text-emerald-300 dark:hover:text-emerald-200",
                 )}
                 aria-label={
-                  remoteConnected
-                    ? "Remote companion connected"
-                    : "Open remote companion"
+                  remoteConnected ? "Remote companion connected" : "Open remote companion"
                 }
               >
                 <Smartphone className="size-3.5" />
@@ -395,9 +367,7 @@ function SidebarAction({
         <>
           <span>{label}</span>
           {shortcut && (
-            <span className="ml-auto font-mono text-[0.6875rem] opacity-50">
-              {shortcut}
-            </span>
+            <span className="ml-auto font-mono text-[0.6875rem] opacity-50">{shortcut}</span>
           )}
         </>
       )}
@@ -428,12 +398,9 @@ function AccountMenu({
     ? account.name || account.email || "mncode account"
     : "Guest mode";
   const detail = account.connected
-    ? account.email ||
-      (account.status === "offline" ? "Offline cache" : "Connected")
+    ? account.email || (account.status === "offline" ? "Offline cache" : "Connected")
     : "Sign in to mncode account";
-  const initial = (account.name || account.email || "?")
-    .slice(0, 1)
-    .toUpperCase();
+  const initial = (account.name || account.email || "?").slice(0, 1).toUpperCase();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -1,3 +1,4 @@
+// MCP server configuration surface for the settings UI.
 package main
 
 import (
@@ -29,6 +30,7 @@ var builtinMCPServers = []builtinMCPDefinition{
 	},
 }
 
+// GetMCPServers lists configured MCP servers for the settings UI.
 func (a *App) GetMCPServers() []DesktopMCPServer {
 	manager := a.mcpManager()
 	servers := make([]DesktopMCPServer, 0, len(builtinMCPServers))
@@ -47,6 +49,8 @@ func (a *App) GetMCPServers() []DesktopMCPServer {
 	return servers
 }
 
+// ConfigureMCPServer validates and persists an MCP server connection
+// (Notion/GitHub).
 func (a *App) ConfigureMCPServer(input DesktopMCPServerInput) ([]DesktopMCPServer, error) {
 	definition, ok := findBuiltinMCP(input.ID)
 	if !ok {

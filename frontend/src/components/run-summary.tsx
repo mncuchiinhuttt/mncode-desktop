@@ -15,7 +15,19 @@ function formatDuration(milliseconds: number) {
   return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
 }
 
-export function RunSummary({ running, summary, usage, startedAt, activities }: { running: boolean; summary?: AgentRunSummary; usage: AgentRunUsage; startedAt?: number; activities: ActivityItem[] }) {
+export function RunSummary({
+  running,
+  summary,
+  usage,
+  startedAt,
+  activities,
+}: {
+  running: boolean;
+  summary?: AgentRunSummary;
+  usage: AgentRunUsage;
+  startedAt?: number;
+  activities: ActivityItem[];
+}) {
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -32,11 +44,25 @@ export function RunSummary({ running, summary, usage, startedAt, activities }: {
   if (!running && !hasMetrics && activities.length === 0) return null;
   return (
     <div className="mx-auto mt-4 w-full max-w-5xl px-6">
-      <button type="button" onClick={() => setOpen((value) => !value)} className="flex w-full items-center gap-2 border-b border-[var(--mn-line)] px-1 py-2 text-left text-sm text-muted-foreground transition-colors hover:text-foreground">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center gap-2 border-b border-[var(--mn-line)] px-1 py-2 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
         {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
         <Clock3 className="size-3.5" />
-        <span>{running ? "Working for" : hasMetrics ? `Worked for ${formatDuration(duration)}` : "Run details"}</span>
-        {tokens > 0 && <span className="ml-auto font-mono text-[0.75rem]">Used {formatTokens(tokens)} tokens</span>}
+        <span>
+          {running
+            ? "Working for"
+            : hasMetrics
+              ? `Worked for ${formatDuration(duration)}`
+              : "Run details"}
+        </span>
+        {tokens > 0 && (
+          <span className="ml-auto font-mono text-[0.75rem]">
+            Used {formatTokens(tokens)} tokens
+          </span>
+        )}
       </button>
       {open && <AgentActionFeed activities={activities} />}
     </div>

@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Check,
-  Copy,
-  Laptop,
-  Link2,
-  RefreshCw,
-  Smartphone,
-  Wifi,
-} from "lucide-react";
+import { Check, Copy, Laptop, Link2, RefreshCw, Smartphone, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -64,8 +56,8 @@ export function RemoteCompanionDialog({
             Remote companion
           </DialogTitle>
           <DialogDescription className="text-sm leading-5">
-            Pair a phone with this desktop to steer turns and answer questions
-            while mncode is running.
+            Pair a phone with this desktop to steer turns and answer questions while mncode is
+            running.
           </DialogDescription>
         </DialogHeader>
 
@@ -79,9 +71,7 @@ export function RemoteCompanionDialog({
           <div className="rounded-xl border border-dashed border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-8 text-center">
             <Smartphone className="mx-auto size-8 text-[var(--mn-accent-strong)]" />
             <p className="mt-3 text-base font-medium">
-              {workspaceReady
-                ? "Start a private pairing link"
-                : "Open a workspace first"}
+              {workspaceReady ? "Start a private pairing link" : "Open a workspace first"}
             </p>
             <p className="mx-auto mt-1 max-w-md text-sm leading-5 text-muted-foreground">
               {workspaceReady
@@ -89,11 +79,7 @@ export function RemoteCompanionDialog({
                 : "Remote companion attaches to the active agent workspace. Choose a project, then open this dialog again."}
             </p>
             {workspaceReady ? (
-              <Button
-                className="mn-accent-button mt-5"
-                onClick={onStart}
-                disabled={loading}
-              >
+              <Button className="mn-accent-button mt-5" onClick={onStart} disabled={loading}>
                 {loading && <RefreshCw className="mr-2 size-4 animate-spin" />}
                 Create pairing link
               </Button>
@@ -164,9 +150,7 @@ export function RemoteCompanionDialog({
                   disabled={loading}
                   aria-label="Refresh remote devices"
                 >
-                  <RefreshCw
-                    className={loading ? "size-4 animate-spin" : "size-4"}
-                  />
+                  <RefreshCw className={loading ? "size-4 animate-spin" : "size-4"} />
                 </Button>
               </div>
               <div className="mt-4 space-y-2">
@@ -183,9 +167,7 @@ export function RemoteCompanionDialog({
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {device.name}
-                      </p>
+                      <p className="truncate text-sm font-medium">{device.name}</p>
                       <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
                         {device.id} · {device.platform}
                       </p>
@@ -198,8 +180,8 @@ export function RemoteCompanionDialog({
                 ))}
               </div>
               <p className="mt-4 text-xs leading-5 text-muted-foreground">
-                The phone appears here after opening the pairing link. Status
-                refreshes automatically while this dialog is open.
+                The phone appears here after opening the pairing link. Status refreshes
+                automatically while this dialog is open.
               </p>
             </section>
           </div>

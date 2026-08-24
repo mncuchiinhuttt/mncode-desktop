@@ -1,17 +1,6 @@
-import {
-  CircleHelp,
-  Command,
-  PanelBottom,
-  PanelRight,
-  Search,
-} from "lucide-react";
+import { CircleHelp, Command, PanelBottom, PanelRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { handleTitlebarDoubleClick } from "@/lib/window";
 import { cn } from "@/lib/utils";
 import type { ViewName, WorkspaceInfo } from "@/types";
@@ -50,12 +39,7 @@ export function TopBar({
       className="mn-drag-region flex h-14 shrink-0 items-center justify-between border-b border-[var(--mn-line)] px-5"
       onDoubleClick={handleTitlebarDoubleClick}
     >
-      <div
-        className={cn(
-          "flex min-w-0 items-center gap-3",
-          sidebarCollapsed && "pl-3",
-        )}
-      >
+      <div className={cn("flex min-w-0 items-center gap-3", sidebarCollapsed && "pl-3")}>
         <span className="eyebrow-badge">
           [ {meta.code} · {meta.label} ]
         </span>
@@ -63,9 +47,7 @@ export function TopBar({
         {workspace.ready ? (
           <span className="hidden min-w-0 items-center gap-2 md:flex">
             <span className="pulse-beacon" />
-            <span className="hud-mono truncate text-muted-foreground">
-              {workspace.name}
-            </span>
+            <span className="hud-mono truncate text-muted-foreground">{workspace.name}</span>
             <i className="pipe-delimiter text-xs">|</i>
             <span className="hud-mono shrink-0 text-[var(--mn-cyan)]">
               {workspace.totalFiles} files

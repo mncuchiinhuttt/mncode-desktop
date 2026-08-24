@@ -1,3 +1,4 @@
+// Tests for tool result summaries.
 package main
 
 import (
@@ -6,6 +7,7 @@ import (
 	"testing"
 )
 
+// TestToolResultSummaryForReplacement checks diff summaries for in-place edits.
 func TestToolResultSummaryForReplacement(t *testing.T) {
 	workspace := t.TempDir()
 	target := filepath.Join(workspace, "src", "app.tsx")
@@ -36,6 +38,7 @@ func TestToolResultSummaryForReplacement(t *testing.T) {
 	}
 }
 
+// TestToolResultSummaryForOverwrite checks summaries for full-file overwrites.
 func TestToolResultSummaryForOverwrite(t *testing.T) {
 	workspace := t.TempDir()
 	target := filepath.Join(workspace, "README.md")

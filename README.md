@@ -1,53 +1,53 @@
-# mncode desktop
+# mncode Desktop
 
-Separate Wails desktop client for the `mncode-cli` Go agent core.
+Native desktop cockpit for the [mncode](https://github.com/mncuchiinhuttt/mncode) Go agent core — visual subagent swarms, PTY multi-terminal, sidecar chat, and real-time quota HUD, wrapped in a Wails v2 shell.
+
+![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![channel](https://img.shields.io/badge/channel-v0.1--beta-pink)
+
+## Highlights
+
+- **Streaming agent chat** — token-level streaming with tool/subagent activity feed, run summaries (duration + token usage persisted across restarts), and steering support
+- **Workspace inspector sidecar** — file tree, agent activity, side notes, and usage telemetry in a resizable right panel
+- **Built-in PTY terminal** — real terminal session rooted at the workspace (`⌘J`)
+- **Skills Marketplace** — curated free skills from MCP Market & [skills.sh](https://skills.sh), installed into the shared `~/.mncode/skills` directory
+- **Multi-provider models** — Antigravity, OpenAI Codex, OpenCode, OpenRouter, and custom OpenAI-compatible providers with account pools and quota HUD
+- **Remote companion** — pair a phone to steer runs from the couch
+- **Personalization** — custom instructions, personality modes (including Brainrot 🧠), and local memories
+- **RMIT-inspired design system** — dark-void surfaces, hairline grids, bracket eyebrows, pink/cyan HUD accents, light & dark themes
 
 ## Stack
 
-- Wails v2.12
-- Go facade importing `mncode-cli` through `replace mncode => ../mncode-cli`
-- React + Vite + TypeScript
-- Tailwind CSS v4
-- shadcn-style source components with Radix primitives
+| Layer    | Tech                                                        |
+| -------- | ----------------------------------------------------------- |
+| Shell    | Wails v2.12 (Go ↔ webview bridge)                           |
+| Core     | `mncode-cli` Go agent core (via `replace mncode => ../mncode-cli`) |
+| Frontend | React 19 + Vite + TypeScript                                |
+| Styling  | Tailwind CSS v4 + shadcn-style components on Radix primitives |
 
-## UI
+## Keyboard shortcuts
 
-- ZCode-inspired task sidebar and centered composer
-- Right workspace sidecar for files, side chat, run activity, automations, and MCP/plugins
-- Automations and MCP/plugins are full left-sidebar tabs; the right sidecar stays focused on inspection
-- Automations currently presents an explicit Coming soon state while the scheduler bridge is being built
-- Settings opens as a standalone animated shell with its own navigation and Back to workspace action
-- Composer context menu with attachment picker plus `@` and `/` shortcuts
-- Composer `@`/`/` autocomplete reads the CLI file, command, and skill catalogs with keyboard selection and Escape dismissal
-- Context ring hover card with live used/budget/remaining token counts
-- Compact composer controls with title-cased effort labels and model menus
-- Light/dark theme toggle with local persistence
-- CLI-synced model, workflow, effort, permission, and theme catalogs
-- Mode and model catalogs also hydrate from shared config before a workspace is opened
-- Model selection updates the shared provider/model configuration
-- Native hidden titlebar with macOS traffic lights and edge-resizable window
-- Double-clicking the top bar toggles the native zoom/maximise state
-- Search shortcut stays beside the top-bar Search action, and the right sidecar opens/closes with width and opacity motion
-- Collapsed left rail keeps its toggle below the macOS traffic lights and gives the workspace title a small safe inset
-- Account menu reuses the CLI mncode-web login flow and resolves the live name/email via `/api/keys/whoami`
-- Account sign-in/sign-out can run before a workspace is opened; guest landing copy does not assume a user name
-- Toast notifications use a top-center, compact notice treatment
-- Settings > Account includes daily/weekly/cumulative usage activity with per-day hover details from mncode-web
-- Settings > Models manages Antigravity and Codex account pools, OpenCode API keys, and custom providers with Anthropic, Chat Completions, or Responses formats
-- Appearance settings include System/Light/Dark theme, UI and code font sizes, light/dark code themes, line numbers, wrapping, and live code previews
-- App info shows the current `v0.1-beta` channel and checks mncode-web for newer releases with an explicit update dialog
+| Keys     | Action                              |
+| -------- | ----------------------------------- |
+| `⌘N`     | New chat                            |
+| `⌘K`     | Command palette                     |
+| `⌘,`     | Open settings                       |
+| `⌘J`     | Toggle terminal                     |
+| `⌘1–9`   | Open the matching chat              |
+| `⌘ +` / `⌘ −` | Step UI font size (11–20px)    |
+| `⌘0`     | Reset UI font size to 15px          |
+| `?`      | Keyboard shortcuts dialog           |
+| `Esc`    | Close the active menu or dialog     |
 
 ## Development
 
-From this directory:
+Requirements: Go 1.24+, [Wails CLI v2](https://wails.io) (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`), Node 20+ with pnpm.
 
 ```bash
 pnpm install
 wails dev
 ```
 
-The Wails browser dev bridge is available at `http://localhost:34115`.
-For a frontend-only preview, run `pnpm --dir frontend dev`.
+The Wails browser dev bridge is available at `http://localhost:34115`. For a frontend-only preview, run `pnpm --dir frontend dev`.
 
 Set `MNCODE_WORKSPACE` to open a workspace automatically:
 
@@ -63,5 +63,39 @@ pnpm --dir frontend build
 wails build
 ```
 
-Provider keys entered in the prototype settings dialog are held in memory for
-the current process and are not persisted to disk.
+The packaged app lands in `build/bin`.
+
+## Project structure
+
+```
+mncode-desktop/
+├── main.go                  # Wails bootstrap and window setup
+├── app.go                   # App facade: workspace, providers, agent turns
+├── app-types.go             # JSON wire types shared with the frontend
+├── desktop-session.go       # Agent session construction and lifecycle
+├── desktop-events.go        # Agent-core callbacks → Wails DOM events
+├── catalog.go               # Settings, themes, models, prompt catalog
+├── providers.go             # Provider accounts, quotas, custom providers
+├── skills-marketplace.go    # Skill install/delete + curated catalog bridge
+├── terminal.go              # PTY terminal panel bridge
+├── remote.go                # Phone companion session management
+├── usage.go                 # Local usage telemetry aggregation
+├── version.go               # Version metadata and update checks
+├── docs/                    # Architecture and skills documentation
+└── frontend/
+    └── src/
+        ├── App.tsx          # Root shell, views, event wiring, chat history
+        ├── style.css        # Design tokens + RMIT utility classes
+        ├── components/      # Sidebar, composer, inspector, settings, ...
+        └── lib/             # Wails bindings and helpers
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the layers talk to each other and [docs/SKILLS.md](docs/SKILLS.md) for how the marketplace catalog works.
+
+## Privacy
+
+Everything runs locally: workspace scanning, agent turns, and usage telemetry stay on this machine. Provider keys entered in settings are held in memory for the current process and are not persisted to disk. Optional mncode account sign-in only syncs settings and usage summaries you explicitly push.
+
+## License
+
+[MIT](LICENSE) © 2026 mncode

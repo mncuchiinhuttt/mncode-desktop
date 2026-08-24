@@ -1,3 +1,4 @@
+// App version metadata and update checks against the release feed.
 package main
 
 import (
@@ -16,6 +17,7 @@ import (
 const desktopVersion = "v0.1-beta"
 const desktopReleaseEndpoint = "/api/releases/desktop/latest"
 
+// DesktopAppInfo describes the running desktop build.
 type DesktopAppInfo struct {
 	Version     string `json:"version"`
 	Channel     string `json:"channel"`
@@ -24,6 +26,7 @@ type DesktopAppInfo struct {
 	Copyright   string `json:"copyright"`
 }
 
+// DesktopUpdateInfo reports update availability against the release feed.
 type DesktopUpdateInfo struct {
 	CurrentVersion  string `json:"currentVersion"`
 	LatestVersion   string `json:"latestVersion"`
@@ -33,6 +36,7 @@ type DesktopUpdateInfo struct {
 	UpdateAvailable bool   `json:"updateAvailable"`
 }
 
+// GetAppInfo returns version, channel, and metadata for the running build.
 func (a *App) GetAppInfo() DesktopAppInfo {
 	return DesktopAppInfo{
 		Version:     desktopVersion,
@@ -43,6 +47,7 @@ func (a *App) GetAppInfo() DesktopAppInfo {
 	}
 }
 
+// CheckForUpdate queries the release feed and reports newer versions.
 func (a *App) CheckForUpdate() (DesktopUpdateInfo, error) {
 	baseURL := "https://mncode.mncuchiinhuttt.dev"
 	if cfg, err := config.LoadConfig(""); err == nil {
@@ -77,10 +82,12 @@ func (a *App) CheckForUpdate() (DesktopUpdateInfo, error) {
 	return DesktopUpdateInfo{CurrentVersion: desktopVersion, LatestVersion: release.Version, ReleaseDate: release.ReleaseDate, Channel: release.Channel, ReleaseURL: release.ReleaseURL, UpdateAvailable: newerVersion(desktopVersion, release.Version)}, nil
 }
 
+// OpenUpdatePage opens the release page in the system browser.
 func (a *App) OpenUpdatePage(url string) error {
 	return a.openExternalURL(url)
 }
 
+// OpenExternalURL opens an arbitrary URL in the system browser.
 func (a *App) OpenExternalURL(rawURL string) error {
 	return a.openExternalURL(rawURL)
 }

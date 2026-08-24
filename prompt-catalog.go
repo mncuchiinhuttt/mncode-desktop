@@ -1,3 +1,4 @@
+// Prompt suggestions (commands, skills, context) for the composer.
 package main
 
 import (

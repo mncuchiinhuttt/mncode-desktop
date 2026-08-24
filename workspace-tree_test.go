@@ -1,3 +1,4 @@
+// Tests for workspace tree scanning.
 package main
 
 import (
@@ -8,6 +9,7 @@ import (
 	"mncode/pkg/config"
 )
 
+// TestValidProvider checks provider name validation.
 func TestValidProvider(t *testing.T) {
 	valid := []config.ProviderType{config.ProviderAnthropic, config.ProviderOpenAI, config.ProviderGemini, config.ProviderOpenRouter}
 	for _, provider := range valid {
@@ -20,6 +22,8 @@ func TestValidProvider(t *testing.T) {
 	}
 }
 
+// TestReadDirectorySkipsIgnoredFolders ensures ignored directories are pruned
+// from the tree.
 func TestReadDirectorySkipsIgnoredFolders(t *testing.T) {
 	root := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(root, ".git"), 0o755); err != nil {

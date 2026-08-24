@@ -1,3 +1,4 @@
+// Builds and owns the agent session: workspace context, tools, and lifecycle.
 package main
 
 import (

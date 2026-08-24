@@ -76,9 +76,7 @@ export function TerminalPanel({
         ref={outputRef}
         className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap px-4 py-3 font-mono text-[0.8125rem] leading-5 text-foreground"
       >
-        {output || (
-          <span className="text-muted-foreground">Run a command in the workspace…</span>
-        )}
+        {output || <span className="text-muted-foreground">Run a command in the workspace…</span>}
       </pre>
       <form
         onSubmit={submit}
@@ -89,9 +87,7 @@ export function TerminalPanel({
           value={command}
           onChange={(event) => setCommand(event.target.value)}
           disabled={running}
-          placeholder={
-            running ? "Command running…" : "Type a command and press Enter"
-          }
+          placeholder={running ? "Command running…" : "Type a command and press Enter"}
           className="min-w-0 flex-1 bg-transparent font-mono text-[0.8125rem] text-foreground outline-none placeholder:text-muted-foreground"
           aria-label="Terminal command"
           autoComplete="off"

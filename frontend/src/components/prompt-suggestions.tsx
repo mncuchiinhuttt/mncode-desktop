@@ -1,11 +1,4 @@
-import {
-  AtSign,
-  Command,
-  FileCode2,
-  Folder,
-  GitBranch,
-  Sparkles,
-} from "lucide-react";
+import { AtSign, Command, FileCode2, Folder, GitBranch, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PromptCatalog, PromptOption } from "@/types";
 
@@ -18,10 +11,7 @@ export interface PromptTriggerState {
   end: number;
 }
 
-export function getPromptTriggerState(
-  value: string,
-  cursor: number,
-): PromptTriggerState | null {
+export function getPromptTriggerState(value: string, cursor: number): PromptTriggerState | null {
   const beforeCursor = value.slice(0, cursor);
   const atMatch = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
   const slashMatch = beforeCursor.match(/(?:^|\s)\/([^\n]*)$/);
@@ -56,27 +46,16 @@ export function getPromptOptions(
   return matches.slice(0, 8);
 }
 
-export function getPromptOptionCount(
-  catalog: PromptCatalog,
-  state: PromptTriggerState,
-) {
+export function getPromptOptionCount(catalog: PromptCatalog, state: PromptTriggerState) {
   return getMatchingPromptOptions(catalog, state).length;
 }
 
-function getMatchingPromptOptions(
-  catalog: PromptCatalog,
-  state: PromptTriggerState,
-) {
+function getMatchingPromptOptions(catalog: PromptCatalog, state: PromptTriggerState) {
   const query = state.query.trim().toLowerCase();
-  const source =
-    state.trigger === "@"
-      ? catalog.context
-      : [...catalog.commands, ...catalog.skills];
+  const source = state.trigger === "@" ? catalog.context : [...catalog.commands, ...catalog.skills];
   return query
     ? source.filter((option) =>
-        `${option.label} ${option.detail} ${option.category}`
-          .toLowerCase()
-          .includes(query),
+        `${option.label} ${option.detail} ${option.category}`.toLowerCase().includes(query),
       )
     : source;
 }
@@ -97,18 +76,12 @@ export function PromptSuggestionMenu({
   onHover: (index: number) => void;
 }) {
   const countLabel =
-    totalCount > options.length
-      ? `${options.length} of ${totalCount}`
-      : `${totalCount}`;
+    totalCount > options.length ? `${options.length} of ${totalCount}` : `${totalCount}`;
   return (
     <div
       id="prompt-suggestions"
       role="listbox"
-      aria-label={
-        trigger === "@"
-          ? "Context suggestions"
-          : "Command and skill suggestions"
-      }
+      aria-label={trigger === "@" ? "Context suggestions" : "Command and skill suggestions"}
       className="mn-prompt-suggestions absolute bottom-full left-2 right-2 z-50 mb-2 overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground shadow-2xl animate-in fade-in-0 slide-in-from-bottom-1"
     >
       <div className="flex items-center justify-between border-b border-[var(--mn-line)] px-3 py-2">
@@ -127,8 +100,7 @@ export function PromptSuggestionMenu({
       <div className="max-h-64 overflow-y-auto p-1">
         {options.length === 0 ? (
           <p className="px-3 py-5 text-center text-[0.875rem] text-muted-foreground">
-            No matching{" "}
-            {trigger === "@" ? "files or context" : "commands or skills"}
+            No matching {trigger === "@" ? "files or context" : "commands or skills"}
           </p>
         ) : (
           options.map((option, index) => {
@@ -153,9 +125,7 @@ export function PromptSuggestionMenu({
                   <Icon className="size-3.5" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[0.875rem] font-medium">
-                    {option.label}
-                  </span>
+                  <span className="block truncate text-[0.875rem] font-medium">{option.label}</span>
                   <span className="mt-0.5 block truncate text-[0.75rem] text-muted-foreground">
                     {option.detail}
                   </span>
@@ -171,8 +141,8 @@ export function PromptSuggestionMenu({
         )}
       </div>
       <div className="border-t border-[var(--mn-line)] px-3 py-2 text-[0.6875rem] text-muted-foreground">
-        ↑↓ navigate <span className="mx-1">·</span> Enter select{" "}
-        <span className="mx-1">·</span> Esc close
+        ↑↓ navigate <span className="mx-1">·</span> Enter select <span className="mx-1">·</span> Esc
+        close
       </div>
     </div>
   );

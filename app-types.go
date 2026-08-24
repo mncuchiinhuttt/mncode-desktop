@@ -1,12 +1,15 @@
+// Wire types shared with the React frontend. JSON field names are the contract.
 package main
 
 import "mncode/pkg/agent"
 
+// LanguageStat is one detected workspace language with its file count.
 type LanguageStat struct {
 	Name  string `json:"name"`
 	Count int    `json:"count"`
 }
 
+// WorkspaceInfo describes the workspace currently mounted in the app.
 type WorkspaceInfo struct {
 	Path        string         `json:"path"`
 	Name        string         `json:"name"`
@@ -17,6 +20,7 @@ type WorkspaceInfo struct {
 	Ready       bool           `json:"ready"`
 }
 
+// FileNode is a workspace file-tree entry (file or directory).
 type FileNode struct {
 	Name     string     `json:"name"`
 	Path     string     `json:"path"`
@@ -24,6 +28,7 @@ type FileNode struct {
 	Children []FileNode `json:"children,omitempty"`
 }
 
+// DesktopAccount mirrors the signed-in mncode account for the UI.
 type DesktopAccount struct {
 	Connected bool   `json:"connected"`
 	Name      string `json:"name"`
@@ -36,6 +41,7 @@ type sessionRuntime struct {
 	session *agent.Session
 }
 
+// DesktopModel is a model entry exposed by the active provider.
 type DesktopModel struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -44,6 +50,7 @@ type DesktopModel struct {
 	Description string `json:"description"`
 }
 
+// DesktopMode is a selectable agent mode (workflow) entry.
 type DesktopMode struct {
 	ID          string `json:"id"`
 	Label       string `json:"label"`
@@ -51,6 +58,7 @@ type DesktopMode struct {
 	Budget      int    `json:"budget,omitempty"`
 }
 
+// DesktopTheme is a selectable UI theme entry.
 type DesktopTheme struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -58,6 +66,7 @@ type DesktopTheme struct {
 	IsDark      bool   `json:"isDark"`
 }
 
+// DesktopSettings is the resolved settings snapshot sent to the frontend.
 type DesktopSettings struct {
 	Model                  string  `json:"model"`
 	Provider               string  `json:"provider"`
@@ -87,6 +96,7 @@ type DesktopSettings struct {
 	ContextLimit           int     `json:"contextLimit"`
 }
 
+// DesktopSettingsInput is a partial settings update from the UI.
 type DesktopSettingsInput struct {
 	Model                  string `json:"model"`
 	Provider               string `json:"provider"`
@@ -112,6 +122,7 @@ type DesktopSettingsInput struct {
 	VerboseOutput          *bool  `json:"verboseOutput"`
 }
 
+// DesktopBrowserSettings reports built-in browser control state and availability.
 type DesktopBrowserSettings struct {
 	ControlEnabled          bool `json:"controlEnabled"`
 	IgnoreCertificateErrors bool `json:"ignoreCertificateErrors"`
@@ -119,11 +130,13 @@ type DesktopBrowserSettings struct {
 	BuiltInBrowserAvailable bool `json:"builtInBrowserAvailable"`
 }
 
+// DesktopBrowserSettingsInput updates built-in browser control preferences.
 type DesktopBrowserSettingsInput struct {
 	ControlEnabled          *bool `json:"controlEnabled"`
 	IgnoreCertificateErrors *bool `json:"ignoreCertificateErrors"`
 }
 
+// DesktopMCPServer is a configured MCP server entry shown in settings.
 type DesktopMCPServer struct {
 	ID              string `json:"id"`
 	Name            string `json:"name"`
@@ -133,11 +146,13 @@ type DesktopMCPServer struct {
 	Connected       bool   `json:"connected"`
 }
 
+// DesktopMCPServerInput creates or updates an MCP server connection.
 type DesktopMCPServerInput struct {
 	ID    string `json:"id"`
 	Token string `json:"token"`
 }
 
+// DesktopRemoteDevice is a phone companion device paired with the session.
 type DesktopRemoteDevice struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
@@ -145,6 +160,7 @@ type DesktopRemoteDevice struct {
 	Status   string `json:"status"`
 }
 
+// DesktopRemoteSession is the remote companion session state.
 type DesktopRemoteSession struct {
 	Active           bool                  `json:"active"`
 	SessionID        string                `json:"sessionId"`
@@ -155,6 +171,7 @@ type DesktopRemoteSession struct {
 	Devices          []DesktopRemoteDevice `json:"devices"`
 }
 
+// DesktopPersonalization is the user's custom instructions and memory state.
 type DesktopPersonalization struct {
 	CustomInstructions string `json:"customInstructions"`
 	Personality        string `json:"personality"`
@@ -165,6 +182,7 @@ type DesktopPersonalization struct {
 	MemoryCount        int    `json:"memoryCount"`
 }
 
+// DesktopPersonalizationInput updates custom instructions or personality flags.
 type DesktopPersonalizationInput struct {
 	CustomInstructions *string `json:"customInstructions"`
 	Personality        string  `json:"personality"`
@@ -174,6 +192,7 @@ type DesktopPersonalizationInput struct {
 	MemoryToolAssisted *bool   `json:"memoryToolAssisted"`
 }
 
+// DesktopPromptOption is a suggested slash command, skill, or context entry.
 type DesktopPromptOption struct {
 	ID         string `json:"id"`
 	Label      string `json:"label"`
@@ -183,18 +202,21 @@ type DesktopPromptOption struct {
 	InsertText string `json:"insertText"`
 }
 
+// DesktopPromptCatalog groups prompt suggestions by kind for the composer.
 type DesktopPromptCatalog struct {
 	Context  []DesktopPromptOption `json:"context"`
 	Commands []DesktopPromptOption `json:"commands"`
 	Skills   []DesktopPromptOption `json:"skills"`
 }
 
+// DesktopUsageDay is one day of token usage telemetry.
 type DesktopUsageDay struct {
 	Date     string `json:"date"`
 	Tokens   int64  `json:"tokens"`
 	Sessions int64  `json:"sessions"`
 }
 
+// DesktopUsageSummary aggregates usage over a time range.
 type DesktopUsageSummary struct {
 	TotalTokens    int64 `json:"totalTokens"`
 	InputTokens    int64 `json:"inputTokens"`
@@ -204,11 +226,13 @@ type DesktopUsageSummary struct {
 	RecordsCount   int64 `json:"recordsCount"`
 }
 
+// DesktopUsageStats is the full usage payload: summary, daily series, and model split.
 type DesktopUsageStats struct {
 	Summary    DesktopUsageSummary `json:"summary"`
 	DailyUsage []DesktopUsageDay   `json:"dailyUsage"`
 }
 
+// DesktopProviderAccount is one account in a provider's rotation pool.
 type DesktopProviderAccount struct {
 	ID        string `json:"id"`
 	Email     string `json:"email"`
@@ -218,6 +242,7 @@ type DesktopProviderAccount struct {
 	LastError string `json:"lastError,omitempty"`
 }
 
+// DesktopModelQuota is the quota headroom for a single model.
 type DesktopModelQuota struct {
 	ModelID             string  `json:"modelId"`
 	DisplayName         string  `json:"displayName"`
@@ -225,6 +250,7 @@ type DesktopModelQuota struct {
 	ResetIn             string  `json:"resetIn"`
 }
 
+// DesktopProviderQuota is the quota snapshot for a provider account.
 type DesktopProviderQuota struct {
 	AccountID       string              `json:"accountId"`
 	Status          string              `json:"status"`
@@ -239,12 +265,14 @@ type DesktopProviderQuota struct {
 	ErrorMessage    string              `json:"errorMessage"`
 }
 
+// DesktopCustomModel is a user-defined model entry on a custom provider.
 type DesktopCustomModel struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
 	ContextWindow int    `json:"contextWindow,omitempty"`
 }
 
+// DesktopCustomProvider is a user-defined OpenAI-compatible provider.
 type DesktopCustomProvider struct {
 	ID               string               `json:"id"`
 	Name             string               `json:"name"`
@@ -254,6 +282,7 @@ type DesktopCustomProvider struct {
 	Models           []DesktopCustomModel `json:"models"`
 }
 
+// DesktopProviderSettings is the provider configuration surface for settings.
 type DesktopProviderSettings struct {
 	Accounts               []DesktopProviderAccount `json:"accounts"`
 	CustomProviders        []DesktopCustomProvider  `json:"customProviders"`
@@ -261,6 +290,7 @@ type DesktopProviderSettings struct {
 	ActiveAntigravityQuota *DesktopProviderQuota    `json:"activeAntigravityQuota,omitempty"`
 }
 
+// DesktopCustomProviderInput creates or updates a custom provider.
 type DesktopCustomProviderInput struct {
 	ID        string               `json:"id"`
 	Name      string               `json:"name"`
@@ -270,6 +300,8 @@ type DesktopCustomProviderInput struct {
 	Models    []DesktopCustomModel `json:"models"`
 }
 
+// DesktopCatalog bundles everything the UI needs: models, modes, themes, settings,
+// and prompt suggestions.
 type DesktopCatalog struct {
 	Models      []DesktopModel       `json:"models"`
 	Workflows   []DesktopMode        `json:"workflows"`

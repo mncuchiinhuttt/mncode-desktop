@@ -1,3 +1,4 @@
+// Phone companion remote session management and pairing.
 package main
 
 import (
@@ -25,6 +26,8 @@ type remoteServerSession struct {
 	CompanionLastHeartbeat int64  `json:"companion_last_heartbeat"`
 }
 
+// StartRemoteSession opens (or reuses) the phone companion session and returns
+// its pairing info.
 func (a *App) StartRemoteSession() (DesktopRemoteSession, error) {
 	cfg, _, err := a.providerConfig()
 	if err != nil {
@@ -79,6 +82,7 @@ func (a *App) StartRemoteSession() (DesktopRemoteSession, error) {
 	return a.GetRemoteSession(), nil
 }
 
+// GetRemoteSession returns the current companion session state.
 func (a *App) GetRemoteSession() DesktopRemoteSession {
 	a.remoteMu.Lock()
 	manager := a.remote
@@ -126,6 +130,7 @@ func (a *App) GetRemoteSession() DesktopRemoteSession {
 	}
 }
 
+// StopRemoteSession tears down the phone companion session.
 func (a *App) StopRemoteSession() {
 	a.closeRemote()
 }

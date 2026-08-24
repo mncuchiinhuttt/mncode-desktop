@@ -1,3 +1,4 @@
+// Resolution of interactive agent prompts: tool permissions and questions.
 package main
 
 import (
@@ -61,6 +62,7 @@ func truncate(value string, max int) string {
 	return value[:max-1] + "…"
 }
 
+// ResolvePermission answers a pending tool-permission request from the UI.
 func (a *App) ResolvePermission(id string, allowed bool) {
 	a.mu.Lock()
 	response, ok := a.permissions[id]
@@ -101,6 +103,7 @@ func (a *App) waitForQuestion(question string, options []string, multi bool) str
 	}
 }
 
+// AnswerQuestion resolves a pending agent question with the user's answer.
 func (a *App) AnswerQuestion(id, answer string) {
 	a.mu.Lock()
 	response, ok := a.questions[id]

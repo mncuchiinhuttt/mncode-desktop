@@ -1,3 +1,4 @@
+// Compact human-readable summaries of tool results for the activity feed.
 package main
 
 import (

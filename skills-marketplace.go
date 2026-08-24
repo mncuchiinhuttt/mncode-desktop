@@ -1,3 +1,4 @@
+// Skill marketplace: curated catalog, install into ~/.mncode/skills, delete.
 package main
 
 import (
@@ -11,6 +12,7 @@ import (
 	"mncode/pkg/skills"
 )
 
+// DesktopSkill is a skill entry for the marketplace or installed lists.
 type DesktopSkill struct {
 	ID             string `json:"id"`
 	Slug           string `json:"slug"`
@@ -24,6 +26,7 @@ type DesktopSkill struct {
 	MarketplaceURL string `json:"marketplaceUrl"`
 }
 
+// DesktopSkillsMarketplace bundles system, user, and discoverable skills.
 type DesktopSkillsMarketplace struct {
 	SystemSkills    []DesktopSkill `json:"systemSkills"`
 	UserSkills      []DesktopSkill `json:"userSkills"`
@@ -31,6 +34,7 @@ type DesktopSkillsMarketplace struct {
 	SourceURL       string         `json:"sourceUrl"`
 }
 
+// GetSkillsMarketplace returns installed skills plus the curated free catalog.
 func (a *App) GetSkillsMarketplace() (DesktopSkillsMarketplace, error) {
 	system, user := installedSkills()
 	installed := make(map[string]bool)
@@ -55,6 +59,8 @@ func (a *App) GetSkillsMarketplace() (DesktopSkillsMarketplace, error) {
 	return DesktopSkillsMarketplace{SystemSkills: system, UserSkills: user, AvailableSkills: available, SourceURL: mcpMarketSkillsURL}, nil
 }
 
+// InstallMarketplaceSkill downloads a catalog skill's SKILL.md into the user
+// skills directory.
 func (a *App) InstallMarketplaceSkill(slug string) (DesktopSkill, error) {
 	definition, ok := findMarketplaceSkill(slug)
 	if !ok {
@@ -79,6 +85,8 @@ func (a *App) InstallMarketplaceSkill(slug string) (DesktopSkill, error) {
 	return DesktopSkill{ID: "user:" + safeSkillFolder(definition.Slug), Slug: definition.Slug, Name: definition.Name, Description: definition.Description, Category: definition.Category, Source: "Installed", Installed: true, Free: true, MarketplaceURL: definition.MarketURL}, nil
 }
 
+// DeleteInstalledSkill removes a user-installed skill by id; system skills are
+// protected.
 func (a *App) DeleteInstalledSkill(id string) error {
 	if !strings.HasPrefix(id, "user:") {
 		return fmt.Errorf("system skills cannot be deleted")

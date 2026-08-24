@@ -1,3 +1,4 @@
+// Account bridge between the desktop UI and the mncode-web sign-in flow.
 package main
 
 import (
@@ -18,6 +19,7 @@ func guestAccount() DesktopAccount {
 	return DesktopAccount{Status: "guest"}
 }
 
+// GetAccount returns the current mncode account, including guest/offline state.
 func (a *App) GetAccount() DesktopAccount {
 	a.mu.RLock()
 	var session *sessionRuntime
@@ -65,6 +67,8 @@ func accountFromConfig(cfg *config.Config) DesktopAccount {
 	return DesktopAccount{Connected: true, Name: name, Email: email, IsAdmin: cfg.GetSetting(cachedAccountAdmin, "false") == "true", Status: "offline"}
 }
 
+// LoginAccount opens the browser sign-in flow, waits for the account bridge,
+// and returns the connected account.
 func (a *App) LoginAccount() (DesktopAccount, error) {
 	a.mu.RLock()
 	var session *sessionRuntime
@@ -98,6 +102,8 @@ func (a *App) LoginAccount() (DesktopAccount, error) {
 	return account, nil
 }
 
+// LogoutAccount signs the desktop out of the mncode account and clears the
+// cached identity.
 func (a *App) LogoutAccount() (DesktopAccount, error) {
 	a.mu.RLock()
 	var session *sessionRuntime

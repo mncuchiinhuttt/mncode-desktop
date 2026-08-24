@@ -1,3 +1,4 @@
+// Core App facade: workspace mounting, provider wiring, and agent turn control.
 package main
 
 import (
@@ -36,6 +37,7 @@ type App struct {
 	questions   map[string]chan string
 }
 
+// NewApp builds the Wails-bound application facade with its runtime dependencies.
 func NewApp() *App {
 	return &App{
 		permissions: make(map[string]chan bool),
@@ -54,12 +56,14 @@ func (a *App) startup(ctx context.Context) {
 	}
 }
 
+// GetWorkspace returns the workspace info for the currently open project.
 func (a *App) GetWorkspace() WorkspaceInfo {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 	return a.workspace
 }
 
+// ChooseWorkspace opens the OS folder picker and mounts the chosen directory.
 func (a *App) ChooseWorkspace() (WorkspaceInfo, error) {
 	a.mu.RLock()
 	ctx := a.ctx
@@ -84,6 +88,7 @@ func (a *App) ChooseWorkspace() (WorkspaceInfo, error) {
 	return a.OpenWorkspace(path)
 }
 
+// ChooseAttachment opens the OS file picker and returns the selected file path.
 func (a *App) ChooseAttachment() (string, error) {
 	a.mu.RLock()
 	ctx := a.ctx
@@ -102,6 +107,7 @@ func (a *App) ChooseAttachment() (string, error) {
 	})
 }
 
+// OpenWorkspace mounts the directory at path as the active workspace.
 func (a *App) OpenWorkspace(path string) (WorkspaceInfo, error) {
 	a.closeRemote()
 	a.closeTerminal()
@@ -134,6 +140,7 @@ func (a *App) OpenWorkspace(path string) (WorkspaceInfo, error) {
 	return info, nil
 }
 
+// OpenStandaloneChat detaches from any workspace for workspace-free chat.
 func (a *App) OpenStandaloneChat() (WorkspaceInfo, error) {
 	a.closeRemote()
 	a.closeTerminal()
@@ -165,6 +172,7 @@ func (a *App) OpenStandaloneChat() (WorkspaceInfo, error) {
 	return info, nil
 }
 
+// ConfigureProvider wires a provider credential and model for this session.
 func (a *App) ConfigureProvider(providerName, model, apiKey string) error {
 	key := strings.TrimSpace(apiKey)
 	if key == "" {
@@ -200,6 +208,7 @@ func (a *App) ConfigureProvider(providerName, model, apiKey string) error {
 	return nil
 }
 
+// SetModel switches the active model on the current provider.
 func (a *App) SetModel(model string) error {
 	model = strings.TrimSpace(model)
 	if model == "" {
@@ -214,6 +223,7 @@ func (a *App) SetModel(model string) error {
 	return nil
 }
 
+// SendPrompt starts an agent turn with the given prompt.
 func (a *App) SendPrompt(prompt string) error {
 	text := strings.TrimSpace(prompt)
 	if text == "" {
@@ -276,6 +286,7 @@ func (a *App) SendPrompt(prompt string) error {
 	return nil
 }
 
+// SteerPrompt queues a steering directive into the running turn.
 func (a *App) SteerPrompt(prompt string) error {
 	a.mu.RLock()
 	session := a.session
@@ -288,6 +299,7 @@ func (a *App) SteerPrompt(prompt string) error {
 	return nil
 }
 
+// CancelTurn interrupts the in-flight agent turn, if any.
 func (a *App) CancelTurn() {
 	a.mu.Lock()
 	if a.cancel != nil {

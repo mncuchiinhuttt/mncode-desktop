@@ -73,28 +73,76 @@ function inline(text: string): ReactNode[] {
   const parts = text.split(pattern).filter(Boolean);
   return parts.map((part, index) => {
     if (part.startsWith("`") && part.endsWith("`")) {
-      return <code key={index} className="rounded bg-[var(--mn-surface-muted)] px-1.5 py-0.5 font-mono text-[0.9em]">{part.slice(1, -1)}</code>;
+      return (
+        <code
+          key={index}
+          className="rounded bg-[var(--mn-surface-muted)] px-1.5 py-0.5 font-mono text-[0.9em]"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
     }
-    if (part.startsWith("**") && part.endsWith("**")) return <strong key={index}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
     if (part.startsWith("*") && part.endsWith("*")) return <em key={index}>{part.slice(1, -1)}</em>;
     const link = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
-    if (link && /^https?:\/\//.test(link[2])) return <a key={index} href={link[2]} target="_blank" rel="noreferrer" className="text-[var(--mn-accent-strong)] underline underline-offset-2">{link[1]}</a>;
+    if (link && /^https?:\/\//.test(link[2]))
+      return (
+        <a
+          key={index}
+          href={link[2]}
+          target="_blank"
+          rel="noreferrer"
+          className="text-[var(--mn-accent-strong)] underline underline-offset-2"
+        >
+          {link[1]}
+        </a>
+      );
     return <span key={index}>{part}</span>;
   });
 }
 
 export function MarkdownRenderer({ content }: { content: string }) {
-  return <div className="mn-markdown space-y-4">{parseBlocks(content).map((block, index) => {
-    if (block.type === "rule") return <hr key={index} className="border-[var(--mn-line)]" />;
-    if (block.type === "code") return <pre key={index} className="overflow-x-auto rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4 font-mono text-[0.8125rem] leading-6"><code>{block.text}</code></pre>;
-    if (block.type === "heading") {
-      const Tag = (`h${Math.min(block.level, 4)}`) as "h1" | "h2" | "h3" | "h4";
-      return <Tag key={index} className="font-semibold tracking-tight">{inline(block.text)}</Tag>;
-    }
-    if (block.type === "list") {
-      const Tag = block.ordered ? "ol" : "ul";
-      return <Tag key={index} className={block.ordered ? "list-decimal space-y-1 pl-6" : "list-disc space-y-1 pl-6"}>{block.items.map((item) => <li key={item}>{inline(item)}</li>)}</Tag>;
-    }
-    return <p key={index} className="leading-7">{inline(block.text)}</p>;
-  })}</div>;
+  return (
+    <div className="mn-markdown space-y-4">
+      {parseBlocks(content).map((block, index) => {
+        if (block.type === "rule") return <hr key={index} className="border-[var(--mn-line)]" />;
+        if (block.type === "code")
+          return (
+            <pre
+              key={index}
+              className="overflow-x-auto rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4 font-mono text-[0.8125rem] leading-6"
+            >
+              <code>{block.text}</code>
+            </pre>
+          );
+        if (block.type === "heading") {
+          const Tag = `h${Math.min(block.level, 4)}` as "h1" | "h2" | "h3" | "h4";
+          return (
+            <Tag key={index} className="font-semibold tracking-tight">
+              {inline(block.text)}
+            </Tag>
+          );
+        }
+        if (block.type === "list") {
+          const Tag = block.ordered ? "ol" : "ul";
+          return (
+            <Tag
+              key={index}
+              className={block.ordered ? "list-decimal space-y-1 pl-6" : "list-disc space-y-1 pl-6"}
+            >
+              {block.items.map((item) => (
+                <li key={item}>{inline(item)}</li>
+              ))}
+            </Tag>
+          );
+        }
+        return (
+          <p key={index} className="leading-7">
+            {inline(block.text)}
+          </p>
+        );
+      })}
+    </div>
+  );
 }

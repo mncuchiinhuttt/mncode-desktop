@@ -2,13 +2,7 @@ import { useState } from "react";
 import { ExternalLink, KeyRound, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -71,9 +65,7 @@ export function McpProviders({
   const [selected, setSelected] = useState<MCPServerID>();
   const [token, setToken] = useState("");
   const [saving, setSaving] = useState(false);
-  const selectedServer = selected
-    ? servers.find((server) => server.id === selected)
-    : undefined;
+  const selectedServer = selected ? servers.find((server) => server.id === selected) : undefined;
   const meta = selected ? serverMeta[selected] : undefined;
 
   function openConnect(id: MCPServerID) {
@@ -107,10 +99,7 @@ export function McpProviders({
           onConnect={openConnect}
         />
       </div>
-      <Dialog
-        open={Boolean(selected)}
-        onOpenChange={(open) => !open && setSelected(undefined)}
-      >
+      <Dialog open={Boolean(selected)} onOpenChange={(open) => !open && setSelected(undefined)}>
         <DialogContent className="max-w-xl border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground">
           {selected && meta && (
             <>
@@ -120,8 +109,7 @@ export function McpProviders({
                   Connect {meta.label} MCP
                 </DialogTitle>
                 <DialogDescription>
-                  Add a local MCP connection for this desktop. The token is
-                  saved in
+                  Add a local MCP connection for this desktop. The token is saved in
                   <code className="mx-1 rounded bg-[var(--mn-surface-muted)] px-1.5 py-0.5 text-[0.75rem]">
                     ~/.mncode/mcp.json
                   </code>
@@ -157,9 +145,8 @@ export function McpProviders({
                 </div>
                 {selected === "notion" && (
                   <p className="text-sm leading-6 text-muted-foreground">
-                    Notion’s hosted MCP uses OAuth and does not need a token.
-                    This field is for the local token-based server used by
-                    mncode.
+                    Notion’s hosted MCP uses OAuth and does not need a token. This field is for the
+                    local token-based server used by mncode.
                   </p>
                 )}
                 <label className="block text-sm font-medium">
@@ -175,8 +162,8 @@ export function McpProviders({
                 </label>
                 <div className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
                   <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-[var(--mn-accent-strong)]" />
-                  Use a separate token with the smallest permissions you need.
-                  Never commit the generated MCP config to source control.
+                  Use a separate token with the smallest permissions you need. Never commit the
+                  generated MCP config to source control.
                 </div>
               </div>
               <DialogFooter>
@@ -221,15 +208,9 @@ function McpProviderCard({
         <div className="flex items-center gap-3">
           <ProviderLogo id={id} />
           <div>
-            <CardTitle className="text-base font-semibold">
-              {meta.label}
-            </CardTitle>
+            <CardTitle className="text-base font-semibold">{meta.label}</CardTitle>
             <CardDescription className="mt-1 text-sm">
-              {server?.connected
-                ? "Connected"
-                : active
-                  ? "Configured"
-                  : "Not configured"}
+              {server?.connected ? "Connected" : active ? "Configured" : "Not configured"}
             </CardDescription>
           </div>
         </div>
@@ -272,16 +253,9 @@ function ProviderLogo({ id }: { id: MCPServerID }) {
   return (
     <div className="grid size-10 place-items-center rounded-xl bg-[#171717] text-white">
       {failed ? (
-        <span className="font-serif text-lg font-bold">
-          {id === "github" ? "GH" : "N"}
-        </span>
+        <span className="font-serif text-lg font-bold">{id === "github" ? "GH" : "N"}</span>
       ) : (
-        <img
-          src={logoURL}
-          alt=""
-          className="size-5"
-          onError={() => setFailed(true)}
-        />
+        <img src={logoURL} alt="" className="size-5" onError={() => setFailed(true)} />
       )}
     </div>
   );

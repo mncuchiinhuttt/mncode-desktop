@@ -1,3 +1,5 @@
+// Curated free skill definitions (MCP Market + skills.sh) with verified
+// SKILL.md paths on each source repository.
 package main
 
 const mcpMarketSkillsURL = "https://mcpmarket.com/tools/skills/all"

@@ -1,3 +1,4 @@
+// PTY-backed terminal panel bridge.
 package main
 
 import (
@@ -23,6 +24,7 @@ type terminalSession struct {
 	closed         bool
 }
 
+// OpenTerminal spawns a PTY rooted at the workspace and opens the terminal panel.
 func (a *App) OpenTerminal() error {
 	a.terminalMu.Lock()
 	if a.terminal != nil {
@@ -90,6 +92,7 @@ func (a *App) OpenTerminal() error {
 	return nil
 }
 
+// RunTerminalCommand writes one command line into the running PTY.
 func (a *App) RunTerminalCommand(command string) error {
 	command = strings.TrimSpace(command)
 	if command == "" {
@@ -122,6 +125,7 @@ func (a *App) RunTerminalCommand(command string) error {
 	return err
 }
 
+// InterruptTerminal sends SIGINT to the PTY's foreground process.
 func (a *App) InterruptTerminal() error {
 	a.terminalMu.Lock()
 	session := a.terminal
@@ -132,6 +136,7 @@ func (a *App) InterruptTerminal() error {
 	return session.cmd.Process.Signal(os.Interrupt)
 }
 
+// CloseTerminal shuts the PTY down and closes the terminal panel.
 func (a *App) CloseTerminal() {
 	a.closeTerminal()
 }

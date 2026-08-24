@@ -1,3 +1,4 @@
+// Workspace file-tree scanning for the inspector sidebar.
 package main
 
 import (
@@ -42,6 +43,7 @@ func (a *App) loadWorkspace(path string) (WorkspaceInfo, *sessionRuntime, error)
 	}, runtimeState, nil
 }
 
+// ListWorkspaceTree returns the workspace file tree for the inspector sidebar.
 func (a *App) ListWorkspaceTree() ([]FileNode, error) {
 	a.mu.RLock()
 	root := a.workspace.Path

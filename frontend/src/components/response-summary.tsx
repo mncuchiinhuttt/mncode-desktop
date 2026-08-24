@@ -47,10 +47,7 @@ export function ResponseSummary({ activities }: { activities: ActivityItem[] }) 
       </div>
       <div className="divide-y divide-[var(--mn-line)]">
         {files.map((file) => (
-          <div
-            key={file.path}
-            className="flex items-center gap-3 px-4 py-2.5 text-xs"
-          >
+          <div key={file.path} className="flex items-center gap-3 px-4 py-2.5 text-xs">
             <span className="min-w-0 flex-1 truncate font-mono text-muted-foreground">
               {file.path}
             </span>

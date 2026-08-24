@@ -1,10 +1,4 @@
-export type ViewName =
-  | "workspace"
-  | "insights"
-  | "settings"
-  | "skills"
-  | "automations"
-  | "mcp";
+export type ViewName = "workspace" | "insights" | "settings" | "skills" | "automations" | "mcp";
 
 export interface LanguageStat {
   name: string;

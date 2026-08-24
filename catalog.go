@@ -1,3 +1,4 @@
+// Settings, themes, models, and the prompt catalog surfaced to the UI.
 package main
 
 import (
@@ -14,6 +15,7 @@ import (
 	"mncode/pkg/ui"
 )
 
+// GetCatalog returns models, modes, themes, prompt suggestions, and settings.
 func (a *App) GetCatalog() DesktopCatalog {
 	a.mu.RLock()
 	var session *sessionRuntime
@@ -67,6 +69,8 @@ func (a *App) GetCatalog() DesktopCatalog {
 	return result
 }
 
+// UpdateSettings validates and applies a partial settings update, returning the
+// fresh snapshot.
 func (a *App) UpdateSettings(input DesktopSettingsInput) (DesktopSettings, error) {
 	a.mu.Lock()
 	if a.session != nil && a.session.session != nil && a.session.session.Config != nil {
@@ -324,6 +328,7 @@ func isPermissionMode(value string) bool {
 	}
 }
 
+// GetBrowserSettings returns built-in browser control preferences and availability.
 func (a *App) GetBrowserSettings() (DesktopBrowserSettings, error) {
 	cfg, err := a.browserConfig()
 	if err != nil {
@@ -332,6 +337,7 @@ func (a *App) GetBrowserSettings() (DesktopBrowserSettings, error) {
 	return browserSettingsFromConfig(cfg), nil
 }
 
+// UpdateBrowserSettings validates and persists browser control preferences.
 func (a *App) UpdateBrowserSettings(input DesktopBrowserSettingsInput) (DesktopBrowserSettings, error) {
 	cfg, err := a.browserConfig()
 	if err != nil {

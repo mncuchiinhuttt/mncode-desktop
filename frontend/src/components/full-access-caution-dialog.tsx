@@ -52,8 +52,8 @@ export function FullAccessCautionDialog({
             Turn on Full Access?
           </DialogTitle>
           <DialogDescription className="text-sm leading-6">
-            Full Access lets mncode run commands, use the internet, and create
-            or edit files without asking for each action.
+            Full Access lets mncode run commands, use the internet, and create or edit files without
+            asking for each action.
           </DialogDescription>
         </DialogHeader>
         <div className="rounded-2xl border border-rose-500/15 bg-rose-500/[0.045] p-3">
@@ -62,9 +62,7 @@ export function FullAccessCautionDialog({
               key={title}
               className={
                 "flex items-center gap-3 px-2 py-3 " +
-                (index < capabilities.length - 1
-                  ? "border-b border-rose-500/10"
-                  : "")
+                (index < capabilities.length - 1 ? "border-b border-rose-500/10" : "")
               }
             >
               <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${tone}`}>
@@ -72,16 +70,14 @@ export function FullAccessCautionDialog({
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-semibold">{title}</p>
-                <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-                  {description}
-                </p>
+                <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{description}</p>
               </div>
             </div>
           ))}
         </div>
         <p className="text-xs leading-5 text-muted-foreground">
-          This can expose sensitive data or allow destructive changes. You can
-          switch back to Ask before changes at any time.
+          This can expose sensitive data or allow destructive changes. You can switch back to Ask
+          before changes at any time.
         </p>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>

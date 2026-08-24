@@ -1,3 +1,5 @@
+// Command mncode-desktop is the Wails v2 desktop shell around the mncode Go
+// agent core. It boots the webview, binds the App facade, and wires lifecycle events.
 package main
 
 import (

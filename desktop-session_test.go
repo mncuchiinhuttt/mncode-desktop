@@ -1,3 +1,4 @@
+// Tests for session construction and provider credential selection.
 package main
 
 import (
@@ -8,6 +9,8 @@ import (
 	"mncode/pkg/config"
 )
 
+// TestShouldUseStoredAntigravityWithRefreshToken checks stored OAuth tokens are
+// reused when they can be refreshed.
 func TestShouldUseStoredAntigravityWithRefreshToken(t *testing.T) {
 	store, err := accounts.NewStore(filepath.Join(t.TempDir(), "accounts.json"))
 	if err != nil {
@@ -27,6 +30,8 @@ func TestShouldUseStoredAntigravityWithRefreshToken(t *testing.T) {
 	}
 }
 
+// TestShouldNotUseStoredAntigravityForGeminiAPIKey ensures Gemini API keys never
+// fall back to Antigravity OAuth credentials.
 func TestShouldNotUseStoredAntigravityForGeminiAPIKey(t *testing.T) {
 	store, err := accounts.NewStore(filepath.Join(t.TempDir(), "accounts.json"))
 	if err != nil {
@@ -46,6 +51,8 @@ func TestShouldNotUseStoredAntigravityForGeminiAPIKey(t *testing.T) {
 	}
 }
 
+// TestBuildStandaloneSessionHasNoWorkspaceTools verifies standalone chat omits
+// workspace-bound tools.
 func TestBuildStandaloneSessionHasNoWorkspaceTools(t *testing.T) {
 	app := NewApp()
 	runtimeState, err := app.buildSession("")

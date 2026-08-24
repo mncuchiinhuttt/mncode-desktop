@@ -30,11 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { modelLabel } from "@/lib/models";
 import {
@@ -158,9 +154,9 @@ export const WorkspaceView: React.FC<WorkspaceViewProps> = ({
               {messages.map((message, index) => {
                 const isLatestAssistant =
                   message.role === "assistant" &&
-                  !messages.slice(index + 1).some(
-                    (nextMessage) => nextMessage.role === "assistant",
-                  );
+                  !messages
+                    .slice(index + 1)
+                    .some((nextMessage) => nextMessage.role === "assistant");
                 return (
                   <React.Fragment key={message.id}>
                     {isLatestAssistant && (
@@ -218,12 +214,8 @@ function Landing({
   suggestedPrompts: boolean;
   onPromptPreset: (value: string) => void;
 }) {
-  const displayName = account.connected
-    ? (account.name.trim().split(/\s+/).pop() ?? "")
-    : "";
-  const greeting = displayName
-    ? `Good evening, ${displayName}`
-    : "Good evening";
+  const displayName = account.connected ? (account.name.trim().split(/\s+/).pop() ?? "") : "";
+  const greeting = displayName ? `Good evening, ${displayName}` : "Good evening";
   return (
     <div className="mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center px-6 pb-10 pt-8">
       <div className="relative z-10 mb-5 text-center">
@@ -233,10 +225,8 @@ function Landing({
         </h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
           Ask mncode anything about your codebase. Use{" "}
-          <span className="font-mono text-[var(--mn-accent-strong)]">@</span>{" "}
-          for context or{" "}
-          <span className="font-mono text-[var(--mn-accent-strong)]">/</span>{" "}
-          for commands.
+          <span className="font-mono text-[var(--mn-accent-strong)]">@</span> for context or{" "}
+          <span className="font-mono text-[var(--mn-accent-strong)]">/</span> for commands.
         </p>
       </div>
       <div className="relative z-10 w-full max-w-3xl">{composer}</div>
@@ -265,15 +255,9 @@ function Landing({
           <StarterCard
             icon={Sparkles}
             title="Explore code"
-            text={
-              workspace.ready
-                ? `Understand ${workspace.name}`
-                : "Open a project first"
-            }
+            text={workspace.ready ? `Understand ${workspace.name}` : "Open a project first"}
             onClick={() =>
-              onPromptPreset(
-                "Give me a concise architecture overview of this codebase.",
-              )
+              onPromptPreset("Give me a concise architecture overview of this codebase.")
             }
           />
         </div>
@@ -346,30 +330,23 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
     ref,
   ) => {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-    const [triggerState, setTriggerState] = useState<PromptTriggerState | null>(
-      null,
-    );
+    const [triggerState, setTriggerState] = useState<PromptTriggerState | null>(null);
     const [activeSuggestion, setActiveSuggestion] = useState(0);
     const [fullAccessCautionOpen, setFullAccessCautionOpen] = useState(false);
     const model = catalog.models.find((item) => item.id === settings.model);
-    const permission = catalog.permissions.find(
-      (item) => item.id === settings.permissionMode,
-    );
+    const permission = catalog.permissions.find((item) => item.id === settings.permissionMode);
     const effort = catalog.efforts.find((item) => item.id === settings.effort);
     const suggestions = useMemo(
       () => (triggerState ? getPromptOptions(promptCatalog, triggerState) : []),
       [promptCatalog, triggerState],
     );
     const suggestionCount = useMemo(
-      () =>
-        triggerState ? getPromptOptionCount(promptCatalog, triggerState) : 0,
+      () => (triggerState ? getPromptOptionCount(promptCatalog, triggerState) : 0),
       [promptCatalog, triggerState],
     );
 
     useEffect(() => {
-      setActiveSuggestion((current) =>
-        Math.min(current, Math.max(0, suggestions.length - 1)),
-      );
+      setActiveSuggestion((current) => Math.min(current, Math.max(0, suggestions.length - 1)));
     }, [suggestions.length]);
 
     function assignTextarea(element: HTMLTextAreaElement | null) {
@@ -410,12 +387,9 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
 
     function selectSuggestion(option: PromptOption) {
       if (!triggerState) return;
-      const trailingSpace = prompt.slice(triggerState.end).startsWith(" ")
-        ? ""
-        : " ";
+      const trailingSpace = prompt.slice(triggerState.end).startsWith(" ") ? "" : " ";
       const nextPrompt = `${prompt.slice(0, triggerState.start)}${option.insertText}${trailingSpace}${prompt.slice(triggerState.end)}`;
-      const nextCursor =
-        triggerState.start + option.insertText.length + trailingSpace.length;
+      const nextCursor = triggerState.start + option.insertText.length + trailingSpace.length;
       onPromptChange(nextPrompt);
       setTriggerState(null);
       requestAnimationFrame(() => {
@@ -437,9 +411,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
       onSettingsChange({ permissionMode: "bypass" });
     }
 
-    function handlePromptKeyDown(
-      event: React.KeyboardEvent<HTMLTextAreaElement>,
-    ) {
+    function handlePromptKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
       if (triggerState) {
         if (event.key === "ArrowDown" && suggestions.length > 0) {
           event.preventDefault();
@@ -448,16 +420,10 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
         }
         if (event.key === "ArrowUp" && suggestions.length > 0) {
           event.preventDefault();
-          setActiveSuggestion(
-            (current) =>
-              (current - 1 + suggestions.length) % suggestions.length,
-          );
+          setActiveSuggestion((current) => (current - 1 + suggestions.length) % suggestions.length);
           return;
         }
-        if (
-          (event.key === "Enter" || event.key === "Tab") &&
-          suggestions[activeSuggestion]
-        ) {
+        if ((event.key === "Enter" || event.key === "Tab") && suggestions[activeSuggestion]) {
           event.preventDefault();
           selectSuggestion(suggestions[activeSuggestion]);
           return;
@@ -470,11 +436,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
           return;
         }
       }
-      if (
-        event.key === "Enter" &&
-        !event.shiftKey &&
-        settings.sendShortcut === "enter"
-      ) {
+      if (event.key === "Enter" && !event.shiftKey && settings.sendShortcut === "enter") {
         event.preventDefault();
         running ? onSteer() : onSend();
         return;
@@ -535,31 +497,18 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
               onChange={handlePromptChange}
               onKeyDown={handlePromptKeyDown}
               onKeyUp={(event) => {
-                if (
-                  !["Enter", "Tab", "Escape", "ArrowUp", "ArrowDown"].includes(
-                    event.key,
-                  )
-                )
-                  syncSuggestions(
-                    event.currentTarget.value,
-                    event.currentTarget.selectionStart,
-                  );
+                if (!["Enter", "Tab", "Escape", "ArrowUp", "ArrowDown"].includes(event.key))
+                  syncSuggestions(event.currentTarget.value, event.currentTarget.selectionStart);
               }}
               onClick={(event) =>
-                syncSuggestions(
-                  event.currentTarget.value,
-                  event.currentTarget.selectionStart,
-                )
+                syncSuggestions(event.currentTarget.value, event.currentTarget.selectionStart)
               }
               placeholder="Ask mncode anything, @ to add context, / for commands or capabilities"
               className="min-h-[88px] w-full resize-none bg-transparent px-4 py-3.5 text-[0.875rem] leading-6 text-foreground outline-none placeholder:text-muted-foreground/65"
             />
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--mn-line)] px-3 py-2">
               <div className="flex items-center gap-1">
-                <ContextMenu
-                  onAttach={onAttach}
-                  onContextToken={insertTrigger}
-                />
+                <ContextMenu onAttach={onAttach} onContextToken={insertTrigger} />
                 <ModeMenu
                   menuTitle="Permission"
                   label={permission?.label ?? "Ask before changes"}
@@ -582,9 +531,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
                 <ModelMenu
                   models={catalog.models}
                   value={settings.model}
-                  onChange={(value, provider) =>
-                    onSettingsChange({ model: value, provider })
-                  }
+                  onChange={(value, provider) => onSettingsChange({ model: value, provider })}
                 />
                 <ModeMenu
                   menuTitle="Effort"
@@ -602,11 +549,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
                   className="mn-accent-button size-8 rounded-lg"
                   aria-label={running ? "Steer agent" : "Send prompt"}
                 >
-                  {running ? (
-                    <Sparkles className="size-4" />
-                  ) : (
-                    <ArrowUp className="size-4" />
-                  )}
+                  {running ? <Sparkles className="size-4" /> : <ArrowUp className="size-4" />}
                 </Button>
               </div>
             </div>
@@ -679,11 +622,7 @@ function ContextRing({
   const safe = Math.max(0, Math.min(100, percent || 0));
   const remaining = Math.max(0, limit - used);
   const statusClass =
-    safe >= 85
-      ? "bg-rose-500"
-      : safe >= 70
-        ? "bg-amber-500"
-        : "bg-[var(--mn-accent-strong)]";
+    safe >= 85 ? "bg-rose-500" : safe >= 70 ? "bg-amber-500" : "bg-[var(--mn-accent-strong)]";
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -716,14 +655,8 @@ function ContextRing({
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <ContextStat
-              label="Used"
-              value={`${formatTokenCount(used)} tokens`}
-            />
-            <ContextStat
-              label="Context budget"
-              value={`${formatTokenCount(limit)} tokens`}
-            />
+            <ContextStat label="Used" value={`${formatTokenCount(used)} tokens`} />
+            <ContextStat label="Context budget" value={`${formatTokenCount(limit)} tokens`} />
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[0.75rem] text-muted-foreground">
@@ -754,17 +687,14 @@ function ContextStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 py-2">
       <p className="text-[0.6875rem] text-muted-foreground">{label}</p>
-      <p className="mt-1 font-mono text-xs font-semibold text-foreground">
-        {value}
-      </p>
+      <p className="mt-1 font-mono text-xs font-semibold text-foreground">{value}</p>
     </div>
   );
 }
 
 function formatTokenCount(value: number) {
   if (!value || value < 1000) return `${Math.max(0, value || 0)}`;
-  if (value >= 1000000)
-    return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
+  if (value >= 1000000) return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
   return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k`;
 }
 
@@ -799,7 +729,8 @@ function ModeMenu({
           size="sm"
           className={cn(
             "h-8 gap-1.5 px-2 text-[0.6875rem] text-muted-foreground hover:bg-[var(--mn-surface-muted)] hover:text-foreground",
-            danger && "text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200",
+            danger &&
+              "text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200",
           )}
         >
           <Icon
@@ -841,9 +772,7 @@ function ModeMenu({
             />
             <span>
               <span className="block text-sm">
-                {formatOptionLabel
-                  ? formatOptionLabel(option.label)
-                  : option.label}
+                {formatOptionLabel ? formatOptionLabel(option.label) : option.label}
               </span>
               <span className="mt-0.5 block max-w-60 text-xs leading-5 text-muted-foreground">
                 {option.description}
@@ -874,9 +803,7 @@ function ModelMenu({
           className="h-8 max-w-52 gap-1.5 px-2 text-[0.6875rem] text-muted-foreground hover:bg-[var(--mn-surface-muted)] hover:text-foreground"
         >
           <Sparkles className="size-3.5 text-[var(--mn-accent-strong)]" />
-          <span className="truncate">
-            {modelLabel(value, models) || "Select model"}
-          </span>
+          <span className="truncate">{modelLabel(value, models) || "Select model"}</span>
           <ChevronDown className="size-3 shrink-0" />
         </Button>
       </DropdownMenuTrigger>
@@ -899,9 +826,7 @@ function ModelMenu({
               <Check
                 className={cn(
                   "mt-0.5 size-3.5",
-                  model.id === value
-                    ? "opacity-100 text-[var(--mn-accent-strong)]"
-                    : "opacity-0",
+                  model.id === value ? "opacity-100 text-[var(--mn-accent-strong)]" : "opacity-0",
                 )}
               />
               <span className="min-w-0">
@@ -1001,9 +926,7 @@ function MessageBubble({
   }
   return (
     <div className="flex justify-end">
-      <div
-        className="max-w-[82%] rounded-2xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-[15px] leading-7"
-      >
+      <div className="max-w-[82%] rounded-2xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-[15px] leading-7">
         <p className="whitespace-pre-wrap">{message.content || "…"}</p>
       </div>
     </div>
@@ -1065,12 +988,9 @@ function PermissionCard({
         <ShieldCheck className="size-4 shrink-0 text-amber-600 dark:text-amber-200" />
         <div className="min-w-0 flex-1">
           <p className="text-[0.875rem] font-medium">
-            Permission requested for{" "}
-            <span className="font-mono">{permission.tool}</span>
+            Permission requested for <span className="font-mono">{permission.tool}</span>
           </p>
-          <p className="mt-1 truncate text-[0.75rem] text-muted-foreground">
-            {permission.summary}
-          </p>
+          <p className="mt-1 truncate text-[0.75rem] text-muted-foreground">{permission.summary}</p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="ghost" onClick={() => onPermission(false)}>

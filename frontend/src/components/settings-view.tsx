@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ElementType,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useRef, useState, type ElementType, type ReactNode } from "react";
 import {
   ArrowLeft,
   BarChart3,
@@ -31,13 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -111,20 +98,12 @@ interface SettingsViewProps {
   onLoadProviderSettings: () => Promise<ProviderSettings>;
   onLoadProviderQuota: () => Promise<ProviderQuota | null>;
   onLoadBrowserSettings: () => Promise<DesktopBrowserSettings>;
-  onUpdateBrowserSettings: (
-    input: DesktopBrowserSettingsInput,
-  ) => Promise<DesktopBrowserSettings>;
+  onUpdateBrowserSettings: (input: DesktopBrowserSettingsInput) => Promise<DesktopBrowserSettings>;
   onConfigureMCP: (input: DesktopMCPServerInput) => Promise<void>;
   onLoadPersonalization: () => Promise<DesktopPersonalization>;
-  onSavePersonalization: (
-    input: DesktopPersonalizationInput,
-  ) => Promise<DesktopPersonalization>;
+  onSavePersonalization: (input: DesktopPersonalizationInput) => Promise<DesktopPersonalization>;
   onDeleteLocalMemories: () => Promise<DesktopPersonalization>;
-  onLoginProvider: (
-    provider: string,
-    accountID: string,
-    token: string,
-  ) => Promise<void>;
+  onLoginProvider: (provider: string, accountID: string, token: string) => Promise<void>;
   onUseProviderAccount: (accountID: string) => Promise<void>;
   onConfigureOpenCode: (apiKey: string) => Promise<void>;
   onSaveCustomProvider: (input: CustomProviderInput) => Promise<void>;
@@ -138,10 +117,7 @@ interface SettingsViewProps {
   onThemeChange: (theme: AppTheme) => void;
   onSettingsChange: (input: Partial<DesktopSettings>) => void;
 }
-const sectionMeta: Record<
-  SettingsSection,
-  { label: string; description: string }
-> = {
+const sectionMeta: Record<SettingsSection, { label: string; description: string }> = {
   general: {
     label: "General",
     description: "Workspace behavior and agent controls.",
@@ -224,11 +200,7 @@ export function SettingsView({
     if (initialSection) setSection(initialSection);
   }, [initialSection]);
   const width =
-    section === "models"
-      ? "max-w-6xl"
-      : section === "skills"
-        ? "max-w-none"
-        : "max-w-4xl";
+    section === "models" ? "max-w-6xl" : section === "skills" ? "max-w-none" : "max-w-4xl";
   return (
     <div className="mn-settings-shell flex min-h-0 flex-1">
       <aside className="mn-settings-nav flex w-[248px] shrink-0 flex-col border-r border-[var(--mn-line)] bg-[var(--mn-sidebar)] px-4 pb-5 pt-16">
@@ -309,10 +281,7 @@ export function SettingsView({
         </div>
       </aside>
       <section className="min-w-0 flex-1 overflow-y-auto">
-        <div
-          key={section}
-          className={"mn-settings-section-in mx-auto " + width + " px-8 py-10"}
-        >
+        <div key={section} className={"mn-settings-section-in mx-auto " + width + " px-8 py-10"}>
           <div className="flex items-end justify-between gap-6">
             <div className="min-w-0">
               <Badge
@@ -412,11 +381,7 @@ export function SettingsView({
             />
           )}
           {section === "app-info" && (
-            <AppInfoSection
-              info={appInfo}
-              onCheck={onCheckForUpdate}
-              onOpenUpdate={onOpenUpdate}
-            />
+            <AppInfoSection info={appInfo} onCheck={onCheckForUpdate} onOpenUpdate={onOpenUpdate} />
           )}
         </div>
       </section>
@@ -467,10 +432,7 @@ function GeneralSection({
         settings={settings}
         onSettingsChange={onSettingsChange}
       />
-      <ComposerPreferences
-        settings={settings}
-        onSettingsChange={onSettingsChange}
-      />
+      <ComposerPreferences settings={settings} onSettingsChange={onSettingsChange} />
     </div>
   );
 }
@@ -497,9 +459,7 @@ function GeneralPreferences({
           control={
             <Select
               value={settings.defaultPermissionMode || "latest"}
-              onValueChange={(value) =>
-                onSettingsChange({ defaultPermissionMode: value })
-              }
+              onValueChange={(value) => onSettingsChange({ defaultPermissionMode: value })}
             >
               <SelectTrigger className="w-56">
                 <SelectValue />
@@ -522,15 +482,13 @@ function GeneralPreferences({
           control={
             <Select
               value={settings.contextWindow || "200K"}
-              onValueChange={(value) =>
-                onSettingsChange({ contextWindow: value })
-              }
+              onValueChange={(value) => onSettingsChange({ contextWindow: value })}
             >
               <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {['200K', '300K', '500K', '1M'].map((value) => (
+                {["200K", "300K", "500K", "1M"].map((value) => (
                   <SelectItem key={value} value={value}>
                     {value} tokens
                   </SelectItem>
@@ -552,7 +510,15 @@ function GeneralPreferences({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {['Default (English)', 'Vietnamese', 'Japanese', 'Chinese', 'Spanish', 'French', 'German'].map((value) => (
+                {[
+                  "Default (English)",
+                  "Vietnamese",
+                  "Japanese",
+                  "Chinese",
+                  "Spanish",
+                  "French",
+                  "German",
+                ].map((value) => (
                   <SelectItem key={value} value={value}>
                     {value}
                   </SelectItem>
@@ -624,9 +590,7 @@ function GeneralPreferences({
           control={
             <ToggleButton
               checked={settings.suggestedPrompts}
-              onChange={(value) =>
-                onSettingsChange({ suggestedPrompts: value })
-              }
+              onChange={(value) => onSettingsChange({ suggestedPrompts: value })}
             />
           }
         />
@@ -655,9 +619,7 @@ function ComposerPreferences({
           control={
             <ToggleButton
               checked={settings.showContextWindowUsage}
-              onChange={(value) =>
-                onSettingsChange({ showContextWindowUsage: value })
-              }
+              onChange={(value) => onSettingsChange({ showContextWindowUsage: value })}
             />
           }
         />
@@ -872,19 +834,11 @@ function CodeAppearance({
     </section>
   );
 }
-function SectionHeading({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
+function SectionHeading({ title, description }: { title: string; description: string }) {
   return (
     <div className="mb-3">
       <h2 className="text-base font-semibold tracking-tight">{title}</h2>
-      <p className="mt-1 text-sm leading-5 text-muted-foreground">
-        {description}
-      </p>
+      <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
     </div>
   );
 }
@@ -1052,18 +1006,14 @@ function CodePreview({
   return (
     <Card
       className={
-        (dark
-          ? "bg-[#171719] text-[#f4f2f0]"
-          : "bg-[var(--mn-surface)] text-[var(--mn-code)]") +
+        (dark ? "bg-[#171719] text-[#f4f2f0]" : "bg-[var(--mn-surface)] text-[var(--mn-code)]") +
         " gap-0 overflow-hidden border-[var(--mn-line)] py-0 shadow-none"
       }
     >
       <CardHeader className="flex-row items-center justify-between space-y-0 border-b border-[var(--mn-line)] p-4 sm:p-5">
         <div>
           <CardTitle className="text-sm">{title}</CardTitle>
-          <CardDescription
-            className={dark ? "text-[#aaa4ae]" : "text-[var(--mn-code)]"}
-          >
+          <CardDescription className={dark ? "text-[#aaa4ae]" : "text-[var(--mn-code)]"}>
             {theme}
           </CardDescription>
         </div>
@@ -1107,14 +1057,10 @@ function PersonalizationSection({
 }: {
   personalization: DesktopPersonalization;
   onLoad: () => Promise<DesktopPersonalization>;
-  onSave: (
-    input: DesktopPersonalizationInput,
-  ) => Promise<DesktopPersonalization>;
+  onSave: (input: DesktopPersonalizationInput) => Promise<DesktopPersonalization>;
   onDeleteMemories: () => Promise<DesktopPersonalization>;
 }) {
-  const [instructions, setInstructions] = useState(
-    personalization.customInstructions,
-  );
+  const [instructions, setInstructions] = useState(personalization.customInstructions);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -1142,11 +1088,7 @@ function PersonalizationSection({
       })
       .catch((reason) => {
         if (active) {
-          setError(
-            reason instanceof Error
-              ? reason.message
-              : "Could not load personalization",
-          );
+          setError(reason instanceof Error ? reason.message : "Could not load personalization");
         }
       })
       .finally(() => {
@@ -1164,11 +1106,7 @@ function PersonalizationSection({
       const next = await onSave({ customInstructions: instructions });
       setInstructions(next.customInstructions);
     } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Could not save instructions",
-      );
+      setError(reason instanceof Error ? reason.message : "Could not save instructions");
     } finally {
       setSaving(false);
     }
@@ -1179,11 +1117,7 @@ function PersonalizationSection({
     try {
       await onSave(input);
     } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Could not save personalization",
-      );
+      setError(reason instanceof Error ? reason.message : "Could not save personalization");
     }
   }
 
@@ -1193,11 +1127,7 @@ function PersonalizationSection({
       await onDeleteMemories();
       setDeleteOpen(false);
     } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Could not delete local memories",
-      );
+      setError(reason instanceof Error ? reason.message : "Could not delete local memories");
     } finally {
       setDeleting(false);
     }
@@ -1245,9 +1175,8 @@ function PersonalizationSection({
     },
   ];
   const selectedPersonality =
-    personalityOptions.find(
-      (option) => option.value === personalization.personality,
-    ) || personalityOptions[0];
+    personalityOptions.find((option) => option.value === personalization.personality) ||
+    personalityOptions[0];
 
   return (
     <div className="mt-8 space-y-5">
@@ -1261,15 +1190,12 @@ function PersonalizationSection({
           <div>
             <h2 className="text-sm font-semibold">Custom instructions</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Give mncode extra instructions and context for all chats on this
-              computer.
+              Give mncode extra instructions and context for all chats on this computer.
             </p>
           </div>
           <Button
             variant="outline"
-            disabled={
-              saving || instructions === personalization.customInstructions
-            }
+            disabled={saving || instructions === personalization.customInstructions}
             onClick={() => void saveInstructions()}
             className="border-[var(--mn-line)]"
           >
@@ -1287,8 +1213,8 @@ function PersonalizationSection({
               aria-label="Custom instructions"
             />
             <p className="border-t border-[var(--mn-line)] px-4 py-2 text-[0.6875rem] text-muted-foreground">
-              {instructions.length.toLocaleString()} / 20,000 characters ·
-              Applied to future agent turns.
+              {instructions.length.toLocaleString()} / 20,000 characters · Applied to future agent
+              turns.
             </p>
           </CardContent>
         </Card>
@@ -1354,21 +1280,13 @@ function PersonalizationSection({
                 onValueChange={(value) => void update({ personality: value })}
               >
                 <SelectTrigger className="w-44">
-                  <span className="truncate text-sm font-medium">
-                    {selectedPersonality.label}
-                  </span>
+                  <span className="truncate text-sm font-medium">{selectedPersonality.label}</span>
                 </SelectTrigger>
                 <SelectContent>
                   {personalityOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      textValue={option.label}
-                    >
+                    <SelectItem key={option.value} value={option.value} textValue={option.label}>
                       <span className="flex min-w-0 flex-col gap-0.5">
-                        <span className="text-sm font-medium">
-                          {option.label}
-                        </span>
+                        <span className="text-sm font-medium">{option.label}</span>
                         <span className="text-[0.75rem] leading-4 text-muted-foreground">
                           {option.description} Best for {option.fit}.
                         </span>
@@ -1405,27 +1323,23 @@ function PersonalizationSection({
       </section>
       <div className="flex items-start gap-2 rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-xs leading-5 text-muted-foreground">
         <Info className="mt-0.5 size-4 shrink-0 text-[var(--mn-accent-strong)]" />
-        Personalization is applied locally by mncode. Memories are only stored
-        when you explicitly ask the agent to remember something.
+        Personalization is applied locally by mncode. Memories are only stored when you explicitly
+        ask the agent to remember something.
       </div>
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent className="border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground">
           <DialogHeader>
             <DialogTitle>Delete local memories?</DialogTitle>
             <DialogDescription>
-              This permanently removes all memories stored in the local mncode
-              memory file. It does not delete chat sessions or workspace files.
+              This permanently removes all memories stored in the local mncode memory file. It does
+              not delete chat sessions or workspace files.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              disabled={deleting}
-              onClick={() => void deleteMemories()}
-            >
+            <Button variant="destructive" disabled={deleting} onClick={() => void deleteMemories()}>
               {deleting ? "Deleting…" : "Delete memories"}
             </Button>
           </DialogFooter>
@@ -1442,9 +1356,7 @@ function BrowserSection({
 }: {
   settings: DesktopBrowserSettings;
   onLoad: () => Promise<DesktopBrowserSettings>;
-  onUpdate: (
-    input: DesktopBrowserSettingsInput,
-  ) => Promise<DesktopBrowserSettings>;
+  onUpdate: (input: DesktopBrowserSettingsInput) => Promise<DesktopBrowserSettings>;
 }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -1455,11 +1367,7 @@ function BrowserSection({
     void onLoad()
       .catch((reason) => {
         if (active) {
-          setError(
-            reason instanceof Error
-              ? reason.message
-              : "Could not load browser settings",
-          );
+          setError(reason instanceof Error ? reason.message : "Could not load browser settings");
         }
       })
       .finally(() => {
@@ -1475,11 +1383,7 @@ function BrowserSection({
     try {
       await onUpdate(input);
     } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Could not update browser settings",
-      );
+      setError(reason instanceof Error ? reason.message : "Could not update browser settings");
     }
   }
 
@@ -1536,9 +1440,7 @@ function BrowserSection({
             control={
               <ToggleButton
                 checked={settings.ignoreCertificateErrors}
-                onChange={(value) =>
-                  void update({ ignoreCertificateErrors: value })
-                }
+                onChange={(value) => void update({ ignoreCertificateErrors: value })}
               />
             }
           />
@@ -1571,9 +1473,8 @@ function BrowserSection({
             destructive
           />
           <div className="border-t border-[var(--mn-line)] px-5 py-3 text-[0.75rem] text-muted-foreground">
-            These actions will be enabled when mncode ships its isolated
-            built-in browser data store. Your Chrome profile is never modified
-            by this screen.
+            These actions will be enabled when mncode ships its isolated built-in browser data
+            store. Your Chrome profile is never modified by this screen.
           </div>
         </Card>
       </section>
@@ -1600,17 +1501,13 @@ function BrowserActionRow({
         </div>
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">{title}</p>
-          <p className="mt-1 text-sm leading-5 text-muted-foreground">
-            {description}
-          </p>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
         </div>
       </div>
       <Button
         variant={destructive ? "destructive" : "outline"}
         disabled
-        className={
-          destructive ? "shrink-0" : "shrink-0 border-[var(--mn-line)]"
-        }
+        className={destructive ? "shrink-0" : "shrink-0 border-[var(--mn-line)]"}
       >
         Coming soon
       </Button>
@@ -1663,21 +1560,13 @@ function AccountSection({
               Sign out
             </Button>
           ) : (
-            <Button
-              disabled={accountBusy}
-              onClick={onLogin}
-              className="mn-accent-button"
-            >
+            <Button disabled={accountBusy} onClick={onLogin} className="mn-accent-button">
               {accountBusy ? "Opening browser…" : "Sign in"}
             </Button>
           )}
         </CardContent>
       </Card>
-      <UsageSection
-        connected={connected}
-        onLogin={onLogin}
-        onLoadUsage={onLoadUsage}
-      />
+      <UsageSection connected={connected} onLogin={onLogin} onLoadUsage={onLoadUsage} />
     </div>
   );
 }
@@ -1707,9 +1596,7 @@ function UsageSection({
             : reason && typeof reason === "object" && "message" in reason
               ? String(reason.message)
               : "Could not load usage";
-      setError(
-        message,
-      );
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -1741,9 +1628,7 @@ function UsageSection({
       <Card className="mn-surface mn-settings-rows shadow-none">
         <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
           <BarChart3 className="size-7 text-[var(--mn-accent-strong)]" />
-          <p className="text-sm font-medium">
-            Usage is linked to your account
-          </p>
+          <p className="text-sm font-medium">Usage is linked to your account</p>
           <p className="max-w-sm text-xs text-muted-foreground">
             Sign in to see daily token activity across your CLI and desktop sessions.
           </p>
@@ -1847,17 +1732,12 @@ function AppInfoSection({
         <Card className="mn-settings-rows border-[var(--mn-accent)]/40 bg-[var(--mn-accent-soft)] shadow-none">
           <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
             <div>
-              <p className="text-sm font-medium">
-                {update.latestVersion} is available
-              </p>
+              <p className="text-sm font-medium">{update.latestVersion} is available</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 You are running {update.currentVersion}.
               </p>
             </div>
-            <Button
-              onClick={() => onOpenUpdate(update.releaseUrl)}
-              className="mn-accent-button"
-            >
+            <Button onClick={() => onOpenUpdate(update.releaseUrl)} className="mn-accent-button">
               <ExternalLink className="mr-2 size-3.5" />
               View release
             </Button>

@@ -69,13 +69,10 @@ function AutomationContent() {
           >
             Coming soon
           </Badge>
-          <h3 className="mt-4 text-lg font-semibold">
-            Automations are in progress
-          </h3>
+          <h3 className="mt-4 text-lg font-semibold">Automations are in progress</h3>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-            This feature is currently being built. Soon you’ll be able to
-            schedule recurring prompts with the same workspace context and agent
-            settings.
+            This feature is currently being built. Soon you’ll be able to schedule recurring prompts
+            with the same workspace context and agent settings.
           </p>
           <div className="mx-auto mt-6 flex max-w-sm items-center justify-center gap-2 rounded-xl bg-[var(--mn-surface-muted)] px-4 py-3 text-xs text-muted-foreground">
             <CheckCircle2 className="size-4 text-[var(--mn-accent-strong)]" />
@@ -96,11 +93,5 @@ function McpContent({
   onConfigureMCP: (input: DesktopMCPServerInput) => Promise<void>;
   onOpenURL: (url: string) => void;
 }) {
-  return (
-    <McpProviders
-      servers={mcpServers}
-      onConfigure={onConfigureMCP}
-      onOpenURL={onOpenURL}
-    />
-  );
+  return <McpProviders servers={mcpServers} onConfigure={onConfigureMCP} onOpenURL={onOpenURL} />;
 }

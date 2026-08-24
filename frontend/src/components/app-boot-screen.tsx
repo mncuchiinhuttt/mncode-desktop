@@ -1,11 +1,7 @@
 import { Check, Loader2 } from "lucide-react";
 import mncodeLogo from "@/assets/images/mncode-logo.svg";
 
-export function AppBootScreen({
-  phase,
-}: {
-  phase: "loading" | "exiting";
-}) {
+export function AppBootScreen({ phase }: { phase: "loading" | "exiting" }) {
   const exiting = phase === "exiting";
   return (
     <div
@@ -21,11 +17,7 @@ export function AppBootScreen({
         </div>
         <div className="mn-boot-status">
           <span className="mn-boot-status-icon">
-            {exiting ? (
-              <Check className="size-3" />
-            ) : (
-              <Loader2 className="size-3 animate-spin" />
-            )}
+            {exiting ? <Check className="size-3" /> : <Loader2 className="size-3 animate-spin" />}
           </span>
           <span className="font-mono text-[0.75rem] uppercase tracking-[0.14em]">
             {exiting ? "[ Ready ]" : "[ Booting local workspace ]"}
