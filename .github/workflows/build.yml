@@ -42,6 +42,12 @@ jobs:
           ref: main
           path: mncode-cli
 
+      - name: Relocate agent core next to the app
+        # actions/checkout only places repos inside the workspace, but the
+        # replace directive resolves ../mncode-cli above the repo root.
+        shell: bash
+        run: mv mncode-cli ../mncode-cli
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
