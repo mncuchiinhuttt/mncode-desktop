@@ -30,8 +30,9 @@ const viewMeta: Record<ViewName, { code: string; label: string }> = {
   workspace: { code: "00", label: "Workspace" },
   insights: { code: "01", label: "Insights" },
   settings: { code: "02", label: "Settings" },
-  automations: { code: "03", label: "Automations" },
-  mcp: { code: "04", label: "MCP & Plugins" },
+  skills: { code: "03", label: "Skills Marketplace" },
+  automations: { code: "04", label: "Automations" },
+  mcp: { code: "05", label: "MCP & Plugins" },
 };
 
 export function TopBar({

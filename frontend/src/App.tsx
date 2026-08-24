@@ -408,7 +408,7 @@ export default function App() {
   } | undefined>(undefined);
 
   const settings = catalog.settings;
-  const standaloneSettings = view === "settings";
+  const standaloneSettings = view === "settings" || view === "skills";
   const notify = useCallback(
     (message: string, kind: "error" | "success" = "error") => {
       setToast({ message, kind });
@@ -1254,7 +1254,9 @@ export default function App() {
       window.clearTimeout(settingsExitTimer.current);
       settingsExitTimer.current = undefined;
     }
-    if (view === "settings" && next !== "settings") {
+    const inSettingsFlow = view === "settings" || view === "skills";
+    const nextInSettingsFlow = next === "settings" || next === "skills";
+    if (inSettingsFlow && !nextInSettingsFlow) {
       setViewDirection("back");
       setSettingsExiting(true);
       settingsExitTimer.current = window.setTimeout(() => {
@@ -1266,7 +1268,7 @@ export default function App() {
     }
     setSettingsExiting(false);
     setViewDirection(
-      view === "settings" && next !== "settings" ? "back" : "forward",
+      inSettingsFlow && !nextInSettingsFlow ? "back" : "forward",
     );
     setView(next);
   }
@@ -1913,10 +1915,11 @@ export default function App() {
                 onOpenWorkspace={openWorkspace}
               />
             )}
-            {view === "settings" && (
+            {(view === "settings" || view === "skills") && (
               <SettingsView
                 catalog={catalog}
                 settings={settings}
+                initialSection={view === "skills" ? "skills" : undefined}
                 account={account}
                 accountBusy={accountBusy}
                 appInfo={appInfo}

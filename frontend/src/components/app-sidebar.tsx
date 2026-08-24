@@ -16,6 +16,7 @@ import {
   Plus,
   Settings2,
   Smartphone,
+  Sparkles,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -179,6 +180,13 @@ export function AppSidebar({
             collapsed={collapsed}
             active={view === "mcp"}
             onClick={() => onUtilityAction("MCP")}
+          />
+          <SidebarAction
+            icon={Sparkles}
+            label="Skills Marketplace"
+            collapsed={collapsed}
+            active={view === "skills"}
+            onClick={() => onViewChange("skills")}
           />
         </div>
       </TooltipProvider>

@@ -75,7 +75,7 @@ import { McpProviders } from "./mcp-providers";
 import { SkillsMarketplace } from "./skills-marketplace";
 import { UsageHeatmap } from "./usage-heatmap";
 
-type SettingsSection =
+export type SettingsSection =
   | "general"
   | "models"
   | "appearance"
@@ -97,6 +97,7 @@ const defaultCustomInstructions = `# Working style
 interface SettingsViewProps {
   catalog: DesktopCatalog;
   settings: DesktopSettings;
+  initialSection?: SettingsSection;
   account: DesktopAccount;
   accountBusy: boolean;
   appInfo: AppInfo;
@@ -182,6 +183,7 @@ const sectionMeta: Record<
 export function SettingsView({
   catalog,
   settings,
+  initialSection,
   account,
   accountBusy,
   appInfo,
@@ -214,8 +216,13 @@ export function SettingsView({
   onThemeChange,
   onSettingsChange,
 }: SettingsViewProps) {
-  const [section, setSection] = useState<SettingsSection>("general");
+  const [section, setSection] = useState<SettingsSection>(initialSection ?? "general");
   const [modelsRefreshKey, setModelsRefreshKey] = useState(0);
+
+  // Follow the entry point (sidebar shortcut) when it changes between mounts.
+  useEffect(() => {
+    if (initialSection) setSection(initialSection);
+  }, [initialSection]);
   const width =
     section === "models"
       ? "max-w-6xl"

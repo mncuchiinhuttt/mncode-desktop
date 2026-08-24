@@ -2,6 +2,7 @@ export type ViewName =
   | "workspace"
   | "insights"
   | "settings"
+  | "skills"
   | "automations"
   | "mcp";
 
