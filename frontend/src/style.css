@@ -1,0 +1,813 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans:
+    "Fira Sans", "Avenir Next", "SF Pro Display", "Helvetica Neue",
+    ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-xs: calc(var(--radius) * 0.5);
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: calc(var(--radius) * 0.9);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+:root {
+  /* Light mode — aligned with mncode-web RMIT palette */
+  --background: #fbfbfa;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #db2777;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f0ee;
+  --secondary-foreground: #3f3d46;
+  --muted: #f0f0ed;
+  --muted-foreground: #475569;
+  --accent: #fdf2f8;
+  --accent-foreground: #09090b;
+  --destructive: #c94c65;
+  --border: #e6e3e1;
+  --input: #e3e0de;
+  --ring: #db2777;
+  --radius: 0.5rem;
+  --mn-shell: #fafaf8;
+  --mn-sidebar: #f3f3f0;
+  --mn-surface: #ffffff;
+  --mn-surface-muted: #f6f6f3;
+  --mn-line: rgba(9, 9, 11, 0.1);
+  --mn-line-strong: rgba(9, 9, 11, 0.28);
+  --mn-grid: rgba(219, 39, 119, 0.035);
+  --mn-accent: #db2777;
+  --mn-accent-strong: #be185d;
+  --mn-accent-soft: rgba(219, 39, 119, 0.1);
+  --mn-cyan: #0284c7;
+  --mn-code: #52525b;
+}
+
+.dark {
+  /* Dark mode — Deep void black, vibrant mncode Pink & Cyan glow (RMIT Hackathon aesthetic) */
+  --background: #000000;
+  --foreground: #f4f4f2;
+  --card: #08090e;
+  --card-foreground: #f4f4f2;
+  --popover: #0e111a;
+  --popover-foreground: #f4f4f2;
+  --primary: #f472b6;
+  --primary-foreground: #ffffff;
+  --secondary: #12141d;
+  --secondary-foreground: #d8d5d7;
+  --muted: #0c0e17;
+  --muted-foreground: #a1a1aa;
+  --accent: #141826;
+  --accent-foreground: #f4f4f2;
+  --destructive: #fb7185;
+  --border: rgba(255, 255, 255, 0.14);
+  --input: rgba(255, 255, 255, 0.18);
+  --ring: #f472b6;
+  --mn-shell: #090a0f;
+  --mn-sidebar: #0b0d13;
+  --mn-surface: #10121a;
+  --mn-surface-muted: #151823;
+  --mn-line: rgba(255, 255, 255, 0.12);
+  --mn-line-strong: rgba(255, 255, 255, 0.28);
+  --mn-grid: rgba(244, 114, 182, 0.045);
+  --mn-accent: #f472b6;
+  --mn-accent-strong: #fb7185;
+  --mn-accent-soft: rgba(244, 114, 182, 0.14);
+  --mn-cyan: #38bdf8;
+  --mn-code: #aaa4ae;
+}
+
+* {
+  border-color: var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--mn-line) transparent;
+}
+
+html,
+body,
+#root {
+  min-width: 960px;
+  min-height: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  font-size: var(--mn-ui-font-size, 14px);
+}
+
+body {
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv02", "cv03", "cv11";
+  letter-spacing: -0.008em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.025em;
+  font-family: "Fira Sans Condensed", var(--font-sans);
+  font-weight: 600;
+}
+
+button,
+textarea,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.mn-drag-region {
+  --wails-draggable: drag;
+}
+
+.mn-drag-region button,
+.mn-drag-region input,
+.mn-drag-region textarea,
+.mn-drag-region select,
+.mn-drag-region [role="button"] {
+  --wails-draggable: no-drag;
+}
+
+.mn-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--mn-shell);
+  color: var(--foreground);
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.mn-shell::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--mn-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mn-grid) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(circle at 52% 32%, black 0%, transparent 92%);
+  content: "";
+  pointer-events: none;
+}
+
+/* Technical pink scrollbar (mncode-web parity) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--mn-accent) 28%, transparent);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mn-accent);
+}
+
+::selection {
+  background: var(--mn-accent);
+  color: #ffffff;
+}
+
+/* ── RMIT Hackathon HUD primitives ───────────────────────────── */
+
+.eyebrow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mn-accent);
+  background: transparent;
+  border-left: 2px solid var(--mn-accent);
+  padding-left: 0.5rem;
+  white-space: nowrap;
+}
+
+.eyebrow-badge-solid {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: var(--mn-accent);
+  padding: 0.22rem 0.6rem;
+  white-space: nowrap;
+}
+
+.pulse-beacon {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+  animation: mn-beacon 2s ease-in-out infinite;
+  flex: 0 0 auto;
+}
+
+.pipe-delimiter {
+  font-style: normal;
+  color: color-mix(in srgb, var(--muted-foreground) 42%, transparent);
+  user-select: none;
+}
+
+.hud-mono {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+/* Hairline grid system — 1px soft gaps between cells */
+.hairline-grid-container {
+  display: grid;
+  gap: 1px;
+  background: var(--mn-line);
+  border: 1px solid var(--mn-line);
+}
+
+.hairline-cell {
+  background: var(--mn-surface);
+  transition: background-color 180ms ease;
+}
+
+.hairline-cell:hover {
+  background: var(--mn-surface-muted);
+}
+
+/* Dot grid texture (mncode-web hero overlay) */
+.dot-grid-bg {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--foreground) 16%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+
+/* Hero-style HUD telemetry cell */
+.hud-stat {
+  border-left: 2px solid var(--mn-line-strong);
+  padding-left: 0.75rem;
+  font-family: var(--font-mono);
+  text-align: left;
+}
+
+.hud-stat-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.hud-stat-value {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 1.1rem;
+  font-weight: 200;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.hud-stat-sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.66rem;
+  font-weight: 500;
+}
+
+.mn-sidebar {
+  background: var(--mn-sidebar);
+  border-color: var(--mn-line);
+}
+
+.mn-main {
+  background: color-mix(in srgb, var(--mn-shell) 92%, transparent);
+}
+
+.mn-surface {
+  background: var(--mn-surface);
+  border-color: var(--mn-line);
+}
+
+.mn-surface-muted {
+  background: var(--mn-surface-muted);
+  border-color: var(--mn-line);
+}
+
+.mn-settings-rows {
+  gap: 0;
+  overflow: hidden;
+  padding-block: 0;
+}
+
+.mn-right-sidebar {
+  color: var(--foreground);
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.mn-right-sidebar-shell {
+  flex: 0 0 300px;
+  width: 300px;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    flex-basis 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    width 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 180ms ease,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mn-right-sidebar-shell.is-closed {
+  flex-basis: 0;
+  width: 0;
+  opacity: 0;
+  transform: translateX(14px);
+  pointer-events: none;
+}
+
+.mn-right-sidebar-shell.is-resizing {
+  transition: none;
+}
+
+.mn-glass {
+  background: color-mix(in srgb, var(--mn-surface) 94%, transparent);
+  border-color: var(--mn-line);
+  box-shadow: 0 14px 42px color-mix(in srgb, var(--foreground) 5%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.mn-composer {
+  background: var(--mn-surface);
+  border-color: var(--mn-line);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.mn-accent-button {
+  background: var(--mn-accent);
+  color: #ffffff !important;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--mn-accent) 26%, transparent);
+}
+
+.mn-accent-button:hover {
+  background: var(--mn-accent-strong);
+}
+
+.dark .mn-accent-button {
+  color: #ffffff !important;
+}
+
+.mn-gradient-text {
+  background: linear-gradient(
+    110deg,
+    var(--foreground) 0%,
+    var(--mn-accent) 55%,
+    var(--mn-cyan) 100%
+  );
+  background-clip: text;
+  color: transparent;
+}
+
+.mn-page-in {
+  animation: mn-page-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-settings-shell {
+  background: var(--mn-shell);
+}
+
+.mn-settings-enter {
+  animation: mn-settings-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-settings-return {
+  animation: mn-settings-return 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-settings-exit {
+  animation: mn-settings-exit 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
+}
+
+.mn-settings-section-in {
+  animation: mn-settings-section-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-onboarding-overlay {
+  background: color-mix(in srgb, var(--foreground) 38%, transparent);
+  backdrop-filter: blur(12px);
+  animation: mn-onboarding-overlay-in 260ms ease-out both;
+}
+
+.mn-onboarding-panel {
+  animation: mn-onboarding-panel-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-onboarding-step {
+  animation: mn-onboarding-step-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-onboarding-check {
+  animation: mn-onboarding-check-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-boot-screen {
+  overflow: hidden;
+  background: var(--mn-shell);
+  color: var(--foreground);
+  animation: mn-boot-enter 220ms ease-out both;
+}
+
+.mn-boot-screen.is-exiting {
+  pointer-events: none;
+  animation: mn-boot-exit 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-boot-aura {
+  position: absolute;
+  width: min(52vw, 520px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--mn-accent) 18%, transparent), transparent 68%),
+    radial-gradient(circle at 70% 30%, color-mix(in srgb, #91d7ed 16%, transparent), transparent 54%);
+  filter: blur(8px);
+  animation: mn-boot-aura 1800ms ease-in-out infinite alternate;
+}
+
+.mn-boot-lockup {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  width: min(80vw, 360px);
+  animation: mn-boot-lockup-in 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mn-boot-logo-frame {
+  position: relative;
+  overflow: hidden;
+  width: 280px;
+  padding: 12px 18px;
+  border: 1px solid color-mix(in srgb, var(--mn-line) 82%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mn-surface) 76%, transparent);
+  box-shadow:
+    0 18px 54px color-mix(in srgb, var(--foreground) 12%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 55%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.mn-boot-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: mn-boot-logo 1200ms ease-in-out infinite alternate;
+}
+
+.mn-boot-scan {
+  position: absolute;
+  inset: -30% auto -30% -42%;
+  width: 22%;
+  background: linear-gradient(100deg, transparent, color-mix(in srgb, white 72%, transparent), transparent);
+  transform: translateX(-180%) skewX(-18deg);
+  animation: mn-boot-scan 1300ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  pointer-events: none;
+}
+
+.mn-boot-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+.mn-boot-status-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--mn-accent-soft);
+  color: var(--mn-accent-strong);
+}
+
+.mn-boot-status-code {
+  margin-left: 6px;
+  color: color-mix(in srgb, var(--muted-foreground) 62%, transparent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.mn-soft-shadow {
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.mn-context-ring {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: conic-gradient(
+    var(--mn-accent-strong) var(--context-percent),
+    var(--mn-line) 0
+  );
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.mn-context-ring::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: inherit;
+  background: var(--mn-surface);
+}
+
+.mn-context-ring span {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--muted-foreground);
+}
+
+.mn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.mn-sheen::after {
+  position: absolute;
+  inset: 0;
+  width: 32%;
+  background: linear-gradient(
+    110deg,
+    transparent,
+    color-mix(in srgb, white 22%, transparent),
+    transparent
+  );
+  content: "";
+  transform: translateX(-160%);
+  animation: mn-sheen 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes mn-beacon {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes mn-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mn-settings-enter {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mn-settings-return {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mn-settings-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+@keyframes mn-settings-section-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mn-onboarding-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mn-onboarding-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mn-onboarding-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mn-onboarding-check-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mn-boot-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mn-boot-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes mn-boot-lockup-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mn-boot-logo {
+  from {
+    opacity: 0.82;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+}
+
+@keyframes mn-boot-scan {
+  0% {
+    transform: translateX(-180%) skewX(-18deg);
+  }
+  52%,
+  100% {
+    transform: translateX(700%) skewX(-18deg);
+  }
+}
+
+@keyframes mn-boot-aura {
+  from {
+    opacity: 0.62;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes mn-sheen {
+  0%,
+  60% {
+    transform: translateX(-160%);
+  }
+  80%,
+  100% {
+    transform: translateX(360%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}

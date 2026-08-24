@@ -1,0 +1,13 @@
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+build/bin/
+build/darwin/*.app/
+*.log
+.DS_Store
+
+# Compiled output
+/mncode-desktop
+frontend/package.json.md5

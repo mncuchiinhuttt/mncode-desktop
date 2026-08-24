@@ -1,0 +1,19 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "mncode Desktop",
+  "outputfilename": "mncode-desktop",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm build",
+  "frontend:dev:watcher": "pnpm dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Vo Minh Long",
+    "email": "vominhlongbentre@gmail.com"
+  },
+  "info": {
+    "companyName": "mncode",
+    "productName": "mncode Desktop",
+    "copyright": "© 2026 mncuchiinhuttt",
+    "comments": "A local-first AI workspace for building with your code."
+  }
+}

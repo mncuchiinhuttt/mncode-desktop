@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90" width="100%" height="100%">
+  <style>
+    .title {
+      font-family: -apple-system, BlinkMacSystemFont, 'Geist', 'Inter', 'SF Pro Display', 'Segoe UI', sans-serif;
+      font-weight: 800;
+      font-size: 52px;
+      letter-spacing: -2px;
+      fill: #0F172A;
+    }
+    .accent {
+      fill: #F472B6;
+    }
+    .subtitle {
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 3px;
+      fill: #F472B6;
+    }
+    @media (prefers-color-scheme: dark) {
+      .title {
+        fill: #F8FAFC;
+      }
+    }
+  </style>
+
+  <!-- Transparent Background Typography -->
+  <g transform="translate(180, 0)" text-anchor="middle">
+    <!-- Main Title: mncode -->
+    <text x="0" y="52" class="title">mncode<tspan class="accent">.</tspan></text>
+    
+    <!-- Subtitle: by @mncuchiinhuttt -->
+    <text x="0" y="78" class="subtitle">by @mncuchiinhuttt</text>
+  </g>
+</svg>
