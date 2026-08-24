@@ -58,7 +58,7 @@ export function ManagementView({
 function AutomationContent() {
   return (
     <div className="mx-auto max-w-2xl">
-      <Card className="mn-surface shadow-none">
+      <Card className="mn-surface gap-0 py-0 shadow-none">
         <CardContent className="p-10 text-center">
           <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
             <CalendarClock className="size-7" />
