@@ -1864,20 +1864,6 @@ function AppInfoSection({
           </CardContent>
         </Card>
       )}
-      <Card className="mn-surface mn-settings-rows shadow-none">
-        <CardContent className="flex items-center justify-between gap-4 p-4">
-          <div>
-            <p className="text-sm font-medium">mncode on GitHub</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Source, releases, and issue tracker.
-            </p>
-          </div>
-          <Button variant="ghost" onClick={() => onOpenUpdate(info.repository)}>
-            <ExternalLink className="mr-2 size-3.5" />
-            Open repository
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }
