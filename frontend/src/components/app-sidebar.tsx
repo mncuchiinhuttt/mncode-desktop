@@ -163,6 +163,7 @@ export function AppSidebar({
             label="New chat"
             collapsed={collapsed}
             emphasized
+            shortcut="⌘N"
             onClick={onNewTask}
           />
           <SidebarAction

@@ -667,6 +667,22 @@ export default function App() {
     };
   }, [activeChatId, activities, messages, runSummary, runUsage]);
 
+  // Persist a finished run's summary immediately — the debounced saver can be
+  // beaten by quitting the app right after a run completes, which would store
+  // a mid-run snapshot without the summary.
+  useEffect(() => {
+    if (!runSummary || messages.length === 0) return;
+    setChatSessions((current) =>
+      upsertChatHistory(current, activeChatId, {
+        messages,
+        activities,
+        runSummary,
+        runUsage,
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runSummary]);
+
   const refreshFiles = useCallback(async () => {
     try {
       setFiles(await desktop.listWorkspaceTree());
@@ -747,12 +763,18 @@ export default function App() {
   useEffect(() => {
     function finalizeRun() {
       const startedAt = runStartedAtRef.current;
-      setRunSummary({
-        durationMs: startedAt ? Date.now() - startedAt : 0,
-        usage: runUsageRef.current,
-      });
+      const durationMs = startedAt ? Date.now() - startedAt : 0;
+      const usage = runUsageRef.current;
       runStartedAtRef.current = undefined;
       setRunStartedAt(undefined);
+      // A zeroed summary (missing start event, no usage) must never overwrite
+      // a meaningful one already attached to the chat.
+      setRunSummary((previous) => {
+        if (durationMs === 0 && usage.totalTokens === 0 && previous) {
+          return previous;
+        }
+        return { durationMs, usage };
+      });
     }
 
     const cleanups = [

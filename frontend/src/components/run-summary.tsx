@@ -28,13 +28,15 @@ export function RunSummary({ running, summary, usage, startedAt, activities }: {
   }, [running]);
   const duration = summary?.durationMs ?? (running && startedAt ? now - startedAt : 0);
   const tokens = summary?.usage.totalTokens ?? usage.totalTokens;
+  const hasMetrics = duration > 0 || tokens > 0;
+  if (!running && !hasMetrics && activities.length === 0) return null;
   return (
     <div className="mx-auto mt-4 w-full max-w-5xl px-6">
       <button type="button" onClick={() => setOpen((value) => !value)} className="flex w-full items-center gap-2 border-b border-[var(--mn-line)] px-1 py-2 text-left text-sm text-muted-foreground transition-colors hover:text-foreground">
         {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
         <Clock3 className="size-3.5" />
-        <span>{running ? "Working for" : "Worked for"} {formatDuration(duration)}</span>
-        <span className="ml-auto font-mono text-[11px]">Used {formatTokens(tokens)} tokens</span>
+        <span>{running ? "Working for" : hasMetrics ? `Worked for ${formatDuration(duration)}` : "Run details"}</span>
+        {tokens > 0 && <span className="ml-auto font-mono text-[11px]">Used {formatTokens(tokens)} tokens</span>}
       </button>
       {open && <AgentActionFeed activities={activities} />}
     </div>
