@@ -1,0 +1,97 @@
+# Build mncode Desktop for Windows and Linux.
+#
+# The Go module uses `replace mncode => ../mncode-cli`, so the public agent-core
+# repository (mncuchiinhuttt/mncode) is checked out as a sibling directory.
+#
+# Triggers:
+# - manually from the Actions tab (workflow_dispatch)
+# - pushing a tag like v0.1.0-beta (also publishes a GitHub release)
+
+name: Build Desktop
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: windows-amd64
+            platform: windows/amd64
+          - os: ubuntu-22.04
+            name: linux-amd64
+            platform: linux/amd64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout desktop app
+        uses: actions/checkout@v4
+
+      - name: Checkout agent core (sibling for the replace directive)
+        uses: actions/checkout@v4
+        with:
+          repository: mncuchiinhuttt/mncode
+          ref: main
+          path: mncode-cli
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-dev libwebkit2gtk-4.0-dev libnss3-dev pkg-config
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
+
+      - name: Build
+        shell: bash
+        run: |
+          "$(go env GOPATH)/bin/wails" build -platform ${{ matrix.platform }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mncode-desktop-${{ matrix.name }}
+          path: build/bin/*
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Attach binaries to the tag release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
