@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowRight,
   ArrowUp,
   AtSign,
   BrainCircuit,
@@ -217,13 +218,30 @@ function Landing({
   const displayName = account.connected ? (account.name.trim().split(/\s+/).pop() ?? "") : "";
   const greeting = displayName ? `Good evening, ${displayName}` : "Good evening";
   return (
-    <div className="mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center px-6 pb-10 pt-8">
+    <div className="relative mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center px-6 pb-10 pt-8">
+      {/* Ambient accent glows behind the empty state */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-6 mx-auto h-60 w-[34rem] max-w-full rounded-full blur-[90px]"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in srgb, var(--mn-accent) 13%, transparent), transparent 70%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute bottom-8 right-[8%] size-52 rounded-full blur-[90px]"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in srgb, var(--mn-cyan) 10%, transparent), transparent 70%)",
+        }}
+      />
       <div className="relative z-10 mb-5 text-center">
-        <p className="text-sm text-muted-foreground">{greeting}</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          What would you like to build?
+        <p className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-[var(--mn-accent)]">
+          {greeting}
+        </p>
+        <h1 className="mt-3 text-4xl font-extralight leading-[1.05] tracking-tight sm:text-5xl">
+          What would you like to <span className="mn-gradient-text font-bold">build?</span>
         </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+        <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
           Ask mncode anything about your codebase. Use{" "}
           <span className="font-mono text-[var(--mn-accent-strong)]">@</span> for context or{" "}
           <span className="font-mono text-[var(--mn-accent-strong)]">/</span> for commands.
@@ -281,13 +299,16 @@ function StarterCard({
     <button
       type="button"
       onClick={onClick}
-      className="group rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--mn-accent)]/45 hover:shadow-md"
+      className="group rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] p-3.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--mn-accent)]/50 hover:shadow-[0_14px_30px_-14px_color-mix(in_srgb,var(--mn-accent)_35%,transparent)] active:translate-y-0 active:scale-[0.98]"
     >
-      <div className="flex items-center gap-2 text-sm font-medium">
-        <Icon className="size-3.5 text-[var(--mn-accent-strong)]" />
-        {title}
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)] transition-transform duration-200 group-hover:scale-110">
+          <Icon className="size-3.5" />
+        </span>
+        <span className="text-sm font-medium">{title}</span>
+        <ArrowRight className="ml-auto size-3.5 -translate-x-1 text-[var(--mn-accent-strong)] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
       </div>
-      <p className="mt-2 text-xs leading-5 text-muted-foreground group-hover:text-foreground/70">
+      <p className="mt-2 text-xs leading-5 text-muted-foreground group-hover:text-foreground/75">
         {text}
       </p>
     </button>
@@ -459,7 +480,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
             onHover={setActiveSuggestion}
           />
         )}
-        <Card className="mn-composer mn-soft-shadow gap-0 overflow-hidden rounded-2xl border py-0">
+        <Card className="mn-composer mn-soft-shadow gap-0 overflow-hidden rounded-2xl border py-0 transition-[border-color,box-shadow] duration-300 focus-within:border-[var(--mn-accent)]/45 focus-within:shadow-[0_0_0_3px_var(--mn-accent-soft),0_18px_44px_-16px_color-mix(in_srgb,var(--mn-accent)_28%,transparent)]">
           <CardContent className="p-0">
             <div className="border-b border-[var(--mn-line)] px-3 py-2">
               <DropdownMenu>

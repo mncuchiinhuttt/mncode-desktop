@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Open skills.sh" shortcut button in the marketplace banner
 - `⌘ +` / `⌘ −` step the UI font size (11–20px) and `⌘ 0` resets to the 15px default, with toast feedback — persisted across restarts
 - `⌘N` shortcut hint on the New chat button
+- Unified diff viewer for edited-file snippets: LCS line diff, old/new line numbers, per-row add/remove highlighting, dependency-free syntax tinting
+- Workspace empty-state polish: ambient accent glows, mono eyebrow greeting, extralight headline with gradient accent word, starter cards with icon chips, hover lift, and arrow reveal
+- Composer gains a focus glow ring while typing; global `:focus-visible` accent ring for keyboard navigation
 
 ### Changed
 
