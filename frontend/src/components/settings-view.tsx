@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type ElementType,
   type ReactNode,
@@ -1107,6 +1108,16 @@ function PersonalizationSection({
   const [deleting, setDeleting] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [error, setError] = useState("");
+  const instructionsRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Auto-grow the editor to fit its content instead of reserving a tall
+  // fixed block with a large empty area under short instructions.
+  useEffect(() => {
+    const el = instructionsRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(480, Math.max(160, el.scrollHeight))}px`;
+  }, [instructions, loading]);
 
   useEffect(() => {
     let active = true;
@@ -1253,12 +1264,13 @@ function PersonalizationSection({
             {saving ? "Saving…" : "Save"}
           </Button>
         </div>
-        <Card className="mn-surface shadow-none">
+        <Card className="mn-surface gap-0 overflow-hidden py-0 shadow-none">
           <CardContent className="p-0">
             <textarea
+              ref={instructionsRef}
               value={instructions}
               onChange={(event) => setInstructions(event.target.value)}
-              className="min-h-64 w-full resize-y rounded-[inherit] border-0 bg-transparent px-4 py-4 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-inset focus:ring-[var(--mn-accent)]/20"
+              className="block max-h-96 min-h-40 w-full resize-none overflow-y-auto rounded-[inherit] border-0 bg-transparent px-4 py-4 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-inset focus:ring-[var(--mn-accent)]/20"
               maxLength={20000}
               aria-label="Custom instructions"
             />
