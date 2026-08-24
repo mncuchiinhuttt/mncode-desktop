@@ -86,7 +86,7 @@ const emptySettings: DesktopSettings = {
   permissionMode: "ask",
   defaultPermissionMode: "latest",
   theme: "light",
-  uiFontSize: 16,
+  uiFontSize: 15,
   codeFontSize: 12,
   lightCodeTheme: "catppuccin-latte",
   darkCodeTheme: "github-dark",
@@ -637,7 +637,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--mn-ui-font-size",
-      `${settings.uiFontSize || 16}px`,
+      `${settings.uiFontSize || 15}px`,
     );
     document.documentElement.style.setProperty(
       "--mn-code-font-size",
@@ -1203,6 +1203,25 @@ export default function App() {
         navigateView("settings");
         return;
       }
+      if ((event.metaKey || event.ctrlKey) && (event.key === "=" || event.key === "+" || event.key === "-")) {
+        event.preventDefault();
+        const current = settings.uiFontSize || 15;
+        const next =
+          event.key === "-"
+            ? Math.max(11, current - 1)
+            : Math.min(20, current + 1);
+        if (next !== current) {
+          void updateSettings({ uiFontSize: next });
+          notify(`UI font size: ${next}px`, "success");
+        }
+        return;
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key === "0") {
+        event.preventDefault();
+        void updateSettings({ uiFontSize: 15 });
+        notify("UI font size reset to 15px", "success");
+        return;
+      }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "j") {
         event.preventDefault();
         void toggleTerminal();
@@ -1243,6 +1262,7 @@ export default function App() {
     messages,
     runSummary,
     runUsage,
+    settings,
     settingsExiting,
     toggleTerminal,
     view,

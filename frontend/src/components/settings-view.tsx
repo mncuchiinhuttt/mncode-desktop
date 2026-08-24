@@ -750,11 +750,11 @@ function InterfaceAppearance({
         />
         <SettingRow
           title="UI font size"
-          description="Adjust interface text without changing the content itself."
+          description="Adjust interface text without changing the content itself. Anywhere in the app: ⌘ + / ⌘ − to step, ⌘ 0 to reset."
           prominent
           control={
             <FontSizeInput
-              value={settings.uiFontSize || 16}
+              value={settings.uiFontSize || 15}
               min={11}
               max={20}
               onChange={(value) => onSettingsChange({ uiFontSize: value })}
