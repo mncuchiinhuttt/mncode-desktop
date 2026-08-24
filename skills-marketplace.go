@@ -40,10 +40,14 @@ func (a *App) GetSkillsMarketplace() (DesktopSkillsMarketplace, error) {
 	}
 	available := make([]DesktopSkill, 0, len(freeMarketplaceSkills))
 	for _, definition := range freeMarketplaceSkills {
+		source := definition.Source
+		if source == "" {
+			source = "MCP Market"
+		}
 		available = append(available, DesktopSkill{
 			ID: "market:" + definition.Slug, Slug: definition.Slug,
 			Name: definition.Name, Description: definition.Description,
-			Category: definition.Category, Source: "MCP Market",
+			Category: definition.Category, Source: source,
 			Free: true, Installed: installed[definition.Slug],
 			MarketplaceURL: definition.MarketURL,
 		})

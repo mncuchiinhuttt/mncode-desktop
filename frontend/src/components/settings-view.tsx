@@ -170,7 +170,7 @@ const sectionMeta: Record<
     description: "Connect external tools and services to the agent.",
   },
   skills: {
-    label: "Skills marketplace",
+    label: "Skills Marketplace",
     description: "Discover, install, and manage agent skills.",
   },
   "app-info": {
@@ -216,7 +216,12 @@ export function SettingsView({
 }: SettingsViewProps) {
   const [section, setSection] = useState<SettingsSection>("general");
   const [modelsRefreshKey, setModelsRefreshKey] = useState(0);
-  const width = section === "models" ? "max-w-6xl" : "max-w-4xl";
+  const width =
+    section === "models"
+      ? "max-w-6xl"
+      : section === "skills"
+        ? "max-w-none"
+        : "max-w-4xl";
   return (
     <div className="mn-settings-shell flex min-h-0 flex-1">
       <aside className="mn-settings-nav flex w-[248px] shrink-0 flex-col border-r border-[var(--mn-line)] bg-[var(--mn-sidebar)] px-4 pb-5 pt-16">
@@ -279,7 +284,7 @@ export function SettingsView({
           <SettingsNavItem
             active={section === "skills"}
             icon={Sparkles}
-            label="Skills marketplace"
+            label="Skills Marketplace"
             onClick={() => setSection("skills")}
           />
           <SettingsNavItem
