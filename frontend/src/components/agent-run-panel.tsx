@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { ActivityItem } from "@/types";
+import { DiffView } from "./diff-view";
 
 function statusIcon(item: ActivityItem) {
   if (item.active) return <Loader2 className="size-3 animate-spin" />;
@@ -73,33 +74,6 @@ function SubagentCard({ item }: { item: ActivityItem }) {
   );
 }
 
-function CodeBlock({
-  label,
-  content,
-  tone,
-}: {
-  label: string;
-  content: string;
-  tone: "rose" | "emerald";
-}) {
-  return (
-    <div>
-      <p
-        className={
-          tone === "rose"
-            ? "mb-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-rose-600"
-            : "mb-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-emerald-600"
-        }
-      >
-        {label}
-      </p>
-      <pre className="max-h-52 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-black/[0.04] p-2 font-mono text-[0.6875rem] leading-4 text-foreground/75 dark:bg-white/[0.05]">
-        {content}
-      </pre>
-    </div>
-  );
-}
-
 function EditedFileCard({ item }: { item: ActivityItem }) {
   const [open, setOpen] = useState(false);
   const hasSnippet = Boolean(item.beforeSnippet || item.afterSnippet);
@@ -125,13 +99,8 @@ function EditedFileCard({ item }: { item: ActivityItem }) {
           (open ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />)}
       </button>
       {open && hasSnippet && (
-        <div className="space-y-2 border-t border-[var(--mn-line)] px-3 pb-3 pt-2">
-          {item.beforeSnippet && (
-            <CodeBlock label="Removed" content={item.beforeSnippet} tone="rose" />
-          )}
-          {item.afterSnippet && (
-            <CodeBlock label="Added" content={item.afterSnippet} tone="emerald" />
-          )}
+        <div className="border-t border-[var(--mn-line)] p-2">
+          <DiffView before={item.beforeSnippet ?? ""} after={item.afterSnippet ?? ""} />
         </div>
       )}
     </div>
