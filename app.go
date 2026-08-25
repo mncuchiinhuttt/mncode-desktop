@@ -334,7 +334,6 @@ func (a *App) CancelTurn() {
 
 func (a *App) shutdown(_ context.Context) {
 	a.stopAutomationScheduler()
-	a.stopHeadroomProxy()
 	a.closeRemote()
 	a.closeTerminal()
 	a.mu.Lock()

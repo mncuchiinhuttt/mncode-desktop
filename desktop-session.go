@@ -41,14 +41,10 @@ func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOpti
 	}
 
 	// Token-saving preferences apply to every new session (chat + automations).
-	applyTokenSaverDirectives(cfg)
+	// Directives are injected at prompt-build time and the headroom proxy base
+	// URL is resolved by the shared config loader (mncode/pkg/config).
 	if settingBool(cfg, "token_saver_cap_thinking", false) && cfg.ThinkingBudget > 4096 {
 		cfg.ThinkingBudget = 4096
-	}
-	if settingBool(cfg, "token_saver_headroom", false) && headroomInstalled() {
-		if proxyURL := a.ensureHeadroomProxy(); proxyURL != "" {
-			cfg.BaseURL = proxyURL
-		}
 	}
 
 	accStore, err := accounts.NewStore("")

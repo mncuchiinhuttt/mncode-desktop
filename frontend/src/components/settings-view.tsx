@@ -227,12 +227,6 @@ export function SettingsView({
         </div>
         <nav className="space-y-1" aria-label="Settings sections">
           <SettingsNavItem
-            active={section === "token-saving"}
-            icon={Zap}
-            label="Token saving"
-            onClick={() => setSection("token-saving")}
-          />
-          <SettingsNavItem
             active={section === "general"}
             icon={Settings2}
             label="General"
@@ -255,6 +249,12 @@ export function SettingsView({
             icon={UserRound}
             label="Account"
             onClick={() => setSection("account")}
+          />
+          <SettingsNavItem
+            active={section === "token-saving"}
+            icon={Zap}
+            label="Token saving"
+            onClick={() => setSection("token-saving")}
           />
           <SettingsNavItem
             active={section === "personalization"}
