@@ -23,6 +23,7 @@ type App struct {
 
 	mu               sync.RWMutex
 	session          *sessionRuntime
+	automations      *automationStore
 	workspace        WorkspaceInfo
 	cancel           context.CancelFunc
 	runSeq           uint64
@@ -39,9 +40,14 @@ type App struct {
 
 // NewApp builds the Wails-bound application facade with its runtime dependencies.
 func NewApp() *App {
+	store := newAutomationStore("")
+	if path, err := automationsStorePath(); err == nil {
+		store = newAutomationStore(path)
+	}
 	return &App{
 		permissions: make(map[string]chan bool),
 		questions:   make(map[string]chan string),
+		automations: store,
 	}
 }
 
