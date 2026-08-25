@@ -15,7 +15,21 @@ import (
 	"mncode/pkg/tools"
 )
 
+type sessionBuildOptions struct {
+	// ui overrides the default chat-streaming UI bridge (used by automation runs).
+	ui agent.UIEventListener
+	// interactive wires the Ask tool to the UI question flow; headless runs
+	// omit it so nothing can block on user input.
+	interactive bool
+}
+
 func (a *App) buildSession(workspace string) (*sessionRuntime, error) {
+	return a.buildSessionWithOptions(workspace, sessionBuildOptions{interactive: true})
+}
+
+// buildSessionWithOptions assembles a full agent session. Automation runs pass
+// their own UI listener and interactive=false.
+func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOptions) (*sessionRuntime, error) {
 	cfg, err := config.LoadConfig(workspace)
 	if err != nil {
 		return nil, err
@@ -44,6 +58,11 @@ func (a *App) buildSession(workspace string) (*sessionRuntime, error) {
 		llmProvider, _ = provider.NewProvider(cfg)
 	}
 
+	ui := options.ui
+	if ui == nil {
+		ui = &desktopUI{app: a, workspace: workspace, pending: make(map[string][]pendingToolCall)}
+	}
+
 	session := &agent.Session{
 		ID:           "mncode-desktop",
 		WorkspaceDir: workspace,
@@ -56,16 +75,18 @@ func (a *App) buildSession(workspace string) (*sessionRuntime, error) {
 		Tracker:      tracker,
 		Subagents:    agent.NewSubagentRegistry(),
 		MCP:          mcpManager,
-		UI:           &desktopUI{app: a, workspace: workspace, pending: make(map[string][]pendingToolCall)},
+		UI:           ui,
 	}
 
-	if !standalone {
+	if !standalone && options.interactive {
 		registry.Register(&tools.AskTool{
 			AutoApprove: cfg.AutoApprove,
-			Prompter: func(question string, options []string, multi bool) string {
-				return a.waitForQuestion(question, options, multi)
+			Prompter: func(question string, askOptions []string, multi bool) string {
+				return a.waitForQuestion(question, askOptions, multi)
 			},
 		})
+	}
+	if !standalone {
 		registry.Register(&tools.SkillTool{Catalog: catalog})
 		registry.Register(&tools.SubagentTool{
 			Invoker: (&agent.SubagentRunner{ParentSession: session}).Run,

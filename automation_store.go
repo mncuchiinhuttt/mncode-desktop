@@ -39,6 +39,7 @@ type AutomationRun struct {
 	DurationMs int64  `json:"durationMs"`
 	Status     string `json:"status"` // success | error | timeout | skipped
 	Detail     string `json:"detail"` // output digest or failure reason
+	LogPath    string `json:"logPath"`
 }
 
 // automationStore is a mutex-guarded JSON list persisted at path.

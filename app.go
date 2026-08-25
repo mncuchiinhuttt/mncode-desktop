@@ -21,18 +21,22 @@ import (
 type App struct {
 	ctx context.Context
 
-	mu               sync.RWMutex
-	session          *sessionRuntime
-	automations      *automationStore
-	workspace        WorkspaceInfo
-	cancel           context.CancelFunc
-	runSeq           uint64
-	activeRun        uint64
-	activeRunHadTool bool
-	terminalMu       sync.Mutex
-	terminal         *terminalSession
-	remoteMu         sync.Mutex
-	remote           *remote.RemoteManager
+	mu                  sync.RWMutex
+	session             *sessionRuntime
+	automations         *automationStore
+	automationSched     *automationScheduler
+	automationMu        sync.Mutex
+	automationRunning   bool
+	automationRunCancel context.CancelFunc
+	workspace           WorkspaceInfo
+	cancel              context.CancelFunc
+	runSeq              uint64
+	activeRun           uint64
+	activeRunHadTool    bool
+	terminalMu          sync.Mutex
+	terminal            *terminalSession
+	remoteMu            sync.Mutex
+	remote              *remote.RemoteManager
 
 	permissions map[string]chan bool
 	questions   map[string]chan string
@@ -45,9 +49,10 @@ func NewApp() *App {
 		store = newAutomationStore(path)
 	}
 	return &App{
-		permissions: make(map[string]chan bool),
-		questions:   make(map[string]chan string),
-		automations: store,
+		permissions:     make(map[string]chan bool),
+		questions:       make(map[string]chan string),
+		automations:     store,
+		automationSched: newAutomationScheduler(),
 	}
 }
 
@@ -56,6 +61,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.mu.Unlock()
 	a.emit("app:ready", map[string]string{"version": "desktop-preview"})
+	a.startAutomationScheduler()
 
 	if workspace := defaultWorkspace(); workspace != "" {
 		go func() { _, _ = a.OpenWorkspace(workspace) }()
@@ -319,6 +325,7 @@ func (a *App) CancelTurn() {
 }
 
 func (a *App) shutdown(_ context.Context) {
+	a.stopAutomationScheduler()
 	a.closeRemote()
 	a.closeTerminal()
 	a.mu.Lock()

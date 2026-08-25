@@ -55,6 +55,7 @@ func (a *App) CreateAutomation(input AutomationInput) (Automation, error) {
 		return Automation{}, err
 	}
 	a.emit("automation:updated", nil)
+	a.resyncAutomations()
 	return automation, nil
 }
 
@@ -77,6 +78,7 @@ func (a *App) UpdateAutomation(id string, input AutomationInput) (Automation, er
 		return Automation{}, fmt.Errorf("automation not found")
 	}
 	a.emit("automation:updated", nil)
+	a.resyncAutomations()
 	updated, _ := a.automationStoreOrDefault().get(id)
 	return updated, nil
 }
@@ -90,6 +92,7 @@ func (a *App) DeleteAutomation(id string) error {
 		return fmt.Errorf("automation not found")
 	}
 	a.emit("automation:updated", nil)
+	a.resyncAutomations()
 	return nil
 }
 
@@ -102,6 +105,7 @@ func (a *App) ToggleAutomation(id string, enabled bool) error {
 		return fmt.Errorf("automation not found")
 	}
 	a.emit("automation:updated", nil)
+	a.resyncAutomations()
 	return nil
 }
 
