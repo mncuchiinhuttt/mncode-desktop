@@ -200,19 +200,19 @@ export function AutomationsView({ workspace }: { workspace: WorkspaceInfo }) {
   const templates = useMemo(() => (automations ?? []).length === 0, [automations]);
 
   return (
-    <div className="mn-page-in mx-auto max-w-4xl px-8 py-10">
+    <div className="mn-page-in w-full px-8 py-10">
       {/* Header */}
       <div className="mb-8">
         <p className="eyebrow-badge mb-3">[ Automations ]</p>
-        <h1 className="text-3xl font-extralight tracking-tight text-foreground">Automations</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h1 className="text-4xl font-extralight tracking-tight text-foreground">Automations</h1>
+        <p className="mt-2 text-base text-muted-foreground">
           Schedule recurring tasks or queue background work that runs during idle time.
         </p>
       </div>
 
       {/* Keep-awake preference */}
       <div className="mb-8 flex items-center justify-between gap-4 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3">
-        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2.5 text-[0.9375rem] text-muted-foreground">
           <Info className="size-4 shrink-0 text-[var(--mn-accent)]" />
           Keep your computer awake while mncode is running a chat.
         </div>
@@ -357,10 +357,10 @@ function TemplateGallery({
 }) {
   return (
     <section>
-      <p className="mb-3 font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="mb-3 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {title}
       </p>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {templates.map((template) => {
           const Icon = template.icon;
           return (
@@ -377,10 +377,10 @@ function TemplateGallery({
                 <span className="truncate text-sm font-medium">{template.title}</span>
                 <Plus className="ml-auto size-3.5 -translate-x-1 text-[var(--mn-accent)] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
               </div>
-              <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">
+              <p className="mt-2 line-clamp-2 text-[0.8125rem] leading-5 text-muted-foreground">
                 {template.text}
               </p>
-              <p className="mt-2 font-mono text-[0.625rem] uppercase tracking-wider text-muted-foreground/70">
+              <p className="mt-2 font-mono text-[0.6875rem] uppercase tracking-wider text-muted-foreground/70">
                 {template.scheduleLabel}
               </p>
             </button>
@@ -441,7 +441,7 @@ function AutomationCard({
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="truncate text-sm font-semibold">{automation.name}</h3>
+              <h3 className="truncate text-[0.9375rem] font-semibold">{automation.name}</h3>
               <Badge
                 variant="outline"
                 className={cn(
@@ -454,7 +454,7 @@ function AutomationCard({
                 {automation.kind}
               </Badge>
             </div>
-            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.8125rem] text-muted-foreground">
               <span className="font-mono">
                 {automation.kind === "scheduled"
                   ? humanizeCron(automation.schedule)
@@ -463,10 +463,7 @@ function AutomationCard({
               {automation.workspace ? (
                 <>
                   <span className="text-muted-foreground/50">·</span>
-                  <span
-                    className="truncate"
-                    title={automation.workspace}
-                  >
+                  <span className="truncate" title={automation.workspace}>
                     in {automation.workspace.split("/").pop()}
                   </span>
                 </>
@@ -477,7 +474,7 @@ function AutomationCard({
                 </>
               )}
             </p>
-            <p className="mt-1 flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               {running ? (
                 <>
                   <span className="size-1.5 animate-pulse rounded-full bg-[var(--mn-accent)]" />
@@ -546,7 +543,7 @@ function AutomationCard({
             <button
               type="button"
               onClick={() => setExpanded((current) => !current)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1.5 text-[0.8125rem] text-muted-foreground transition-colors hover:text-foreground"
               aria-expanded={expanded}
             >
               {expanded ? (
@@ -561,7 +558,7 @@ function AutomationCard({
                 {runs.slice(0, 5).map((run, index) => (
                   <div
                     key={`${run.startedAt}-${index}`}
-                    className="flex items-start gap-2 rounded-md bg-[var(--mn-surface-muted)] px-2.5 py-1.5 text-xs"
+                    className="flex items-start gap-2 rounded-md bg-[var(--mn-surface-muted)] px-2.5 py-1.5 text-[0.8125rem]"
                   >
                     {run.status === "success" ? (
                       <CheckCircle2 className="mt-0.5 size-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
@@ -577,7 +574,7 @@ function AutomationCard({
                           {formatRelative(run.startedAt)} · {(run.durationMs / 1000).toFixed(1)}s
                         </span>
                       </p>
-                      <p className="mt-0.5 line-clamp-2 text-[0.6875rem] leading-4 text-muted-foreground">
+                      <p className="mt-0.5 line-clamp-2 text-xs leading-4 text-muted-foreground">
                         {run.detail}
                       </p>
                       {run.status === "success" && run.logPath && (
