@@ -1,5 +1,100 @@
 export namespace main {
 	
+	export class AutomationRun {
+	    startedAt: number;
+	    durationMs: number;
+	    status: string;
+	    detail: string;
+	    logPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AutomationRun(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.startedAt = source["startedAt"];
+	        this.durationMs = source["durationMs"];
+	        this.status = source["status"];
+	        this.detail = source["detail"];
+	        this.logPath = source["logPath"];
+	    }
+	}
+	export class Automation {
+	    id: string;
+	    name: string;
+	    prompt: string;
+	    kind: string;
+	    schedule: string;
+	    workspace: string;
+	    enabled: boolean;
+	    createdAt: number;
+	    lastRunAt: number;
+	    nextRunAt: number;
+	    runCount: number;
+	    runs: AutomationRun[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Automation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.prompt = source["prompt"];
+	        this.kind = source["kind"];
+	        this.schedule = source["schedule"];
+	        this.workspace = source["workspace"];
+	        this.enabled = source["enabled"];
+	        this.createdAt = source["createdAt"];
+	        this.lastRunAt = source["lastRunAt"];
+	        this.nextRunAt = source["nextRunAt"];
+	        this.runCount = source["runCount"];
+	        this.runs = this.convertValues(source["runs"], AutomationRun);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class AutomationInput {
+	    name: string;
+	    prompt: string;
+	    kind: string;
+	    schedule: string;
+	    workspace: string;
+	    enabled: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new AutomationInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.prompt = source["prompt"];
+	        this.kind = source["kind"];
+	        this.schedule = source["schedule"];
+	        this.workspace = source["workspace"];
+	        this.enabled = source["enabled"];
+	    }
+	}
+	
 	export class DesktopAccount {
 	    connected: boolean;
 	    name: string;

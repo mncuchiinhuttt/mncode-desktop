@@ -108,9 +108,9 @@ func (a *App) runAutomation(automation Automation, trigger string) {
 	a.automationRunning = true
 	a.automationMu.Unlock()
 
-	a.automationSched.keepAwake.start()
+	a.automationSched.keepAwake.acquire()
 	defer func() {
-		a.automationSched.keepAwake.stop()
+		a.automationSched.keepAwake.release()
 		a.automationMu.Lock()
 		a.automationRunning = false
 		a.automationMu.Unlock()

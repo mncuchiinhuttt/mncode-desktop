@@ -42,6 +42,14 @@ export function ConfigureProvider(arg1, arg2, arg3) {
   return window['go']['main']['App']['ConfigureProvider'](arg1, arg2, arg3);
 }
 
+export function CreateAutomation(arg1) {
+  return window['go']['main']['App']['CreateAutomation'](arg1);
+}
+
+export function DeleteAutomation(arg1) {
+  return window['go']['main']['App']['DeleteAutomation'](arg1);
+}
+
 export function DeleteCustomProvider(arg1) {
   return window['go']['main']['App']['DeleteCustomProvider'](arg1);
 }
@@ -78,6 +86,10 @@ export function GetCatalog() {
   return window['go']['main']['App']['GetCatalog']();
 }
 
+export function GetKeepAwake() {
+  return window['go']['main']['App']['GetKeepAwake']();
+}
+
 export function GetMCPServers() {
   return window['go']['main']['App']['GetMCPServers']();
 }
@@ -112,6 +124,10 @@ export function InstallMarketplaceSkill(arg1) {
 
 export function InterruptTerminal() {
   return window['go']['main']['App']['InterruptTerminal']();
+}
+
+export function ListAutomations() {
+  return window['go']['main']['App']['ListAutomations']();
 }
 
 export function ListWorkspaceTree() {
@@ -154,6 +170,10 @@ export function ResolvePermission(arg1, arg2) {
   return window['go']['main']['App']['ResolvePermission'](arg1, arg2);
 }
 
+export function RunAutomationNow(arg1) {
+  return window['go']['main']['App']['RunAutomationNow'](arg1);
+}
+
 export function RunTerminalCommand(arg1) {
   return window['go']['main']['App']['RunTerminalCommand'](arg1);
 }
@@ -170,6 +190,10 @@ export function SendPrompt(arg1) {
   return window['go']['main']['App']['SendPrompt'](arg1);
 }
 
+export function SetKeepAwake(arg1) {
+  return window['go']['main']['App']['SetKeepAwake'](arg1);
+}
+
 export function SetModel(arg1) {
   return window['go']['main']['App']['SetModel'](arg1);
 }
@@ -184,6 +208,14 @@ export function SteerPrompt(arg1) {
 
 export function StopRemoteSession() {
   return window['go']['main']['App']['StopRemoteSession']();
+}
+
+export function ToggleAutomation(arg1, arg2) {
+  return window['go']['main']['App']['ToggleAutomation'](arg1, arg2);
+}
+
+export function UpdateAutomation(arg1, arg2) {
+  return window['go']['main']['App']['UpdateAutomation'](arg1, arg2);
 }
 
 export function UpdateBrowserSettings(arg1) {

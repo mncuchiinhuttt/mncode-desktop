@@ -336,6 +336,38 @@ export interface DesktopSkillsMarketplace {
   sourceUrl: string;
 }
 
+export interface AutomationRun {
+  startedAt: number;
+  durationMs: number;
+  status: string;
+  detail: string;
+  logPath: string;
+}
+
+export interface Automation {
+  id: string;
+  name: string;
+  prompt: string;
+  kind: "scheduled" | "idle";
+  schedule: string;
+  workspace: string;
+  enabled: boolean;
+  createdAt: number;
+  lastRunAt: number;
+  nextRunAt: number;
+  runCount: number;
+  runs: AutomationRun[];
+}
+
+export interface AutomationInput {
+  name: string;
+  prompt: string;
+  kind: "scheduled" | "idle";
+  schedule: string;
+  workspace: string;
+  enabled: boolean;
+}
+
 export interface UpdateAsset {
   name: string;
   url: string;

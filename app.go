@@ -275,7 +275,14 @@ func (a *App) SendPrompt(prompt string) error {
 
 	go func() {
 		a.emit("agent:start", map[string]string{"prompt": text})
+		holdKeepAwake := a.keepAwakeEnabled()
+		if holdKeepAwake {
+			a.automationSched.keepAwake.acquire()
+		}
 		err := session.ProcessUserInput(ctx, text)
+		if holdKeepAwake {
+			a.automationSched.keepAwake.release()
+		}
 		a.mu.Lock()
 		isCurrent := a.activeRun == runID
 		toolAssisted := a.activeRunHadTool
@@ -361,6 +368,14 @@ func (a *App) emit(name string, payload interface{}) {
 	if ctx != nil {
 		runtime.EventsEmit(ctx, name, payload)
 	}
+}
+
+// keepAwakeEnabled reports the user's keep-awake preference.
+func (a *App) keepAwakeEnabled() bool {
+	if a.automations == nil {
+		return false
+	}
+	return a.automations.getKeepAwake()
 }
 
 func validProvider(providerType config.ProviderType) bool {

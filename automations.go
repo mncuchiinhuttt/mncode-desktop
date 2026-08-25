@@ -109,6 +109,39 @@ func (a *App) ToggleAutomation(id string, enabled bool) error {
 	return nil
 }
 
+// RunAutomationNow triggers an immediate manual run of one automation.
+func (a *App) RunAutomationNow(id string) error {
+	automation, ok := a.automationStoreOrDefault().get(id)
+	if !ok {
+		return fmt.Errorf("automation not found")
+	}
+	if a.automationRunActive() {
+		return fmt.Errorf("another automation is already running")
+	}
+	if a.interactiveTurnActive() {
+		return fmt.Errorf("wait for the current agent turn to finish first")
+	}
+	go func() {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				a.recordAutomationFailure(automation, "manual", fmt.Errorf("automation panicked: %v", recovered))
+			}
+		}()
+		a.runAutomation(automation, "manual")
+	}()
+	return nil
+}
+
+// SetKeepAwake persists the keep-awake preference for interactive chats.
+func (a *App) SetKeepAwake(enabled bool) error {
+	return a.automationStoreOrDefault().setKeepAwake(enabled)
+}
+
+// GetKeepAwake returns the keep-awake preference.
+func (a *App) GetKeepAwake() bool {
+	return a.automationStoreOrDefault().getKeepAwake()
+}
+
 func newAutomationFromInput(input AutomationInput) (Automation, error) {
 	name := strings.TrimSpace(input.Name)
 	prompt := strings.TrimSpace(input.Prompt)
@@ -142,6 +175,7 @@ func newAutomationFromInput(input AutomationInput) (Automation, error) {
 		Workspace: strings.TrimSpace(input.Workspace),
 		Enabled:   input.Enabled,
 		CreatedAt: timeNowMillis(),
+		Runs:      []AutomationRun{},
 	}, nil
 }
 

@@ -42,16 +42,41 @@ type AutomationRun struct {
 	LogPath    string `json:"logPath"`
 }
 
-// automationStore is a mutex-guarded JSON list persisted at path.
+// automationFile is the on-disk envelope: automations plus the keep-awake
+// preference that governs interactive turns.
+type automationFile struct {
+	KeepAwake   bool         `json:"keepAwake"`
+	Automations []Automation `json:"automations"`
+}
+
+// automationStore is a mutex-guarded JSON store persisted at path.
 type automationStore struct {
 	mu          sync.Mutex
 	path        string
 	loaded      bool
+	keepAwake   bool
 	automations []Automation
 }
 
 func newAutomationStore(path string) *automationStore {
 	return &automationStore{path: path}
+}
+
+// getKeepAwake returns the keep-awake preference.
+func (s *automationStore) getKeepAwake() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.ensureLoadedLocked()
+	return s.keepAwake
+}
+
+// setKeepAwake persists the keep-awake preference.
+func (s *automationStore) setKeepAwake(enabled bool) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.ensureLoadedLocked()
+	s.keepAwake = enabled
+	return s.saveLocked()
 }
 
 // timeNow is an indirection over time.Now so tests can pin clocks.
@@ -158,9 +183,15 @@ func (s *automationStore) ensureLoadedLocked() {
 	if err != nil {
 		return
 	}
-	var stored []Automation
+	var stored automationFile
 	if json.Unmarshal(raw, &stored) == nil {
-		s.automations = stored
+		s.automations = stored.Automations
+		s.keepAwake = stored.KeepAwake
+	}
+	for index := range s.automations {
+		if s.automations[index].Runs == nil {
+			s.automations[index].Runs = []AutomationRun{}
+		}
 	}
 }
 
@@ -169,7 +200,10 @@ func (s *automationStore) saveLocked() error {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
-	raw, err := json.MarshalIndent(s.automations, "", "  ")
+	raw, err := json.MarshalIndent(automationFile{
+		KeepAwake:   s.keepAwake,
+		Automations: s.automations,
+	}, "", "  ")
 	if err != nil {
 		return err
 	}

@@ -22,6 +22,10 @@ export function ConfigureOpenCode(arg1:string):Promise<void>;
 
 export function ConfigureProvider(arg1:string,arg2:string,arg3:string):Promise<void>;
 
+export function CreateAutomation(arg1:main.AutomationInput):Promise<main.Automation>;
+
+export function DeleteAutomation(arg1:string):Promise<void>;
+
 export function DeleteCustomProvider(arg1:string):Promise<void>;
 
 export function DeleteInstalledSkill(arg1:string):Promise<void>;
@@ -40,6 +44,8 @@ export function GetBrowserSettings():Promise<main.DesktopBrowserSettings>;
 
 export function GetCatalog():Promise<main.DesktopCatalog>;
 
+export function GetKeepAwake():Promise<boolean>;
+
 export function GetMCPServers():Promise<Array<main.DesktopMCPServer>>;
 
 export function GetPersonalization():Promise<main.DesktopPersonalization>;
@@ -57,6 +63,8 @@ export function GetWorkspace():Promise<main.WorkspaceInfo>;
 export function InstallMarketplaceSkill(arg1:string):Promise<main.DesktopSkill>;
 
 export function InterruptTerminal():Promise<void>;
+
+export function ListAutomations():Promise<Array<main.Automation>>;
 
 export function ListWorkspaceTree():Promise<Array<main.FileNode>>;
 
@@ -78,6 +86,8 @@ export function OpenWorkspace(arg1:string):Promise<main.WorkspaceInfo>;
 
 export function ResolvePermission(arg1:string,arg2:boolean):Promise<void>;
 
+export function RunAutomationNow(arg1:string):Promise<void>;
+
 export function RunTerminalCommand(arg1:string):Promise<void>;
 
 export function SaveCustomProvider(arg1:main.DesktopCustomProviderInput):Promise<main.DesktopCustomProvider>;
@@ -86,6 +96,8 @@ export function SavePersonalization(arg1:main.DesktopPersonalizationInput):Promi
 
 export function SendPrompt(arg1:string):Promise<void>;
 
+export function SetKeepAwake(arg1:boolean):Promise<void>;
+
 export function SetModel(arg1:string):Promise<void>;
 
 export function StartRemoteSession():Promise<main.DesktopRemoteSession>;
@@ -93,6 +105,10 @@ export function StartRemoteSession():Promise<main.DesktopRemoteSession>;
 export function SteerPrompt(arg1:string):Promise<void>;
 
 export function StopRemoteSession():Promise<void>;
+
+export function ToggleAutomation(arg1:string,arg2:boolean):Promise<void>;
+
+export function UpdateAutomation(arg1:string,arg2:main.AutomationInput):Promise<main.Automation>;
 
 export function UpdateBrowserSettings(arg1:main.DesktopBrowserSettingsInput):Promise<main.DesktopBrowserSettings>;
 

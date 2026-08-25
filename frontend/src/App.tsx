@@ -51,6 +51,7 @@ import { RightSidebar, type RightPanel } from "./components/right-sidebar";
 import { RemoteCompanionDialog } from "./components/remote-companion-dialog";
 import { OnboardingFlow, type OnboardingPhase } from "./components/onboarding-flow";
 import { WorkspaceView } from "./components/workspace-view";
+import { AutomationsView } from "./components/automations-view";
 import "./style.css";
 
 type UpdatePhase = "idle" | "downloading" | "ready";
@@ -511,9 +512,7 @@ export default function App() {
       setUpdatePhase("ready");
     } catch (error) {
       setUpdatePhase("idle");
-      setUpdateError(
-        error instanceof Error ? error.message : "Could not download the update",
-      );
+      setUpdateError(error instanceof Error ? error.message : "Could not download the update");
     }
   }
 
@@ -522,9 +521,7 @@ export default function App() {
     try {
       await desktop.applyUpdateAndRestart(updateDownloadPath);
     } catch (error) {
-      setUpdateError(
-        error instanceof Error ? error.message : "Could not apply the update",
-      );
+      setUpdateError(error instanceof Error ? error.message : "Could not apply the update");
     }
   }
 
@@ -1125,9 +1122,7 @@ export default function App() {
         ]);
         void hydrateCatalog();
       }),
-      listen<{ percent: number }>("update:progress", ({ percent }) =>
-        setUpdateProgress(percent),
-      ),
+      listen<{ percent: number }>("update:progress", ({ percent }) => setUpdateProgress(percent)),
       listen<{ provider: string }>("provider:configured", ({ provider }) =>
         notify(`${provider} connected for this session`, "success"),
       ),
@@ -1853,15 +1848,7 @@ export default function App() {
                 onSettingsChange={updateSettings}
               />
             )}
-            {view === "automations" && (
-              <ManagementView
-                kind="automations"
-                onOpenSettings={() => navigateView("settings")}
-                mcpServers={mcpServers}
-                onConfigureMCP={configureMCPServer}
-                onOpenURL={openExternalURL}
-              />
-            )}
+            {view === "automations" && <AutomationsView workspace={workspace} />}
             {view === "mcp" && (
               <ManagementView
                 kind="mcp"
@@ -2192,10 +2179,7 @@ function UpdateDialog({
                 </p>
                 <ul className="mt-2 space-y-1.5">
                   {section.items.map((item, index) => (
-                    <li
-                      key={index}
-                      className="flex gap-2 text-xs leading-5 text-muted-foreground"
-                    >
+                    <li key={index} className="flex gap-2 text-xs leading-5 text-muted-foreground">
                       <span className="mt-2 size-1 shrink-0 rounded-full bg-[var(--mn-accent)]" />
                       <span>{item}</span>
                     </li>
