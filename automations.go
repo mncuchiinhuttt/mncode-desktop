@@ -7,6 +7,8 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/robfig/cron/v3"
@@ -91,6 +93,13 @@ func (a *App) DeleteAutomation(id string) error {
 	if err := a.automationStoreOrDefault().delete(id); err != nil {
 		return fmt.Errorf("automation not found")
 	}
+	a.automationMu.Lock()
+	runCancel := a.automationRunCancel
+	isRunning := a.automationRunning && a.automationRunID == id
+	a.automationMu.Unlock()
+	if isRunning && runCancel != nil {
+		runCancel()
+	}
 	a.emit("automation:updated", nil)
 	a.resyncAutomations()
 	return nil
@@ -130,6 +139,28 @@ func (a *App) RunAutomationNow(id string) error {
 		a.runAutomation(automation, "manual")
 	}()
 	return nil
+}
+
+// ReadAutomationLog returns the transcript of one stored run. The path must
+// point at a markdown log inside ~/.mncode/automation-runs.
+func (a *App) ReadAutomationLog(path string) (string, error) {
+	clean := filepath.Clean(strings.TrimSpace(path))
+	root, err := filepath.Abs(automationRunsRoot())
+	if err != nil {
+		return "", err
+	}
+	absPath, err := filepath.Abs(clean)
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(absPath, root+string(filepath.Separator)) || !strings.HasSuffix(absPath, ".md") {
+		return "", fmt.Errorf("invalid log path")
+	}
+	raw, err := os.ReadFile(absPath)
+	if err != nil {
+		return "", fmt.Errorf("log file not found")
+	}
+	return string(raw), nil
 }
 
 // SetKeepAwake persists the keep-awake preference for interactive chats.

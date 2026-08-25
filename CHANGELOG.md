@@ -36,6 +36,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - GitHub repository card from Settings → App info
 
+## [0.1.2-beta] — 2026-08-25
+
+### Added
+
+- **Automations** (phase 1–4 of plans/250825-automations): scheduled (cron) and idle-time agent tasks with a dedicated view — template galleries, create/edit dialog with schedule presets and custom cron, enable toggles, run-now, and per-automation run history with copyable transcripts
+- Scheduler with next-run bookkeeping, idle dispatcher (30-minute minimum gap, busy-skip), 15-minute run timeout, and serialized execution
+- Keep-awake toggle: holds a caffeinate assertion while any agent turn runs (macOS)
+- Missed-run marking: scheduled fires that pass while the app is closed are recorded as skipped, never silently executed
+- Deleting a running automation cancels the in-flight run; deleted workspaces fall back to standalone runs
+
+### Changed
+
+- Version bump to v0.1.2-beta
+
 ## [0.1.1-beta] — 2026-08-25
 
 ### Added

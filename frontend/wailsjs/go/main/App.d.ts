@@ -84,6 +84,8 @@ export function OpenUpdatePage(arg1:string):Promise<void>;
 
 export function OpenWorkspace(arg1:string):Promise<main.WorkspaceInfo>;
 
+export function ReadAutomationLog(arg1:string):Promise<string>;
+
 export function ResolvePermission(arg1:string,arg2:boolean):Promise<void>;
 
 export function RunAutomationNow(arg1:string):Promise<void>;

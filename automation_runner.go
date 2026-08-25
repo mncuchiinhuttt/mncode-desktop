@@ -17,6 +17,7 @@ import (
 // startAutomationScheduler boots the cron loop and idle dispatcher. Called
 // from startup once the Wails context is available.
 func (a *App) startAutomationScheduler() {
+	a.markMissedAutomations()
 	a.automationSched.start(func(id string, trigger string) {
 		if trigger == "idle-tick" {
 			a.dispatchIdleAutomations()
@@ -36,6 +37,24 @@ func (a *App) stopAutomationScheduler() {
 	a.automationMu.Unlock()
 	if cancel != nil {
 		cancel()
+	}
+}
+
+// markMissedAutomations records a skipped entry for scheduled runs whose fire
+// time passed while the app was closed. v1 policy: no catch-up execution.
+func (a *App) markMissedAutomations() {
+	now := timeNow()
+	for _, automation := range a.automationStoreOrDefault().list() {
+		if !automation.Enabled || automation.Kind != AutomationKindScheduled {
+			continue
+		}
+		if automation.NextRunAt > 0 && automation.NextRunAt < now.UnixMilli() {
+			_ = a.automationStoreOrDefault().appendRun(automation.ID, AutomationRun{
+				StartedAt: automation.NextRunAt,
+				Status:    "skipped",
+				Detail:    "missed: the app was closed at the scheduled time",
+			})
+		}
 	}
 }
 
@@ -106,6 +125,7 @@ func (a *App) runAutomation(automation Automation, trigger string) {
 		return
 	}
 	a.automationRunning = true
+	a.automationRunID = automation.ID
 	a.automationMu.Unlock()
 
 	a.automationSched.keepAwake.acquire()
@@ -119,7 +139,15 @@ func (a *App) runAutomation(automation Automation, trigger string) {
 
 	a.emit("automation:run", map[string]any{"id": automation.ID, "status": "running"})
 
-	runtimeState, err := a.buildSessionWithOptions(automation.Workspace, sessionBuildOptions{ui: &automationUI{
+	// A deleted or unmounted workspace falls back to a standalone run.
+	effectiveWorkspace := automation.Workspace
+	if effectiveWorkspace != "" {
+		if _, statErr := os.Stat(effectiveWorkspace); statErr != nil {
+			effectiveWorkspace = ""
+		}
+	}
+
+	runtimeState, err := a.buildSessionWithOptions(effectiveWorkspace, sessionBuildOptions{ui: &automationUI{
 		app:          a,
 		automationID: automation.ID,
 	}})

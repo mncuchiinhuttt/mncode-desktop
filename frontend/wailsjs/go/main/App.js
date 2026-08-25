@@ -166,6 +166,10 @@ export function OpenWorkspace(arg1) {
   return window['go']['main']['App']['OpenWorkspace'](arg1);
 }
 
+export function ReadAutomationLog(arg1) {
+  return window['go']['main']['App']['ReadAutomationLog'](arg1);
+}
+
 export function ResolvePermission(arg1, arg2) {
   return window['go']['main']['App']['ResolvePermission'](arg1, arg2);
 }

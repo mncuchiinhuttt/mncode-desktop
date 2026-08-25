@@ -101,7 +101,7 @@ const SCHEDULED_TEMPLATES: AutomationTemplate[] = [
   },
 ];
 
-/** Humanize the small set of cron specs the UI produces; fall back to raw. */
+/** Humanize the cron specs the UI produces; fall back to the raw spec. */
 function humanizeCron(spec: string): string {
   const dayNames: Record<string, string> = {
     "0": "Sundays",
@@ -113,16 +113,31 @@ function humanizeCron(spec: string): string {
     "6": "Saturdays",
     "1-5": "Weekdays",
     "0,6": "Weekends",
+    "*": "Every day",
   };
+  if (spec === "* * * * *") return "Every minute";
+  if (spec === "@hourly") return "Hourly";
   if (spec === "@daily") return "Daily";
+  if (spec === "@weekly") return "Weekly";
+  if (spec === "@monthly") return "Monthly";
+  if (spec === "@yearly" || spec === "@annually") return "Yearly";
   if (spec.startsWith("@every ")) return `Every ${spec.slice(7)}`;
-  const match = spec.match(/^(\d{1,2}) (\d{1,2}) \* \* (\S+)$/);
-  if (!match) return spec;
-  const [, minute, hour, days] = match;
-  const clock = `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
-  const dayLabel = dayNames[days];
-  if (!dayLabel) return spec;
-  return `${dayLabel} at ${clock}`;
+
+  const everyMinutes = spec.match(/^\*\/(\d{1,2}) \* \* \* \*$/);
+  if (everyMinutes) return `Every ${everyMinutes[1]} minutes`;
+
+  const everyHours = spec.match(/^0 \*\/(\d{1,2}) \* \* \*$/);
+  if (everyHours) return `Every ${everyHours[1]} hours`;
+
+  const atTime = spec.match(/^(\d{1,2}) (\d{1,2}) \* \* (\S+)$/);
+  if (atTime) {
+    const [, minute, hour, days] = atTime;
+    const clock = `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+    const dayLabel = dayNames[days];
+    if (!dayLabel) return spec;
+    return `${dayLabel} at ${clock}`;
+  }
+  return spec;
 }
 
 function formatRelative(millis: number): string {
@@ -392,8 +407,20 @@ function AutomationCard({
   onDelete: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [copiedLog, setCopiedLog] = useState(-1);
   const runs = automation.runs ?? [];
   const lastRun = runs[0];
+
+  const copyLog = async (logPath: string, index: number) => {
+    try {
+      const content = await desktop.readAutomationLog(logPath);
+      await navigator.clipboard.writeText(content);
+      setCopiedLog(index);
+      window.setTimeout(() => setCopiedLog(-1), 1600);
+    } catch {
+      // log file may have been pruned
+    }
+  };
   return (
     <Card className="mn-surface gap-0 py-0 shadow-none transition-colors hover:border-[var(--mn-accent)]/45">
       <CardContent className="p-4">
@@ -436,7 +463,12 @@ function AutomationCard({
               {automation.workspace ? (
                 <>
                   <span className="text-muted-foreground/50">·</span>
-                  <span className="truncate">in {automation.workspace}</span>
+                  <span
+                    className="truncate"
+                    title={automation.workspace}
+                  >
+                    in {automation.workspace.split("/").pop()}
+                  </span>
                 </>
               ) : (
                 <>
@@ -548,6 +580,23 @@ function AutomationCard({
                       <p className="mt-0.5 line-clamp-2 text-[0.6875rem] leading-4 text-muted-foreground">
                         {run.detail}
                       </p>
+                      {run.status === "success" && run.logPath && (
+                        <button
+                          type="button"
+                          onClick={() => void copyLog(run.logPath, index)}
+                          className="mt-1 inline-flex items-center gap-1 text-[0.625rem] text-[var(--mn-accent)] hover:underline"
+                        >
+                          {copiedLog === index ? (
+                            <>
+                              <CheckCircle2 className="size-2.5" /> Copied transcript
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="size-2.5" /> Copy transcript
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

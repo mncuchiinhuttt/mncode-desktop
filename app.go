@@ -27,6 +27,7 @@ type App struct {
 	automationSched     *automationScheduler
 	automationMu        sync.Mutex
 	automationRunning   bool
+	automationRunID     string
 	automationRunCancel context.CancelFunc
 	workspace           WorkspaceInfo
 	cancel              context.CancelFunc

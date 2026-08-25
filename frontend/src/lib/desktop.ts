@@ -83,6 +83,7 @@ export const desktop = {
   deleteAutomation: (id: string) => call<void>("DeleteAutomation", id),
   toggleAutomation: (id: string, enabled: boolean) => call<void>("ToggleAutomation", id, enabled),
   runAutomationNow: (id: string) => call<void>("RunAutomationNow", id),
+  readAutomationLog: (path: string) => call<string>("ReadAutomationLog", path),
   getKeepAwake: () => call<boolean>("GetKeepAwake"),
   setKeepAwake: (enabled: boolean) => call<void>("SetKeepAwake", enabled),
   applyUpdateAndRestart: (path: string) => call<void>("ApplyUpdateAndRestart", path),

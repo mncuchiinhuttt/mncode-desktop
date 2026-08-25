@@ -10,6 +10,7 @@ Native desktop cockpit for the [mncode](https://github.com/mncuchiinhuttt/mncode
 - **Workspace inspector sidecar** — file tree, agent activity, side notes, and usage telemetry in a resizable right panel
 - **Built-in PTY terminal** — real terminal session rooted at the workspace (`⌘J`)
 - **Skills Marketplace** — curated free skills from MCP Market & [skills.sh](https://skills.sh), installed into the shared `~/.mncode/skills` directory
+- **Automations** — scheduled (cron) and idle-time agent tasks with run history and keep-awake; see [docs/AUTOMATIONS.md](docs/AUTOMATIONS.md)
 - **Multi-provider models** — Antigravity, OpenAI Codex, OpenCode, OpenRouter, and custom OpenAI-compatible providers with account pools and quota HUD
 - **Remote companion** — pair a phone to steer runs from the couch
 - **Personalization** — custom instructions, personality modes (including Brainrot 🧠), and local memories
