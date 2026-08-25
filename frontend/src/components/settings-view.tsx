@@ -587,11 +587,13 @@ function TokenSavingSection({
                     {rtkInstalling ? "Installing…" : "Install rtk"}
                   </Button>
                 )}
-                <ToggleButton
-                  checked={settings.tokenSaverRtk}
-                  disabled={rtkInstalled === false || rtkInstalling}
-                  onChange={(value) => onSettingsChange({ tokenSaverRtk: value })}
-                />
+                {rtkInstalled && (
+                  <ToggleButton
+                    checked={settings.tokenSaverRtk}
+                    disabled={rtkInstalling}
+                    onChange={(value) => onSettingsChange({ tokenSaverRtk: value })}
+                  />
+                )}
               </div>
             }
           />
@@ -634,15 +636,15 @@ function TokenSavingSection({
                     {headroomInstalling ? "Installing…" : "Install headroom"}
                   </Button>
                 )}
-                <ToggleButton
-                  checked={settings.tokenSaverHeadroom}
-                  disabled={
-                    headroomInstalledState === false || headroomInstalling
-                  }
-                  onChange={(value) =>
-                    onSettingsChange({ tokenSaverHeadroom: value })
-                  }
-                />
+                {headroomInstalledState && (
+                  <ToggleButton
+                    checked={settings.tokenSaverHeadroom}
+                    disabled={headroomInstalling}
+                    onChange={(value) =>
+                      onSettingsChange({ tokenSaverHeadroom: value })
+                    }
+                  />
+                )}
               </div>
             }
           />
