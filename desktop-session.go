@@ -45,6 +45,11 @@ func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOpti
 	if settingBool(cfg, "token_saver_cap_thinking", false) && cfg.ThinkingBudget > 4096 {
 		cfg.ThinkingBudget = 4096
 	}
+	if settingBool(cfg, "token_saver_headroom", false) && headroomInstalled() {
+		if proxyURL := a.ensureHeadroomProxy(); proxyURL != "" {
+			cfg.BaseURL = proxyURL
+		}
+	}
 
 	accStore, err := accounts.NewStore("")
 	if err != nil {

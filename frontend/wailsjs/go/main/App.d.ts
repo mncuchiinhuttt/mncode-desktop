@@ -10,6 +10,8 @@ export function CancelTurn():Promise<void>;
 
 export function CheckForUpdate():Promise<main.DesktopUpdateInfo>;
 
+export function CheckHeadroomInstalled():Promise<boolean>;
+
 export function CheckRtkInstalled():Promise<boolean>;
 
 export function ChooseAttachment():Promise<string>;
@@ -61,6 +63,8 @@ export function GetSkillsMarketplace():Promise<main.DesktopSkillsMarketplace>;
 export function GetUsageStats():Promise<main.DesktopUsageStats>;
 
 export function GetWorkspace():Promise<main.WorkspaceInfo>;
+
+export function InstallHeadroom():Promise<void>;
 
 export function InstallMarketplaceSkill(arg1:string):Promise<main.DesktopSkill>;
 

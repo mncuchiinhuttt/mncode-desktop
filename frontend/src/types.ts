@@ -146,6 +146,7 @@ export interface DesktopSettings {
   tokenSaverCompressOutput: boolean;
   tokenSaverTargetedEdits: boolean;
   tokenSaverRtk: boolean;
+  tokenSaverHeadroom: boolean;
   language: string;
   artifacts: boolean;
   interruptMode: "queue" | "steer";

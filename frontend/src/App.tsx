@@ -102,6 +102,7 @@ const emptySettings: DesktopSettings = {
   tokenSaverCompressOutput: false,
   tokenSaverTargetedEdits: false,
   tokenSaverRtk: false,
+  tokenSaverHeadroom: false,
   language: "Default (English)",
   artifacts: true,
   interruptMode: "queue",

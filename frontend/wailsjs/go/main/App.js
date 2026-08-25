@@ -18,6 +18,10 @@ export function CheckForUpdate() {
   return window['go']['main']['App']['CheckForUpdate']();
 }
 
+export function CheckHeadroomInstalled() {
+  return window['go']['main']['App']['CheckHeadroomInstalled']();
+}
+
 export function CheckRtkInstalled() {
   return window['go']['main']['App']['CheckRtkInstalled']();
 }
@@ -120,6 +124,10 @@ export function GetUsageStats() {
 
 export function GetWorkspace() {
   return window['go']['main']['App']['GetWorkspace']();
+}
+
+export function InstallHeadroom() {
+  return window['go']['main']['App']['InstallHeadroom']();
 }
 
 export function InstallMarketplaceSkill(arg1) {

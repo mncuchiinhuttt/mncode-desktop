@@ -445,6 +445,8 @@ function TokenSavingSection({
 }) {
   const [rtkInstalled, setRtkInstalled] = useState<boolean | null>(null);
   const [rtkInstalling, setRtkInstalling] = useState(false);
+  const [headroomInstalledState, setHeadroomInstalled] = useState<boolean | null>(null);
+  const [headroomInstalling, setHeadroomInstalling] = useState(false);
   useEffect(() => {
     desktop
       .checkRtkInstalled()
@@ -466,9 +468,32 @@ function TokenSavingSection({
       }
       if (payload?.status === "error") setRtkInstalling(false);
     });
-    return off;
+    const offHeadroom = listen("headroom:install", (payload: { status?: string }) => {
+      if (payload?.status === "installing") setHeadroomInstalling(true);
+      if (payload?.status === "done") {
+        setHeadroomInstalling(false);
+        desktop
+          .checkHeadroomInstalled()
+          .then((installed) => {
+            setHeadroomInstalled(installed);
+            if (installed && !settings.tokenSaverHeadroom) {
+              onSettingsChange({ tokenSaverHeadroom: true });
+            }
+          })
+          .catch(() => undefined);
+      }
+      if (payload?.status === "error") setHeadroomInstalling(false);
+    });
+    desktop
+      .checkHeadroomInstalled()
+      .then(setHeadroomInstalled)
+      .catch(() => setHeadroomInstalled(null));
+    return () => {
+      off();
+      offHeadroom();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.tokenSaverRtk]);
+  }, [settings.tokenSaverRtk, settings.tokenSaverHeadroom]);
   return (
     <div className="space-y-5">
       <section>
@@ -571,14 +596,54 @@ function TokenSavingSection({
             }
           />
           <SettingRow
-            title="Auto-compact memory"
-            description="Summarize conversation history when context usage reaches the CLI threshold."
+            title="Headroom context compression"
+            description={
+              headroomInstalledState === false
+                ? "Local proxy that compresses tool outputs, files, and history before they reach the model (15–20% fewer tokens). Install the headroom CLI, then the proxy starts automatically on port 8787."
+                : "Local proxy that compresses tool outputs, files, and history before they reach the model (15–20% fewer tokens). The proxy starts automatically on port 8787."
+            }
             prominent
             control={
-              <ToggleButton
-                checked={settings.autoCompact}
-                onChange={(value) => onSettingsChange({ autoCompact: value })}
-              />
+              <div className="flex items-center gap-2.5">
+                {headroomInstalledState !== null && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[0.5625rem] uppercase tracking-widest",
+                      headroomInstalledState
+                        ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                        : "border-[var(--mn-line)] text-muted-foreground",
+                    )}
+                  >
+                    {headroomInstalling
+                      ? "Installing…"
+                      : headroomInstalledState
+                        ? "Detected"
+                        : "Not installed"}
+                  </Badge>
+                )}
+                {headroomInstalledState === false && (
+                  <Button
+                    size="sm"
+                    className="mn-accent-button"
+                    disabled={headroomInstalling}
+                    onClick={() =>
+                      void desktop.installHeadroom().catch(() => undefined)
+                    }
+                  >
+                    {headroomInstalling ? "Installing…" : "Install headroom"}
+                  </Button>
+                )}
+                <ToggleButton
+                  checked={settings.tokenSaverHeadroom}
+                  disabled={
+                    headroomInstalledState === false || headroomInstalling
+                  }
+                  onChange={(value) =>
+                    onSettingsChange({ tokenSaverHeadroom: value })
+                  }
+                />
+              </div>
             }
           />
         </Card>

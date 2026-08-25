@@ -214,6 +214,9 @@ func applySettings(cfg *config.Config, session *agent.Session, input DesktopSett
 	if input.TokenSaverRtk != nil {
 		cfg.SetSetting("token_saver_rtk", strconv.FormatBool(*input.TokenSaverRtk))
 	}
+	if input.TokenSaverHeadroom != nil {
+		cfg.SetSetting("token_saver_headroom", strconv.FormatBool(*input.TokenSaverHeadroom))
+	}
 	if value := strings.TrimSpace(input.Language); value != "" {
 		allowed := map[string]bool{"Default (English)": true, "Vietnamese": true, "Japanese": true, "Chinese": true, "Spanish": true, "French": true, "German": true}
 		if !allowed[value] {
@@ -296,6 +299,7 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 	tokenSaverCompressOutput := settingBool(cfg, "token_saver_compress_output", false)
 	tokenSaverTargetedEdits := settingBool(cfg, "token_saver_targeted_edits", false)
 	tokenSaverRtk := settingBool(cfg, "token_saver_rtk", false)
+	tokenSaverHeadroom := settingBool(cfg, "token_saver_headroom", false)
 	language := cfg.GetSetting("language", "Default (English)")
 	artifacts := settingBool(cfg, "artifacts", true)
 	interruptMode := cfg.GetSetting("interrupt_mode", "queue")
@@ -319,7 +323,7 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 		SuggestedPrompts: suggestedPrompts, SendShortcut: sendShortcut,
 		ContextWindow: contextWindow, AutoCompact: autoCompact, Language: language,
 		TokenSaverConcise: tokenSaverConcise, TokenSaverCapThinking: tokenSaverCapThinking,
-		TokenSaverCompressOutput: tokenSaverCompressOutput, TokenSaverTargetedEdits: tokenSaverTargetedEdits, TokenSaverRtk: tokenSaverRtk,
+		TokenSaverCompressOutput: tokenSaverCompressOutput, TokenSaverTargetedEdits: tokenSaverTargetedEdits, TokenSaverRtk: tokenSaverRtk, TokenSaverHeadroom: tokenSaverHeadroom,
 		Artifacts: artifacts, InterruptMode: interruptMode, VerboseOutput: verboseOutput,
 		ContextPercent: usage.PercentUsed, ContextUsed: usage.TotalUsed, ContextLimit: usage.Limit,
 	}

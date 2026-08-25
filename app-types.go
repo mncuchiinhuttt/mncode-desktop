@@ -92,6 +92,7 @@ type DesktopSettings struct {
 	TokenSaverCompressOutput bool    `json:"tokenSaverCompressOutput"`
 	TokenSaverTargetedEdits  bool    `json:"tokenSaverTargetedEdits"`
 	TokenSaverRtk            bool    `json:"tokenSaverRtk"`
+	TokenSaverHeadroom       bool    `json:"tokenSaverHeadroom"`
 	Language                 string  `json:"language"`
 	Artifacts                bool    `json:"artifacts"`
 	InterruptMode            string  `json:"interruptMode"`
@@ -128,6 +129,7 @@ type DesktopSettingsInput struct {
 	TokenSaverCompressOutput *bool  `json:"tokenSaverCompressOutput"`
 	TokenSaverTargetedEdits  *bool  `json:"tokenSaverTargetedEdits"`
 	TokenSaverRtk            *bool  `json:"tokenSaverRtk"`
+	TokenSaverHeadroom       *bool  `json:"tokenSaverHeadroom"`
 	Artifacts                *bool  `json:"artifacts"`
 	VerboseOutput            *bool  `json:"verboseOutput"`
 }

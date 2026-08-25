@@ -248,6 +248,7 @@ export namespace main {
 	    tokenSaverCompressOutput: boolean;
 	    tokenSaverTargetedEdits: boolean;
 	    tokenSaverRtk: boolean;
+	    tokenSaverHeadroom: boolean;
 	    language: string;
 	    artifacts: boolean;
 	    interruptMode: string;
@@ -286,6 +287,7 @@ export namespace main {
 	        this.tokenSaverCompressOutput = source["tokenSaverCompressOutput"];
 	        this.tokenSaverTargetedEdits = source["tokenSaverTargetedEdits"];
 	        this.tokenSaverRtk = source["tokenSaverRtk"];
+	        this.tokenSaverHeadroom = source["tokenSaverHeadroom"];
 	        this.language = source["language"];
 	        this.artifacts = source["artifacts"];
 	        this.interruptMode = source["interruptMode"];
@@ -788,6 +790,7 @@ export namespace main {
 	    tokenSaverCompressOutput?: boolean;
 	    tokenSaverTargetedEdits?: boolean;
 	    tokenSaverRtk?: boolean;
+	    tokenSaverHeadroom?: boolean;
 	    artifacts?: boolean;
 	    verboseOutput?: boolean;
 	
@@ -822,6 +825,7 @@ export namespace main {
 	        this.tokenSaverCompressOutput = source["tokenSaverCompressOutput"];
 	        this.tokenSaverTargetedEdits = source["tokenSaverTargetedEdits"];
 	        this.tokenSaverRtk = source["tokenSaverRtk"];
+	        this.tokenSaverHeadroom = source["tokenSaverHeadroom"];
 	        this.artifacts = source["artifacts"];
 	        this.verboseOutput = source["verboseOutput"];
 	    }
