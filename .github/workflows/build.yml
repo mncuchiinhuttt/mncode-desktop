@@ -1,11 +1,14 @@
-# Build mncode Desktop for Windows and Linux.
+# Build mncode Desktop for Windows and Linux (amd64 + arm64).
 #
 # The Go module uses `replace mncode => ../mncode-cli`, so the public agent-core
 # repository (mncuchiinhuttt/mncode) is checked out as a sibling directory.
 #
 # Triggers:
 # - manually from the Actions tab (workflow_dispatch)
-# - pushing a tag like v0.1.0-beta (also publishes a GitHub release)
+# - pushing a tag like v0.1-beta (also publishes a GitHub release)
+#
+# macOS builds are produced locally (wails build -platform darwin/universal)
+# and attached to the release afterwards.
 
 name: Build Desktop
 
@@ -30,6 +33,14 @@ jobs:
           - os: ubuntu-22.04
             name: linux-amd64
             platform: linux/amd64
+          - os: ubuntu-22.04
+            name: linux-arm64
+            platform: linux/arm64
+            cross: linux-arm64
+          - os: ubuntu-22.04
+            name: windows-arm64
+            platform: windows/arm64
+            cross: windows-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout desktop app
@@ -64,19 +75,65 @@ jobs:
           node-version: 22
 
       - name: Install Linux build dependencies
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.cross != 'linux-arm64'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             libgtk-3-dev libwebkit2gtk-4.0-dev libnss3-dev pkg-config
 
+      - name: Install arm64 cross toolchain and GTK libs
+        if: matrix.cross == 'linux-arm64'
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo sed -i 's|^deb |deb [arch=amd64,i386] |' /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main universe" | sudo tee /etc/apt/sources.list.d/arm64-ports.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-aarch64-linux-gnu \
+            libgtk-3-dev:arm64 libwebkit2gtk-4.0-dev:arm64 libnss3-dev:arm64
+
+      - name: Set up zig (Windows ARM64 cross compiler)
+        if: matrix.cross == 'windows-arm64'
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.11.0
+
       - name: Install Wails CLI
+        if: ${{ !matrix.cross }}
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
 
-      - name: Build
+      - name: Build frontend
+        shell: bash
+        run: |
+          pnpm --dir frontend install
+          pnpm --dir frontend build
+
+      - name: Build (native via Wails CLI)
+        if: ${{ !matrix.cross }}
         shell: bash
         run: |
           "$(go env GOPATH)/bin/wails" build -platform ${{ matrix.platform }}
+
+      - name: Build (linux/arm64 cross)
+        if: matrix.cross == 'linux-arm64'
+        shell: bash
+        run: |
+          export CC=aarch64-linux-gnu-gcc
+          export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
+          export PKG_CONFIG_ALLOW_CROSS=1
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 \
+            go build -tags desktop,production -ldflags "-w -s" \
+            -o build/bin/mncode-desktop
+
+      - name: Build (windows/arm64 cross)
+        if: matrix.cross == 'windows-arm64'
+        shell: bash
+        run: |
+          export CC="zig cc -target aarch64-windows-gnu"
+          export CXX="zig c++ -target aarch64-windows-gnu"
+          CGO_ENABLED=1 GOOS=windows GOARCH=arm64 \
+            go build -tags desktop,production -ldflags "-w -s -H windowsgui" \
+            -o build/bin/mncode-desktop.exe
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
@@ -85,12 +142,23 @@ jobs:
           Compress-Archive -Path build/bin/mncode-desktop.exe
           -DestinationPath build/bin/mncode-desktop-${{ github.ref_name }}-windows-amd64.zip
 
-      - name: Package (Linux)
-        if: runner.os == 'Linux'
+      - name: Package (Linux amd64)
+        if: matrix.name == 'linux-amd64'
         shell: bash
         run: >
           tar -czf build/bin/mncode-desktop-${{ github.ref_name }}-linux-amd64.tar.gz
           -C build/bin mncode-desktop
+
+      - name: Package (cross targets)
+        if: matrix.cross
+        shell: bash
+        run: |
+          cd build/bin
+          if [[ "${{ matrix.name }}" == "linux-arm64" ]]; then
+            tar -czf mncode-desktop-${{ github.ref_name }}-linux-arm64.tar.gz mncode-desktop
+          else
+            zip mncode-desktop-${{ github.ref_name }}-windows-arm64.zip mncode-desktop.exe
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
