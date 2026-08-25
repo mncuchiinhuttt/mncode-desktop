@@ -126,6 +126,10 @@ export function InstallMarketplaceSkill(arg1) {
   return window['go']['main']['App']['InstallMarketplaceSkill'](arg1);
 }
 
+export function InstallRtk() {
+  return window['go']['main']['App']['InstallRtk']();
+}
+
 export function InterruptTerminal() {
   return window['go']['main']['App']['InterruptTerminal']();
 }

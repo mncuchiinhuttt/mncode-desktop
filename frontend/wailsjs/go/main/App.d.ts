@@ -64,6 +64,8 @@ export function GetWorkspace():Promise<main.WorkspaceInfo>;
 
 export function InstallMarketplaceSkill(arg1:string):Promise<main.DesktopSkill>;
 
+export function InstallRtk():Promise<void>;
+
 export function InterruptTerminal():Promise<void>;
 
 export function ListAutomations():Promise<Array<main.Automation>>;

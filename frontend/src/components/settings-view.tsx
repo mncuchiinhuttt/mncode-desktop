@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { desktop } from "@/lib/desktop";
+import { desktop, listen } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -444,12 +444,31 @@ function TokenSavingSection({
   onSettingsChange: (input: Partial<DesktopSettings>) => void;
 }) {
   const [rtkInstalled, setRtkInstalled] = useState<boolean | null>(null);
+  const [rtkInstalling, setRtkInstalling] = useState(false);
   useEffect(() => {
     desktop
       .checkRtkInstalled()
       .then(setRtkInstalled)
       .catch(() => setRtkInstalled(null));
-  }, []);
+    const off = listen("rtk:install", (payload: { status?: string }) => {
+      if (payload?.status === "installing") setRtkInstalling(true);
+      if (payload?.status === "done") {
+        setRtkInstalling(false);
+        desktop
+          .checkRtkInstalled()
+          .then((installed) => {
+            setRtkInstalled(installed);
+            if (installed && !settings.tokenSaverRtk) {
+              onSettingsChange({ tokenSaverRtk: true });
+            }
+          })
+          .catch(() => undefined);
+      }
+      if (payload?.status === "error") setRtkInstalling(false);
+    });
+    return off;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.tokenSaverRtk]);
   return (
     <div className="space-y-5">
       <section>
@@ -526,11 +545,26 @@ function TokenSavingSection({
                         : "border-[var(--mn-line)] text-muted-foreground",
                     )}
                   >
-                    {rtkInstalled ? "Detected" : "Not installed"}
+                    {rtkInstalling
+                      ? "Installing…"
+                      : rtkInstalled
+                        ? "Detected"
+                        : "Not installed"}
                   </Badge>
+                )}
+                {rtkInstalled === false && (
+                  <Button
+                    size="sm"
+                    className="mn-accent-button"
+                    disabled={rtkInstalling}
+                    onClick={() => void desktop.installRtk().catch(() => undefined)}
+                  >
+                    {rtkInstalling ? "Installing…" : "Install rtk"}
+                  </Button>
                 )}
                 <ToggleButton
                   checked={settings.tokenSaverRtk}
+                  disabled={rtkInstalled === false || rtkInstalling}
                   onChange={(value) => onSettingsChange({ tokenSaverRtk: value })}
                 />
               </div>
@@ -1087,15 +1121,18 @@ function ThemeSelect({
 function ToggleButton({
   checked,
   onChange,
+  disabled,
 }: {
   checked: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
       className={
         "relative inline-flex h-6 w-11 shrink-0 items-center overflow-hidden rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mn-accent)]/40 " +

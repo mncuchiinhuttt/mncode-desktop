@@ -3,7 +3,6 @@
 package main
 
 import (
-	"os/exec"
 	"strings"
 
 	"mncode/pkg/config"
@@ -12,12 +11,6 @@ import (
 const rtkDirective = "Shell output compression: the `rtk` CLI is installed on this machine. " +
 	"Prefix common development commands with `rtk` (for example `rtk git log --oneline -20`, `rtk npm test`, `rtk go build ./...`) " +
 	"so their output is token-compressed. If an rtk-wrapped command fails, fall back to the raw command."
-
-// rtkInstalled reports whether the rtk CLI is available on PATH.
-func rtkInstalled() bool {
-	_, err := exec.LookPath("rtk")
-	return err == nil
-}
 
 // CheckRtkInstalled exposes rtk detection to the settings UI.
 func (a *App) CheckRtkInstalled() bool {
