@@ -830,72 +830,6 @@ export namespace main {
 	        this.verboseOutput = source["verboseOutput"];
 	    }
 	}
-	export class DesktopSkill {
-	    id: string;
-	    slug: string;
-	    name: string;
-	    description: string;
-	    category: string;
-	    source: string;
-	    system: boolean;
-	    installed: boolean;
-	    free: boolean;
-	    marketplaceUrl: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new DesktopSkill(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.slug = source["slug"];
-	        this.name = source["name"];
-	        this.description = source["description"];
-	        this.category = source["category"];
-	        this.source = source["source"];
-	        this.system = source["system"];
-	        this.installed = source["installed"];
-	        this.free = source["free"];
-	        this.marketplaceUrl = source["marketplaceUrl"];
-	    }
-	}
-	export class DesktopSkillsMarketplace {
-	    systemSkills: DesktopSkill[];
-	    userSkills: DesktopSkill[];
-	    availableSkills: DesktopSkill[];
-	    sourceUrl: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new DesktopSkillsMarketplace(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.systemSkills = this.convertValues(source["systemSkills"], DesktopSkill);
-	        this.userSkills = this.convertValues(source["userSkills"], DesktopSkill);
-	        this.availableSkills = this.convertValues(source["availableSkills"], DesktopSkill);
-	        this.sourceUrl = source["sourceUrl"];
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
 	
 	export class DesktopUpdateAsset {
 	    name: string;
@@ -1100,6 +1034,77 @@ export namespace main {
 	        this.totalLines = source["totalLines"];
 	        this.languages = this.convertValues(source["languages"], LanguageStat);
 	        this.ready = source["ready"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
+export namespace skills {
+	
+	export class MarketplaceSkill {
+	    id: string;
+	    slug: string;
+	    name: string;
+	    description: string;
+	    category: string;
+	    source: string;
+	    system: boolean;
+	    installed: boolean;
+	    free: boolean;
+	    marketplaceUrl: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new MarketplaceSkill(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.slug = source["slug"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.category = source["category"];
+	        this.source = source["source"];
+	        this.system = source["system"];
+	        this.installed = source["installed"];
+	        this.free = source["free"];
+	        this.marketplaceUrl = source["marketplaceUrl"];
+	    }
+	}
+	export class SkillsMarketplace {
+	    systemSkills: MarketplaceSkill[];
+	    userSkills: MarketplaceSkill[];
+	    availableSkills: MarketplaceSkill[];
+	    sourceUrl: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SkillsMarketplace(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.systemSkills = this.convertValues(source["systemSkills"], MarketplaceSkill);
+	        this.userSkills = this.convertValues(source["userSkills"], MarketplaceSkill);
+	        this.availableSkills = this.convertValues(source["availableSkills"], MarketplaceSkill);
+	        this.sourceUrl = source["sourceUrl"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
