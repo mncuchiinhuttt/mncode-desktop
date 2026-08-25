@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertCircle, Check, Download, Keyboard, X } from "lucide-react";
+import { AlertCircle, Check, Download, Keyboard, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +34,7 @@ import type {
   PermissionRequest,
   PromptCatalog,
   QuestionRequest,
+  UpdateAsset,
   UpdateInfo,
   ViewName,
   WorkspaceInfo,
@@ -52,6 +53,7 @@ import { OnboardingFlow, type OnboardingPhase } from "./components/onboarding-fl
 import { WorkspaceView } from "./components/workspace-view";
 import "./style.css";
 
+type UpdatePhase = "idle" | "downloading" | "ready";
 const emptyWorkspace: WorkspaceInfo = {
   path: "",
   name: "",
@@ -359,6 +361,10 @@ export default function App() {
     useState<DesktopPersonalization>(emptyPersonalization);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo>();
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [updatePhase, setUpdatePhase] = useState<UpdatePhase>("idle");
+  const [updateProgress, setUpdateProgress] = useState(0);
+  const [updateDownloadPath, setUpdateDownloadPath] = useState("");
+  const [updateError, setUpdateError] = useState("");
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [terminalOutput, setTerminalOutput] = useState("");
   const [terminalRunning, setTerminalRunning] = useState(false);
@@ -493,6 +499,34 @@ export default function App() {
     else notify("You are already on the latest version", "success");
     return info;
   }, [notify]);
+
+  async function downloadDesktopUpdate() {
+    if (!updateInfo) return;
+    setUpdatePhase("downloading");
+    setUpdateProgress(0);
+    setUpdateError("");
+    try {
+      const path = await desktop.downloadUpdate(updateInfo.assets ?? []);
+      setUpdateDownloadPath(path);
+      setUpdatePhase("ready");
+    } catch (error) {
+      setUpdatePhase("idle");
+      setUpdateError(
+        error instanceof Error ? error.message : "Could not download the update",
+      );
+    }
+  }
+
+  async function applyDesktopUpdate() {
+    if (!updateDownloadPath) return;
+    try {
+      await desktop.applyUpdateAndRestart(updateDownloadPath);
+    } catch (error) {
+      setUpdateError(
+        error instanceof Error ? error.message : "Could not apply the update",
+      );
+    }
+  }
 
   function openExternalURL(url: string) {
     void desktop
@@ -1091,6 +1125,9 @@ export default function App() {
         ]);
         void hydrateCatalog();
       }),
+      listen<{ percent: number }>("update:progress", ({ percent }) =>
+        setUpdateProgress(percent),
+      ),
       listen<{ provider: string }>("provider:configured", ({ provider }) =>
         notify(`${provider} connected for this session`, "success"),
       ),
@@ -1908,14 +1945,11 @@ export default function App() {
           update={updateInfo}
           open={updateOpen}
           onOpenChange={setUpdateOpen}
-          onOpenUpdate={(url) =>
-            desktop
-              .openUpdatePage(url)
-              .then(() => setUpdateOpen(false))
-              .catch((error) =>
-                notify(error instanceof Error ? error.message : "Could not open update page"),
-              )
-          }
+          phase={updatePhase}
+          progress={updateProgress}
+          error={updateError}
+          onDownload={() => void downloadDesktopUpdate()}
+          onApply={() => void applyDesktopUpdate()}
         />
         <RemoteCompanionDialog
           open={remoteOpen}
@@ -2081,53 +2115,155 @@ function DeleteChatDialog({
   );
 }
 
+/** Markdown-lite parser for GitHub release bodies: `## Section` + bullets. */
+function parseReleaseNotes(notes: string): Array<{ title: string; items: string[] }> {
+  const sections: Array<{ title: string; items: string[] }> = [];
+  let current: { title: string; items: string[] } | null = null;
+  for (const raw of notes.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    const plain = line.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/\*\*/g, "");
+    if (plain.startsWith("#")) {
+      current = { title: plain.replace(/^#+\s*/, ""), items: [] };
+      sections.push(current);
+    } else if (plain.startsWith("- ") || plain.startsWith("* ")) {
+      if (!current) {
+        current = { title: "Changes", items: [] };
+        sections.push(current);
+      }
+      current.items.push(plain.slice(2));
+    } else if (current) {
+      current.items.push(plain);
+    }
+  }
+  return sections;
+}
+
 function UpdateDialog({
   update,
   open,
   onOpenChange,
-  onOpenUpdate,
+  phase,
+  progress,
+  error,
+  onDownload,
+  onApply,
 }: {
   update?: UpdateInfo;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onOpenUpdate: (url: string) => void;
+  phase: UpdatePhase;
+  progress: number;
+  error: string;
+  onDownload: () => void;
+  onApply: () => void;
 }) {
   if (!update) return null;
+  const sections = parseReleaseNotes(update.notes ?? "");
+  const releaseDate = update.releaseDate
+    ? new Date(update.releaseDate + "T00:00:00").toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground">
+      <DialogContent className="border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="size-4 text-[var(--mn-accent-strong)]" />
-            Update available
+            {update.latestVersion} Release Notes
           </DialogTitle>
-          <DialogDescription>A newer mncode desktop release is ready.</DialogDescription>
+          <DialogDescription>
+            {releaseDate && `Released ${releaseDate}. `}
+            {phase === "ready"
+              ? "Download complete — restart to finish the update."
+              : "A newer mncode desktop release is ready to install."}
+          </DialogDescription>
         </DialogHeader>
-        <div className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Current version</span>
-            <span className="font-mono">{update.currentVersion}</span>
+
+        {sections.length > 0 && (
+          <div className="max-h-64 overflow-y-auto rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
+            {sections.map((section) => (
+              <div key={section.title} className="mb-4 last:mb-0">
+                <p className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  {section.title}
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  {section.items.map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex gap-2 text-xs leading-5 text-muted-foreground"
+                    >
+                      <span className="mt-2 size-1 shrink-0 rounded-full bg-[var(--mn-accent)]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          <div className="mt-2 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Latest version</span>
-            <span className="font-mono font-semibold text-[var(--mn-accent-strong)]">
-              {update.latestVersion}
-            </span>
-          </div>
-          {update.releaseDate && (
-            <p className="mt-3 text-[0.6875rem] text-muted-foreground">
-              Released {update.releaseDate}
+        )}
+
+        {phase === "downloading" && (
+          <div className="space-y-2">
+            <div className="h-1.5 overflow-hidden rounded-full bg-[var(--mn-surface-muted)]">
+              <div
+                className="h-full rounded-full bg-[var(--mn-accent)] transition-[width] duration-300"
+                style={{ width: `${Math.min(100, progress).toFixed(1)}%` }}
+              />
+            </div>
+            <p className="text-center font-mono text-[0.6875rem] text-muted-foreground">
+              Downloading… {progress.toFixed(0)}%
             </p>
-          )}
-        </div>
+          </div>
+        )}
+        {error && (
+          <p className="rounded-md border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-xs text-rose-600 dark:text-rose-300">
+            {error}
+          </p>
+        )}
+
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Later
-          </Button>
-          <Button className="mn-accent-button" onClick={() => onOpenUpdate(update.releaseUrl)}>
-            <Download className="mr-2 size-3.5" />
-            View update
-          </Button>
+          {phase === "ready" ? (
+            <>
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Later
+              </Button>
+              <Button className="mn-accent-button" onClick={onApply}>
+                <Check className="mr-2 size-3.5" />
+                Restart to update
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Later
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onOpenChange(false);
+                  window.open(update.releaseUrl, "_blank");
+                }}
+              >
+                Release page
+              </Button>
+              <Button
+                className="mn-accent-button"
+                disabled={phase === "downloading"}
+                onClick={onDownload}
+              >
+                {phase === "downloading" ? (
+                  <Loader2 className="mr-2 size-3.5 animate-spin" />
+                ) : (
+                  <Download className="mr-2 size-3.5" />
+                )}
+                {phase === "downloading" ? "Downloading…" : "Download update"}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -336,12 +336,20 @@ export interface DesktopSkillsMarketplace {
   sourceUrl: string;
 }
 
+export interface UpdateAsset {
+  name: string;
+  url: string;
+  size: number;
+}
+
 export interface UpdateInfo {
   currentVersion: string;
   latestVersion: string;
   releaseDate: string;
   channel: string;
   releaseUrl: string;
+  notes: string;
+  assets: UpdateAsset[];
   updateAvailable: boolean;
 }
 

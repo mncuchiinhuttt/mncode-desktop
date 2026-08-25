@@ -14,7 +14,7 @@ import (
 	"mncode/pkg/config"
 )
 
-const desktopVersion = "v0.1-beta"
+const desktopVersion = "v0.1.1-beta"
 const desktopReleaseEndpoint = "/api/releases/desktop/latest"
 
 // DesktopAppInfo describes the running desktop build.
@@ -26,14 +26,23 @@ type DesktopAppInfo struct {
 	Copyright   string `json:"copyright"`
 }
 
+// DesktopUpdateAsset is one downloadable release artifact.
+type DesktopUpdateAsset struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+	Size int64  `json:"size"`
+}
+
 // DesktopUpdateInfo reports update availability against the release feed.
 type DesktopUpdateInfo struct {
-	CurrentVersion  string `json:"currentVersion"`
-	LatestVersion   string `json:"latestVersion"`
-	ReleaseDate     string `json:"releaseDate"`
-	Channel         string `json:"channel"`
-	ReleaseURL      string `json:"releaseUrl"`
-	UpdateAvailable bool   `json:"updateAvailable"`
+	CurrentVersion  string               `json:"currentVersion"`
+	LatestVersion   string               `json:"latestVersion"`
+	ReleaseDate     string               `json:"releaseDate"`
+	Channel         string               `json:"channel"`
+	ReleaseURL      string               `json:"releaseUrl"`
+	Notes           string               `json:"notes"`
+	Assets          []DesktopUpdateAsset `json:"assets"`
+	UpdateAvailable bool                 `json:"updateAvailable"`
 }
 
 // GetAppInfo returns version, channel, and metadata for the running build.
@@ -68,18 +77,29 @@ func (a *App) CheckForUpdate() (DesktopUpdateInfo, error) {
 		return DesktopUpdateInfo{}, fmt.Errorf("release endpoint returned status %d", response.StatusCode)
 	}
 	var release struct {
-		Version     string `json:"version"`
-		ReleaseDate string `json:"releaseDate"`
-		Channel     string `json:"channel"`
-		ReleaseURL  string `json:"releaseUrl"`
+		Version     string               `json:"version"`
+		ReleaseDate string               `json:"releaseDate"`
+		Channel     string               `json:"channel"`
+		ReleaseURL  string               `json:"releaseUrl"`
+		Notes       string               `json:"notes"`
+		Assets      []DesktopUpdateAsset `json:"assets"`
 	}
 	if err := json.NewDecoder(response.Body).Decode(&release); err != nil {
 		return DesktopUpdateInfo{}, err
 	}
 	if release.ReleaseURL == "" {
-		release.ReleaseURL = "https://github.com/mncuchiinhuttt/mncode/releases"
+		release.ReleaseURL = "https://github.com/mncuchiinhuttt/mncode-desktop/releases"
 	}
-	return DesktopUpdateInfo{CurrentVersion: desktopVersion, LatestVersion: release.Version, ReleaseDate: release.ReleaseDate, Channel: release.Channel, ReleaseURL: release.ReleaseURL, UpdateAvailable: newerVersion(desktopVersion, release.Version)}, nil
+	return DesktopUpdateInfo{
+		CurrentVersion:  desktopVersion,
+		LatestVersion:   release.Version,
+		ReleaseDate:     release.ReleaseDate,
+		Channel:         release.Channel,
+		ReleaseURL:      release.ReleaseURL,
+		Notes:           release.Notes,
+		Assets:          release.Assets,
+		UpdateAvailable: newerVersion(desktopVersion, release.Version),
+	}, nil
 }
 
 // OpenUpdatePage opens the release page in the system browser.

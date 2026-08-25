@@ -17,6 +17,7 @@ import type {
   FileNode,
   ProviderQuota,
   ProviderSettings,
+  UpdateAsset,
   UpdateInfo,
   UsageStats,
   WorkspaceInfo,
@@ -73,6 +74,8 @@ export const desktop = {
   deleteInstalledSkill: (id: string) => call<void>("DeleteInstalledSkill", id),
   checkForUpdate: () => call<UpdateInfo>("CheckForUpdate"),
   openUpdatePage: (url: string) => call<void>("OpenUpdatePage", url),
+  downloadUpdate: (assets: UpdateAsset[]) => call<string>("DownloadUpdate", assets),
+  applyUpdateAndRestart: (path: string) => call<void>("ApplyUpdateAndRestart", path),
   openExternalURL: (url: string) => call<void>("OpenExternalURL", url),
   loginProvider: (provider: string, accountID: string, token: string) =>
     call<void>("LoginProvider", provider, accountID, token),

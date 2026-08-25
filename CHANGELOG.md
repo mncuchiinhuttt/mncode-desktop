@@ -36,6 +36,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - GitHub repository card from Settings → App info
 
+## [0.1.1-beta] — 2026-08-25
+
+### Added
+
+- In-app updater: the update dialog now shows the release notes (version, date, and change sections), downloads the asset built for the running OS/architecture with a live progress bar, and swaps it in via **Restart to update** — no manual download or version picking
+- Release feed (`/api/releases/desktop/latest`) serves the latest GitHub release with notes and per-platform assets
+
+### Changed
+
+- Version bump to v0.1.1-beta
+
 ## [0.1.0-beta] — 2026-08-24
 
 ### Added

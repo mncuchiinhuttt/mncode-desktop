@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function AnswerQuestion(arg1:string,arg2:string):Promise<void>;
 
+export function ApplyUpdateAndRestart(arg1:string):Promise<void>;
+
 export function CancelTurn():Promise<void>;
 
 export function CheckForUpdate():Promise<main.DesktopUpdateInfo>;
@@ -25,6 +27,8 @@ export function DeleteCustomProvider(arg1:string):Promise<void>;
 export function DeleteInstalledSkill(arg1:string):Promise<void>;
 
 export function DeleteLocalMemories():Promise<main.DesktopPersonalization>;
+
+export function DownloadUpdate(arg1:Array<main.DesktopUpdateAsset>):Promise<string>;
 
 export function GetAccount():Promise<main.DesktopAccount>;
 

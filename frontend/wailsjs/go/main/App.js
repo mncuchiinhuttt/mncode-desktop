@@ -6,6 +6,10 @@ export function AnswerQuestion(arg1, arg2) {
   return window['go']['main']['App']['AnswerQuestion'](arg1, arg2);
 }
 
+export function ApplyUpdateAndRestart(arg1) {
+  return window['go']['main']['App']['ApplyUpdateAndRestart'](arg1);
+}
+
 export function CancelTurn() {
   return window['go']['main']['App']['CancelTurn']();
 }
@@ -48,6 +52,10 @@ export function DeleteInstalledSkill(arg1) {
 
 export function DeleteLocalMemories() {
   return window['go']['main']['App']['DeleteLocalMemories']();
+}
+
+export function DownloadUpdate(arg1) {
+  return window['go']['main']['App']['DownloadUpdate'](arg1);
 }
 
 export function GetAccount() {
