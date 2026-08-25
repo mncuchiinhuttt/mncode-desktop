@@ -1906,6 +1906,8 @@ export default function App() {
           onOpenChange={setCommandOpen}
           onOpenWorkspace={openWorkspace}
           onNavigate={navigateView}
+          chats={chatSessions.map((chat) => ({ id: chat.id, title: chat.title }))}
+          onOpenChat={openChat}
         />
         <ShortcutDialog open={shortcutOpen} onOpenChange={setShortcutOpen} />
         <RenameChatDialog
