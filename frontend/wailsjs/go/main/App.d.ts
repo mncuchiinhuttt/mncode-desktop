@@ -10,6 +10,8 @@ export function CancelTurn():Promise<void>;
 
 export function CheckForUpdate():Promise<main.DesktopUpdateInfo>;
 
+export function CheckRtkInstalled():Promise<boolean>;
+
 export function ChooseAttachment():Promise<string>;
 
 export function ChooseWorkspace():Promise<main.WorkspaceInfo>;

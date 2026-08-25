@@ -141,6 +141,11 @@ export interface DesktopSettings {
   sendShortcut: "enter" | "command-enter";
   contextWindow: string;
   autoCompact: boolean;
+  tokenSaverConcise: boolean;
+  tokenSaverCapThinking: boolean;
+  tokenSaverCompressOutput: boolean;
+  tokenSaverTargetedEdits: boolean;
+  tokenSaverRtk: boolean;
   language: string;
   artifacts: boolean;
   interruptMode: "queue" | "steer";

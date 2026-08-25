@@ -18,6 +18,10 @@ export function CheckForUpdate() {
   return window['go']['main']['App']['CheckForUpdate']();
 }
 
+export function CheckRtkInstalled() {
+  return window['go']['main']['App']['CheckRtkInstalled']();
+}
+
 export function ChooseAttachment() {
   return window['go']['main']['App']['ChooseAttachment']();
 }

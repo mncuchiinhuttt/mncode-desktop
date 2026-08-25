@@ -86,6 +86,7 @@ export const desktop = {
   readAutomationLog: (path: string) => call<string>("ReadAutomationLog", path),
   getKeepAwake: () => call<boolean>("GetKeepAwake"),
   setKeepAwake: (enabled: boolean) => call<void>("SetKeepAwake", enabled),
+  checkRtkInstalled: () => call<boolean>("CheckRtkInstalled"),
   applyUpdateAndRestart: (path: string) => call<void>("ApplyUpdateAndRestart", path),
   openExternalURL: (url: string) => call<void>("OpenExternalURL", url),
   loginProvider: (provider: string, accountID: string, token: string) =>

@@ -243,6 +243,11 @@ export namespace main {
 	    sendShortcut: string;
 	    contextWindow: string;
 	    autoCompact: boolean;
+	    tokenSaverConcise: boolean;
+	    tokenSaverCapThinking: boolean;
+	    tokenSaverCompressOutput: boolean;
+	    tokenSaverTargetedEdits: boolean;
+	    tokenSaverRtk: boolean;
 	    language: string;
 	    artifacts: boolean;
 	    interruptMode: string;
@@ -276,6 +281,11 @@ export namespace main {
 	        this.sendShortcut = source["sendShortcut"];
 	        this.contextWindow = source["contextWindow"];
 	        this.autoCompact = source["autoCompact"];
+	        this.tokenSaverConcise = source["tokenSaverConcise"];
+	        this.tokenSaverCapThinking = source["tokenSaverCapThinking"];
+	        this.tokenSaverCompressOutput = source["tokenSaverCompressOutput"];
+	        this.tokenSaverTargetedEdits = source["tokenSaverTargetedEdits"];
+	        this.tokenSaverRtk = source["tokenSaverRtk"];
 	        this.language = source["language"];
 	        this.artifacts = source["artifacts"];
 	        this.interruptMode = source["interruptMode"];
@@ -773,6 +783,11 @@ export namespace main {
 	    language: string;
 	    interruptMode: string;
 	    autoCompact?: boolean;
+	    tokenSaverConcise?: boolean;
+	    tokenSaverCapThinking?: boolean;
+	    tokenSaverCompressOutput?: boolean;
+	    tokenSaverTargetedEdits?: boolean;
+	    tokenSaverRtk?: boolean;
 	    artifacts?: boolean;
 	    verboseOutput?: boolean;
 	
@@ -802,6 +817,11 @@ export namespace main {
 	        this.language = source["language"];
 	        this.interruptMode = source["interruptMode"];
 	        this.autoCompact = source["autoCompact"];
+	        this.tokenSaverConcise = source["tokenSaverConcise"];
+	        this.tokenSaverCapThinking = source["tokenSaverCapThinking"];
+	        this.tokenSaverCompressOutput = source["tokenSaverCompressOutput"];
+	        this.tokenSaverTargetedEdits = source["tokenSaverTargetedEdits"];
+	        this.tokenSaverRtk = source["tokenSaverRtk"];
 	        this.artifacts = source["artifacts"];
 	        this.verboseOutput = source["verboseOutput"];
 	    }

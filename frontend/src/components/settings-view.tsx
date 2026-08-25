@@ -20,11 +20,14 @@ import {
   Sun,
   Trash2,
   UserRound,
+  Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { desktop } from "@/lib/desktop";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -64,6 +67,7 @@ import { UsageHeatmap } from "./usage-heatmap";
 
 export type SettingsSection =
   | "general"
+  | "token-saving"
   | "models"
   | "appearance"
   | "account"
@@ -150,6 +154,10 @@ const sectionMeta: Record<SettingsSection, { label: string; description: string 
     label: "Skills Marketplace",
     description: "Discover, install, and manage agent skills.",
   },
+  "token-saving": {
+    label: "Token saving",
+    description: "Cut token consumption on every agent turn.",
+  },
   "app-info": {
     label: "App info",
     description: "Version, release channel, and update preferences.",
@@ -218,6 +226,12 @@ export function SettingsView({
           </p>
         </div>
         <nav className="space-y-1" aria-label="Settings sections">
+          <SettingsNavItem
+            active={section === "token-saving"}
+            icon={Zap}
+            label="Token saving"
+            onClick={() => setSection("token-saving")}
+          />
           <SettingsNavItem
             active={section === "general"}
             icon={Settings2}
@@ -311,6 +325,12 @@ export function SettingsView({
               </Button>
             )}
           </div>
+          {section === "token-saving" && (
+            <TokenSavingSection
+              settings={settings}
+              onSettingsChange={onSettingsChange}
+            />
+          )}
           {section === "general" && (
             <GeneralSection
               catalog={catalog}
@@ -416,6 +436,123 @@ function SettingsNavItem({
     </button>
   );
 }
+function TokenSavingSection({
+  settings,
+  onSettingsChange,
+}: {
+  settings: DesktopSettings;
+  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+}) {
+  const [rtkInstalled, setRtkInstalled] = useState<boolean | null>(null);
+  useEffect(() => {
+    desktop
+      .checkRtkInstalled()
+      .then(setRtkInstalled)
+      .catch(() => setRtkInstalled(null));
+  }, []);
+  return (
+    <div className="space-y-5">
+      <section>
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold">Token saving</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Reduce token consumption on every agent turn — chat and automations.
+            Each discipline applies to new sessions; no stored instructions are
+            modified.
+          </p>
+        </div>
+        <Card className="mn-surface mn-settings-rows shadow-none">
+          <SettingRow
+            title="Concise responses"
+            description="Shorter, denser answers. Injects a brevity directive into every session."
+            prominent
+            control={
+              <ToggleButton
+                checked={settings.tokenSaverConcise}
+                onChange={(value) => onSettingsChange({ tokenSaverConcise: value })}
+              />
+            }
+          />
+          <SettingRow
+            title="Cap thinking budget"
+            description="Limits reasoning to 4,096 tokens per turn instead of the configured budget."
+            prominent
+            control={
+              <ToggleButton
+                checked={settings.tokenSaverCapThinking}
+                onChange={(value) => onSettingsChange({ tokenSaverCapThinking: value })}
+              />
+            }
+          />
+          <SettingRow
+            title="Compress command output"
+            description="Instructs the agent to filter and truncate long command output with head, tail, and grep."
+            prominent
+            control={
+              <ToggleButton
+                checked={settings.tokenSaverCompressOutput}
+                onChange={(value) => onSettingsChange({ tokenSaverCompressOutput: value })}
+              />
+            }
+          />
+          <SettingRow
+            title="Prefer targeted edits"
+            description="Search-and-replace edits instead of full-file rewrites — far fewer output tokens."
+            prominent
+            control={
+              <ToggleButton
+                checked={settings.tokenSaverTargetedEdits}
+                onChange={(value) => onSettingsChange({ tokenSaverTargetedEdits: value })}
+              />
+            }
+          />
+          <SettingRow
+            title="RTK shell compression"
+            description={
+              rtkInstalled === false
+                ? "Routes dev commands through the rtk CLI for 60–90% smaller outputs. rtk was not found on PATH — install it from github.com/rtk-ai/rtk."
+                : "Routes dev commands through the rtk CLI (60–90% smaller outputs). Detected on PATH."
+            }
+            prominent
+            control={
+              <div className="flex items-center gap-2.5">
+                {rtkInstalled !== null && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[0.5625rem] uppercase tracking-widest",
+                      rtkInstalled
+                        ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                        : "border-[var(--mn-line)] text-muted-foreground",
+                    )}
+                  >
+                    {rtkInstalled ? "Detected" : "Not installed"}
+                  </Badge>
+                )}
+                <ToggleButton
+                  checked={settings.tokenSaverRtk}
+                  onChange={(value) => onSettingsChange({ tokenSaverRtk: value })}
+                />
+              </div>
+            }
+          />
+          <SettingRow
+            title="Auto-compact memory"
+            description="Summarize conversation history when context usage reaches the CLI threshold."
+            prominent
+            control={
+              <ToggleButton
+                checked={settings.autoCompact}
+                onChange={(value) => onSettingsChange({ autoCompact: value })}
+              />
+            }
+          />
+        </Card>
+      </section>
+    </div>
+  );
+}
+
 function GeneralSection({
   catalog,
   settings,
@@ -525,17 +662,6 @@ function GeneralPreferences({
                 ))}
               </SelectContent>
             </Select>
-          }
-        />
-        <SettingRow
-          title="Auto-compact memory"
-          description="Summarize conversation history when context usage reaches the CLI threshold."
-          prominent
-          control={
-            <ToggleButton
-              checked={settings.autoCompact}
-              onChange={(value) => onSettingsChange({ autoCompact: value })}
-            />
           }
         />
         <SettingRow

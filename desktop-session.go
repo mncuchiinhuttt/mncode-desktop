@@ -40,6 +40,12 @@ func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOpti
 		cfg.ClaudeDir = ""
 	}
 
+	// Token-saving preferences apply to every new session (chat + automations).
+	applyTokenSaverDirectives(cfg)
+	if settingBool(cfg, "token_saver_cap_thinking", false) && cfg.ThinkingBudget > 4096 {
+		cfg.ThinkingBudget = 4096
+	}
+
 	accStore, err := accounts.NewStore("")
 	if err != nil {
 		return nil, err

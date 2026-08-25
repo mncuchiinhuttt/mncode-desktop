@@ -199,6 +199,21 @@ func applySettings(cfg *config.Config, session *agent.Session, input DesktopSett
 	if input.AutoCompact != nil {
 		cfg.SetSetting("auto_compact", strconv.FormatBool(*input.AutoCompact))
 	}
+	if input.TokenSaverConcise != nil {
+		cfg.SetSetting("token_saver_concise", strconv.FormatBool(*input.TokenSaverConcise))
+	}
+	if input.TokenSaverCapThinking != nil {
+		cfg.SetSetting("token_saver_cap_thinking", strconv.FormatBool(*input.TokenSaverCapThinking))
+	}
+	if input.TokenSaverCompressOutput != nil {
+		cfg.SetSetting("token_saver_compress_output", strconv.FormatBool(*input.TokenSaverCompressOutput))
+	}
+	if input.TokenSaverTargetedEdits != nil {
+		cfg.SetSetting("token_saver_targeted_edits", strconv.FormatBool(*input.TokenSaverTargetedEdits))
+	}
+	if input.TokenSaverRtk != nil {
+		cfg.SetSetting("token_saver_rtk", strconv.FormatBool(*input.TokenSaverRtk))
+	}
 	if value := strings.TrimSpace(input.Language); value != "" {
 		allowed := map[string]bool{"Default (English)": true, "Vietnamese": true, "Japanese": true, "Chinese": true, "Spanish": true, "French": true, "German": true}
 		if !allowed[value] {
@@ -276,6 +291,11 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 	}
 	contextWindow := cfg.GetContextWindowLabel()
 	autoCompact := settingBool(cfg, "auto_compact", true)
+	tokenSaverConcise := settingBool(cfg, "token_saver_concise", false)
+	tokenSaverCapThinking := settingBool(cfg, "token_saver_cap_thinking", false)
+	tokenSaverCompressOutput := settingBool(cfg, "token_saver_compress_output", false)
+	tokenSaverTargetedEdits := settingBool(cfg, "token_saver_targeted_edits", false)
+	tokenSaverRtk := settingBool(cfg, "token_saver_rtk", false)
 	language := cfg.GetSetting("language", "Default (English)")
 	artifacts := settingBool(cfg, "artifacts", true)
 	interruptMode := cfg.GetSetting("interrupt_mode", "queue")
@@ -298,6 +318,8 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 		WrapLines: wrapLines, ShowContextWindowUsage: showContextWindowUsage,
 		SuggestedPrompts: suggestedPrompts, SendShortcut: sendShortcut,
 		ContextWindow: contextWindow, AutoCompact: autoCompact, Language: language,
+		TokenSaverConcise: tokenSaverConcise, TokenSaverCapThinking: tokenSaverCapThinking,
+		TokenSaverCompressOutput: tokenSaverCompressOutput, TokenSaverTargetedEdits: tokenSaverTargetedEdits, TokenSaverRtk: tokenSaverRtk,
 		Artifacts: artifacts, InterruptMode: interruptMode, VerboseOutput: verboseOutput,
 		ContextPercent: usage.PercentUsed, ContextUsed: usage.TotalUsed, ContextLimit: usage.Limit,
 	}
