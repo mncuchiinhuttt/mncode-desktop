@@ -21,7 +21,7 @@ function ContextMenuContent({
       <ContextMenuPrimitive.Content
         data-slot="context-menu-content"
         className={cn(
-          "z-50 min-w-[10rem] origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] p-1.5 text-foreground shadow-2xl data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          "z-50 min-w-[10rem] origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] p-1.5 text-foreground shadow-2xl data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
         )}
         {...props}
@@ -45,7 +45,7 @@ function ContextMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-lg px-2.5 py-2 text-xs outline-none select-none focus:bg-[var(--mn-surface-muted)] data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[inset]:pl-8 data-[variant=destructive]:text-rose-600",
+        "relative flex cursor-default items-center gap-2 rounded-sm px-2.5 py-2 text-xs outline-none select-none focus:bg-[var(--mn-surface-muted)] data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[inset]:pl-8 data-[variant=destructive]:text-rose-600",
         className,
       )}
       {...props}

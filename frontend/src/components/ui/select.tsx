@@ -31,7 +31,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 text-xs text-foreground outline-none transition-colors focus:border-[var(--mn-accent)] focus:ring-2 focus:ring-[var(--mn-accent)]/20 disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 [&>span]:min-w-0 [&>span]:truncate",
+        "flex w-full items-center justify-between gap-2 rounded-sm border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 text-xs text-foreground outline-none transition-colors focus:border-[var(--mn-accent)] focus:ring-2 focus:ring-[var(--mn-accent)]/20 disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 [&>span]:min-w-0 [&>span]:truncate",
         className,
       )}
       {...props}
@@ -56,7 +56,7 @@ function SelectContent({
         data-slot="select-content"
         position={position}
         className={cn(
-          "relative z-50 max-h-80 min-w-[8rem] overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground shadow-xl animate-in fade-in-0 zoom-in-95",
+          "relative z-50 max-h-80 min-w-[8rem] overflow-hidden rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground shadow-xl animate-in fade-in-0 zoom-in-95",
           position === "popper" && "translate-y-1",
           className,
         )}

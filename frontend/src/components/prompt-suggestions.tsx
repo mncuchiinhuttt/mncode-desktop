@@ -82,7 +82,7 @@ export function PromptSuggestionMenu({
       id="prompt-suggestions"
       role="listbox"
       aria-label={trigger === "@" ? "Context suggestions" : "Command and skill suggestions"}
-      className="mn-prompt-suggestions absolute bottom-full left-2 right-2 z-50 mb-2 overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground shadow-2xl animate-in fade-in-0 slide-in-from-bottom-1"
+      className="mn-prompt-suggestions absolute bottom-full left-2 right-2 z-50 mb-2 overflow-hidden rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground shadow-2xl animate-in fade-in-0 slide-in-from-bottom-1"
     >
       <div className="flex items-center justify-between border-b border-[var(--mn-line)] px-3 py-2">
         <div className="flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">

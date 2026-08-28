@@ -3,15 +3,14 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 
 	"mncode/pkg/accounts"
 	"mncode/pkg/agent"
+	"mncode/pkg/browserctl"
 	"mncode/pkg/config"
+	"mncode/pkg/provider"
 	"mncode/pkg/ui"
 )
 
@@ -240,8 +239,15 @@ func applySettings(cfg *config.Config, session *agent.Session, input DesktopSett
 	if err := config.SaveConfig(cfg); err != nil {
 		return DesktopSettings{}, err
 	}
-	if session != nil {
+	if session != nil && strings.TrimSpace(input.Provider) != "" {
 		session.Provider = nil
+		if cfg.APIKey != "" {
+			resolved, err := provider.NewProvider(cfg)
+			if err != nil {
+				return DesktopSettings{}, err
+			}
+			session.Provider = resolved
+		}
 	}
 	return settingsFromConfig(cfg, session), nil
 }
@@ -396,33 +402,79 @@ func browserSettingsFromConfig(cfg *config.Config) DesktopBrowserSettings {
 	return DesktopBrowserSettings{
 		ControlEnabled:          settingBool(cfg, "browser_control_enabled", false),
 		IgnoreCertificateErrors: settingBool(cfg, "browser_ignore_cert_errors", false),
-		ChromeProfileFound:      chromeProfilePath() != "",
-		BuiltInBrowserAvailable: false,
+		ChromeProfileFound:      browserctl.FindChromeProfile() != "",
+		BuiltInBrowserAvailable: true,
+		SessionRunning:          browserctl.IsSharedRunning(),
+		ProfileDataDir:          browserctl.DefaultUserDataDir(),
 	}
 }
 
-func chromeProfilePath() string {
-	home, err := os.UserHomeDir()
+// ImportChromeBrowserData copies cookies, bookmarks, and history from the
+// user's default Chrome profile into mncode's isolated controlled-browser
+// profile. Never touches the user's real Chrome profile or saved passwords.
+// The controlled browser is closed first so profile files aren't locked.
+func (a *App) ImportChromeBrowserData() (DesktopBrowserSettings, error) {
+	if err := browserctl.CloseShared(); err != nil {
+		return DesktopBrowserSettings{}, err
+	}
+	if _, err := browserctl.ImportChromeProfile(browserctl.DefaultUserDataDir()); err != nil {
+		cfg, cfgErr := a.browserConfig()
+		if cfgErr == nil {
+			return browserSettingsFromConfig(cfg), err
+		}
+		return DesktopBrowserSettings{}, err
+	}
+	cfg, err := a.browserConfig()
 	if err != nil {
-		return ""
+		return DesktopBrowserSettings{}, err
 	}
-	var candidates []string
-	switch runtime.GOOS {
-	case "darwin":
-		candidates = []string{filepath.Join(home, "Library", "Application Support", "Google", "Chrome", "Default")}
-	case "windows":
-		if localAppData := os.Getenv("LOCALAPPDATA"); localAppData != "" {
-			candidates = []string{filepath.Join(localAppData, "Google", "Chrome", "User Data", "Default")}
-		}
-	default:
-		candidates = []string{filepath.Join(home, ".config", "google-chrome", "Default")}
+	return browserSettingsFromConfig(cfg), nil
+}
+
+// ClearBrowserCacheData clears only the controlled browser's HTTP/GPU/service
+// worker caches, keeping cookies, history, and logins intact.
+func (a *App) ClearBrowserCacheData() (DesktopBrowserSettings, error) {
+	if err := browserctl.CloseShared(); err != nil {
+		return DesktopBrowserSettings{}, err
 	}
-	for _, candidate := range candidates {
-		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-			return candidate
-		}
+	if err := browserctl.ClearBrowserCache(browserctl.DefaultUserDataDir()); err != nil {
+		return DesktopBrowserSettings{}, err
 	}
-	return ""
+	cfg, err := a.browserConfig()
+	if err != nil {
+		return DesktopBrowserSettings{}, err
+	}
+	return browserSettingsFromConfig(cfg), nil
+}
+
+// ClearAllBrowserData wipes mncode's entire isolated controlled-browser
+// profile (cookies, history, cache, everything). The user's real Chrome
+// profile is never touched.
+func (a *App) ClearAllBrowserData() (DesktopBrowserSettings, error) {
+	if err := browserctl.CloseShared(); err != nil {
+		return DesktopBrowserSettings{}, err
+	}
+	if err := browserctl.ClearBrowserData(browserctl.DefaultUserDataDir()); err != nil {
+		return DesktopBrowserSettings{}, err
+	}
+	cfg, err := a.browserConfig()
+	if err != nil {
+		return DesktopBrowserSettings{}, err
+	}
+	return browserSettingsFromConfig(cfg), nil
+}
+
+// CloseBrowserSession shuts down the agent's controlled browser process, if
+// one is running.
+func (a *App) CloseBrowserSession() (DesktopBrowserSettings, error) {
+	if err := browserctl.CloseShared(); err != nil {
+		return DesktopBrowserSettings{}, err
+	}
+	cfg, err := a.browserConfig()
+	if err != nil {
+		return DesktopBrowserSettings{}, err
+	}
+	return browserSettingsFromConfig(cfg), nil
 }
 
 func permissionCatalog() []DesktopMode {

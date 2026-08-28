@@ -299,7 +299,7 @@ function StarterCard({
     <button
       type="button"
       onClick={onClick}
-      className="group rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] p-3.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--mn-accent)]/50 hover:shadow-[0_14px_30px_-14px_color-mix(in_srgb,var(--mn-accent)_35%,transparent)] active:translate-y-0 active:scale-[0.98]"
+      className="group rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] p-3.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--mn-accent)]/50 hover:shadow-[0_14px_30px_-14px_color-mix(in_srgb,var(--mn-accent)_35%,transparent)] active:translate-y-0 active:scale-[0.98]"
     >
       <div className="flex items-center gap-2.5">
         <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)] transition-transform duration-200 group-hover:scale-110">
@@ -480,7 +480,7 @@ const Composer = React.forwardRef<HTMLTextAreaElement, ComposerProps>(
             onHover={setActiveSuggestion}
           />
         )}
-        <Card className="mn-composer mn-soft-shadow gap-0 overflow-hidden rounded-2xl border py-0 transition-[border-color,box-shadow] duration-300 focus-within:border-[var(--mn-accent)]/45 focus-within:shadow-[0_0_0_3px_var(--mn-accent-soft),0_18px_44px_-16px_color-mix(in_srgb,var(--mn-accent)_28%,transparent)]">
+        <Card className="mn-composer mn-soft-shadow gap-0 overflow-hidden rounded-lg border py-0 transition-[border-color,box-shadow] duration-300 focus-within:border-[var(--mn-accent)]/45 focus-within:shadow-[0_0_0_3px_var(--mn-accent-soft),0_18px_44px_-16px_color-mix(in_srgb,var(--mn-accent)_28%,transparent)]">
           <CardContent className="p-0">
             <div className="border-b border-[var(--mn-line)] px-3 py-2">
               <DropdownMenu>
@@ -661,7 +661,7 @@ function ContextRing({
         align="center"
         sideOffset={12}
         arrowClassName="bg-[var(--mn-surface)] fill-[var(--mn-surface)]"
-        className="w-[320px] max-w-[calc(100vw-2rem)] rounded-2xl border border-[var(--mn-line)] bg-[var(--mn-surface)] p-4 text-foreground shadow-2xl"
+        className="w-[320px] max-w-[calc(100vw-2rem)] rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] p-4 text-foreground shadow-2xl"
       >
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
@@ -706,7 +706,7 @@ function ContextRing({
 
 function ContextStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 py-2">
+    <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 py-2">
       <p className="text-[0.6875rem] text-muted-foreground">{label}</p>
       <p className="mt-1 font-mono text-xs font-semibold text-foreground">{value}</p>
     </div>
@@ -947,7 +947,7 @@ function MessageBubble({
   }
   return (
     <div className="flex justify-end">
-      <div className="max-w-[82%] rounded-2xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-[15px] leading-7">
+      <div className="max-w-[82%] rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-[15px] leading-7">
         <p className="whitespace-pre-wrap">{message.content || "…"}</p>
       </div>
     </div>
@@ -967,7 +967,7 @@ function QuestionCard({
       aria-live="assertive"
       className="border-t border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 py-3 sm:px-4"
     >
-      <div className="flex w-full items-start gap-3 rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] px-4 py-3">
+      <div className="flex w-full items-start gap-3 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] px-4 py-3">
         <Sparkles className="mt-0.5 size-4 shrink-0 text-[var(--mn-accent-strong)]" />
         <div className="min-w-0 flex-1">
           <p className="text-[0.875rem] font-medium">mncode needs your input</p>
@@ -1005,7 +1005,7 @@ function PermissionCard({
       aria-live="assertive"
       className="border-t border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-6 py-3"
     >
-      <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-50/50 px-4 py-3 dark:bg-amber-300/[0.08]">
+      <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-lg border border-amber-400/30 bg-amber-50/50 px-4 py-3 dark:bg-amber-300/[0.08]">
         <ShieldCheck className="size-4 shrink-0 text-amber-600 dark:text-amber-200" />
         <div className="min-w-0 flex-1">
           <p className="text-[0.875rem] font-medium">

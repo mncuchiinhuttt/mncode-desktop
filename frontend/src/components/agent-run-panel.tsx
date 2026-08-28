@@ -37,7 +37,7 @@ function SubagentCard({ item }: { item: ActivityItem }) {
     item.subagentResult ||
     (item.active ? "Subagent is working…" : item.detail || "No response recorded.");
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)]">
+    <div className="overflow-hidden rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)]">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -78,7 +78,7 @@ function EditedFileCard({ item }: { item: ActivityItem }) {
   const [open, setOpen] = useState(false);
   const hasSnippet = Boolean(item.beforeSnippet || item.afterSnippet);
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)]">
+    <div className="overflow-hidden rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)]">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -128,7 +128,7 @@ export function AgentRunPanel({ activities }: { activities: ActivityItem[] }) {
         </span>
       </div>
       {subagents.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--mn-line)] px-3 py-6 text-center text-xs text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-[var(--mn-line)] px-3 py-6 text-center text-xs text-muted-foreground">
           <MessageCircle className="mx-auto size-4" />
           <p className="mt-2">No subagents spawned yet.</p>
         </div>
@@ -155,7 +155,7 @@ export function AgentRunPanel({ activities }: { activities: ActivityItem[] }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-[var(--mn-line)] px-3 py-4 text-center text-xs text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-[var(--mn-line)] px-3 py-4 text-center text-xs text-muted-foreground">
           No file edits yet.
         </div>
       )}

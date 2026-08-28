@@ -140,6 +140,8 @@ export namespace main {
 	    ignoreCertificateErrors: boolean;
 	    chromeProfileFound: boolean;
 	    builtInBrowserAvailable: boolean;
+	    sessionRunning: boolean;
+	    profileDataDir: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new DesktopBrowserSettings(source);
@@ -151,6 +153,8 @@ export namespace main {
 	        this.ignoreCertificateErrors = source["ignoreCertificateErrors"];
 	        this.chromeProfileFound = source["chromeProfileFound"];
 	        this.builtInBrowserAvailable = source["builtInBrowserAvailable"];
+	        this.sessionRunning = source["sessionRunning"];
+	        this.profileDataDir = source["profileDataDir"];
 	    }
 	}
 	export class DesktopBrowserSettingsInput {
@@ -997,6 +1001,32 @@ export namespace main {
 		    }
 		    return a;
 		}
+	}
+	export class DesktopFilePreview {
+	    path: string;
+	    name: string;
+	    language: string;
+	    content: string;
+	    size: number;
+	    lines: number;
+	    truncated: boolean;
+	    binary: boolean;
+
+	    static createFrom(source: any = {}) {
+	        return new DesktopFilePreview(source);
+	    }
+
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.name = source["name"];
+	        this.language = source["language"];
+	        this.content = source["content"];
+	        this.size = source["size"];
+	        this.lines = source["lines"];
+	        this.truncated = source["truncated"];
+	        this.binary = source["binary"];
+	    }
 	}
 	export class LanguageStat {
 	    name: string;

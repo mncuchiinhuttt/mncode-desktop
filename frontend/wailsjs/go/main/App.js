@@ -90,6 +90,22 @@ export function GetBrowserSettings() {
   return window['go']['main']['App']['GetBrowserSettings']();
 }
 
+export function ImportChromeBrowserData() {
+  return window['go']['main']['App']['ImportChromeBrowserData']();
+}
+
+export function ClearBrowserCacheData() {
+  return window['go']['main']['App']['ClearBrowserCacheData']();
+}
+
+export function ClearAllBrowserData() {
+  return window['go']['main']['App']['ClearAllBrowserData']();
+}
+
+export function CloseBrowserSession() {
+  return window['go']['main']['App']['CloseBrowserSession']();
+}
+
 export function GetCatalog() {
   return window['go']['main']['App']['GetCatalog']();
 }
@@ -172,6 +188,10 @@ export function OpenStandaloneChat() {
 
 export function OpenTerminal() {
   return window['go']['main']['App']['OpenTerminal']();
+}
+
+export function ReadWorkspaceFile(arg1) {
+  return window['go']['main']['App']['ReadWorkspaceFile'](arg1);
 }
 
 export function OpenUpdatePage(arg1) {

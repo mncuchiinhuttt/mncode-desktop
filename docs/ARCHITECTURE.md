@@ -38,7 +38,7 @@ Every public method on `App` is a Wails binding callable from the frontend. File
 | --------------------- | ----------------------------------------------------- |
 | `app.go`              | Workspace mount, provider wiring, send/steer/cancel   |
 | `desktop-session.go`  | Agent session construction, tools, credential choice  |
-| `desktop-events.go`   | `desktopUI` bridge: core callbacks → Wails events     |
+| `desktop-events.go`   | `desktopUI` bridge: callbacks with immutable per-run IDs → Wails events |
 | `desktop-prompts.go`  | Permission/question prompt resolution                 |
 | `catalog.go`          | Settings validation, themes, models, prompt catalog   |
 | `providers.go`        | Provider pools, quotas, custom providers              |
@@ -72,11 +72,12 @@ terminal:ready/command/output/exit/closed · remote:closed
 4. Tools emit `tool-start`/`tool-result`; permission-gated tools raise `agent:permission`, resolved by `App.ResolvePermission`.
 5. `agent:done` finalizes the run: the summary (duration + usage) is computed once and **persisted immediately** to chat history.
 6. Cancels and errors follow the same finalize path (`agent:cancelled` / `agent:error`).
+7. The normal ReAct loop is bounded by `max_agent_turns` (default 25, hard maximum 100); reaching the limit returns an explicit error instead of silently completing.
 
 ## Security posture
 
 - Workspace MCP servers are only auto-started for **trusted workspaces**; the child-process environment is sanitized (whitelist) so API keys never leak into MCP servers.
-- Provider keys entered in settings live in memory for the current process.
+- Provider/API and telemetry credentials are persisted in `~/.mncode/config.json`; the config directory is `0700` and the file is `0600`. OS keychain storage remains a future hardening option.
 - Remote companion sessions require explicit pairing; the pairing URL carries the secret in the URL fragment, never the query string.
 
 ## Conventions

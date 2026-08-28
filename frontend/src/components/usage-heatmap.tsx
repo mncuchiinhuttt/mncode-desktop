@@ -92,7 +92,7 @@ function UsageMetric({
   value: string;
 }) {
   return (
-    <div className="mn-surface rounded-xl border p-3">
+    <div className="mn-surface rounded-lg border p-3">
       <div className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
         <Icon className="size-3.5 text-[var(--mn-accent-strong)]" />
         {label}

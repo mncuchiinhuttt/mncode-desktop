@@ -30,7 +30,7 @@ export function ResponseSummary({ activities }: { activities: ActivityItem[] }) 
   const label = files.length === 1 ? "file" : "files";
 
   return (
-    <section className="mt-5 overflow-hidden rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)]">
+    <section className="mt-5 overflow-hidden rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)]">
       <div className="flex items-center gap-3 border-b border-[var(--mn-line)] px-4 py-3">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[var(--mn-surface-muted)] text-muted-foreground">
           <FilePenLine className="size-4" />

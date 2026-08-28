@@ -30,6 +30,17 @@ export interface FileNode {
   children?: FileNode[];
 }
 
+export interface DesktopFilePreview {
+  path: string;
+  name: string;
+  language: string;
+  content: string;
+  size: number;
+  lines: number;
+  truncated: boolean;
+  binary: boolean;
+}
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
@@ -48,6 +59,7 @@ export interface ChatSession {
   activities?: ActivityItem[];
   runSummary?: AgentRunSummary;
   runUsage?: AgentRunUsage;
+  activeRunID?: number;
 }
 
 export interface AgentRunUsage {
@@ -90,6 +102,7 @@ export interface PermissionRequest {
   id: string;
   tool: string;
   summary: string;
+  runID: number;
 }
 
 export interface QuestionRequest {
@@ -97,6 +110,7 @@ export interface QuestionRequest {
   question: string;
   options: string[];
   multi: boolean;
+  runID: number;
 }
 
 export interface ModelOption {
@@ -161,6 +175,8 @@ export interface DesktopBrowserSettings {
   ignoreCertificateErrors: boolean;
   chromeProfileFound: boolean;
   builtInBrowserAvailable: boolean;
+  sessionRunning: boolean;
+  profileDataDir: string;
 }
 
 export interface DesktopBrowserSettingsInput {

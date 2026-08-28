@@ -95,20 +95,20 @@ export function SkillsMarketplace({
   if (loading && !data)
     return (
       <div className="mt-8 space-y-3">
-        <div className="h-28 animate-pulse rounded-xl bg-[var(--mn-surface-muted)]" />
-        <div className="h-44 animate-pulse rounded-xl bg-[var(--mn-surface-muted)]" />
+        <div className="h-28 animate-pulse rounded-lg bg-[var(--mn-surface-muted)]" />
+        <div className="h-44 animate-pulse rounded-lg bg-[var(--mn-surface-muted)]" />
       </div>
     );
   return (
     <div className="mt-8 space-y-5">
       {error && (
-        <div className="rounded-xl border border-rose-500/25 bg-rose-500/8 px-4 py-3 text-xs text-rose-700 dark:text-rose-200">
+        <div className="rounded-lg border border-rose-500/25 bg-rose-500/8 px-4 py-3 text-xs text-rose-700 dark:text-rose-200">
           {error}
         </div>
       )}
       <Card className="mn-surface gap-0 py-0 shadow-none">
         <CardContent className="flex flex-wrap items-center gap-3 p-4">
-          <div className="grid size-10 place-items-center rounded-xl bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
+          <div className="grid size-10 place-items-center rounded-lg bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
             <Sparkles className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -217,7 +217,7 @@ export function SkillsMarketplace({
           />
         </section>
       )}
-      <div className="flex items-start gap-2 rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-xs leading-5 text-muted-foreground">
+      <div className="flex items-start gap-2 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-xs leading-5 text-muted-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[var(--mn-accent-strong)]" />
         Skills are instruction files. Install only sources you trust and inspect their contents
         before using them in agent turns.
@@ -346,7 +346,7 @@ function InstalledGroup({
           {skills.map((skill) => (
             <div
               key={skill.id}
-              className="flex items-center gap-3 rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] px-3 py-2.5"
+              className="flex items-center gap-3 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] px-3 py-2.5"
             >
               <div className="grid size-7 shrink-0 place-items-center rounded-md bg-[var(--mn-surface-muted)] text-[var(--mn-accent-strong)]">
                 <PackageOpen className="size-3.5" />
@@ -383,7 +383,7 @@ function InstalledGroup({
 
 function EmptySkills({ text }: { text: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-[var(--mn-line)] px-4 py-8 text-center text-xs text-muted-foreground">
+    <div className="rounded-lg border border-dashed border-[var(--mn-line)] px-4 py-8 text-center text-xs text-muted-foreground">
       {text}
     </div>
   );

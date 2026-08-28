@@ -13,12 +13,12 @@ Both source buttons are available in the marketplace banner inside the app.
 
 ## How installation works
 
-1. The UI lists the curated catalog from `skills-marketplace-catalog.go` plus what is already installed.
+1. The UI lists the curated catalog from `pkg/skills/marketplace-catalog.go` plus what is already installed.
 2. On install, `InstallMarketplaceSkill` fetches:
    ```
    https://raw.githubusercontent.com/{Repository}/{main|master}/{SkillPath}/SKILL.md
    ```
-3. The content (capped at 4 MiB) is written to `~/.mncode/skills/{slug}/SKILL.md` with `0600` permissions.
+3. The content (capped at 2 MiB) is written to `~/.mncode/skills/{slug}/SKILL.md` with `0600` permissions.
 4. The running session's skill catalog reloads immediately — no restart needed.
 
 Deleting a user-installed skill removes its folder. System skills (shipped with the local agent environment) are protected and cannot be deleted.

@@ -111,7 +111,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
           return (
             <pre
               key={index}
-              className="overflow-x-auto rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4 font-mono text-[0.8125rem] leading-6"
+              className="overflow-x-auto rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4 font-mono text-[0.8125rem] leading-6"
             >
               <code>{block.text}</code>
             </pre>

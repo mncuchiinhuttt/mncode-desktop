@@ -146,7 +146,7 @@ function InsightMetric({
   return (
     <Card className="mn-surface mn-sheen py-0 shadow-none">
       <CardContent className="flex items-center gap-3 p-4">
-        <div className="grid size-9 place-items-center rounded-xl bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
+        <div className="grid size-9 place-items-center rounded-lg bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
           <Icon className="size-4" />
         </div>
         <div>
