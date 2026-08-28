@@ -19,11 +19,13 @@ func (a *App) waitForPermission(call *provider.ToolCall) bool {
 	response := make(chan bool, 1)
 	a.mu.Lock()
 	a.permissions[id] = response
+	runID := a.activeRun
 	a.mu.Unlock()
 	tool := call.Name
-	a.emit("agent:permission", map[string]string{
+	a.emit("agent:permission", map[string]interface{}{
 		"id": id, "tool": tool,
 		"summary": permissionSummary(call),
+		"runID":   runID,
 	})
 
 	select {
@@ -78,10 +80,12 @@ func (a *App) waitForQuestion(question string, options []string, multi bool) str
 	response := make(chan string, 1)
 	a.mu.Lock()
 	a.questions[id] = response
+	runID := a.activeRun
 	a.mu.Unlock()
 	a.emit("agent:question", map[string]interface{}{
 		"id": id, "question": question,
 		"options": options, "multi": multi,
+		"runID":   runID,
 	})
 	if manager := a.activeRemoteManager(); manager != nil {
 		manager.PushQuestion(remote.QuestionPayload{

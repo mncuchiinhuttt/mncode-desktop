@@ -95,7 +95,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the layers talk to each
 
 ## Privacy
 
-Everything runs locally: workspace scanning, agent turns, and usage telemetry stay on this machine. Provider keys entered in settings are held in memory for the current process and are not persisted to disk. Optional mncode account sign-in only syncs settings and usage summaries you explicitly push.
+Everything runs locally: workspace scanning, agent turns, and usage telemetry stay on this machine. Provider and account credentials are persisted in `~/.mncode` with restrictive local permissions (`0700` directory, `0600` credential files). Optional mncode account sign-in only syncs settings and usage summaries you explicitly push.
 
 ## License
 

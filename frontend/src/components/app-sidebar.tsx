@@ -65,6 +65,7 @@ interface AppSidebarProps {
   onLoginAccount: () => void;
   onLogoutAccount: () => void;
   onChatSelect: (chatID: string) => void;
+  onSplitChat: (chatID: string) => void;
   onRenameChat: (chatID: string) => void;
   onToggleChatPin: (chatID: string) => void;
   onDeleteChat: (chatID: string) => void;
@@ -93,6 +94,7 @@ export function AppSidebar({
   onLoginAccount,
   onLogoutAccount,
   onChatSelect,
+  onSplitChat,
   onRenameChat,
   onToggleChatPin,
   onDeleteChat,
@@ -268,7 +270,10 @@ export function AppSidebar({
                         <Copy />
                         Copy session ID
                       </ContextMenuItem>
-                      <ContextMenuItem disabled>
+                      <ContextMenuItem
+                        disabled={chat.id === activeChatId}
+                        onSelect={() => onSplitChat(chat.id)}
+                      >
                         <Check />
                         Open in split view
                       </ContextMenuItem>

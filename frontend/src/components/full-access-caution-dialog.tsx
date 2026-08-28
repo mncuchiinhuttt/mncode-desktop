@@ -46,7 +46,7 @@ export function FullAccessCautionDialog({
       <DialogContent className="max-w-xl border-[var(--mn-line)] bg-[var(--mn-surface)] text-foreground">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl">
-            <span className="grid size-9 place-items-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-300">
+            <span className="grid size-9 place-items-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300">
               <AlertTriangle className="size-5" />
             </span>
             Turn on Full Access?
@@ -56,7 +56,7 @@ export function FullAccessCautionDialog({
             asking for each action.
           </DialogDescription>
         </DialogHeader>
-        <div className="rounded-2xl border border-rose-500/15 bg-rose-500/[0.045] p-3">
+        <div className="rounded-lg border border-rose-500/15 bg-rose-500/[0.045] p-3">
           {capabilities.map(({ title, description, icon: Icon, tone }, index) => (
             <div
               key={title}
@@ -65,7 +65,7 @@ export function FullAccessCautionDialog({
                 (index < capabilities.length - 1 ? "border-b border-rose-500/10" : "")
               }
             >
-              <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${tone}`}>
+              <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${tone}`}>
                 <Icon className="size-4" />
               </span>
               <div className="min-w-0">

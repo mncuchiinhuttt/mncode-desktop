@@ -140,6 +140,14 @@ type DesktopBrowserSettings struct {
 	IgnoreCertificateErrors bool `json:"ignoreCertificateErrors"`
 	ChromeProfileFound      bool `json:"chromeProfileFound"`
 	BuiltInBrowserAvailable bool `json:"builtInBrowserAvailable"`
+	// SessionRunning reports whether the agent's controlled browser process
+	// is currently active (a real Chrome window is open under mncode's
+	// control).
+	SessionRunning bool `json:"sessionRunning"`
+	// ProfileDataDir is the isolated Chrome profile directory the
+	// controlled browser uses — separate from the user's real browser
+	// profile.
+	ProfileDataDir string `json:"profileDataDir"`
 }
 
 // DesktopBrowserSettingsInput updates built-in browser control preferences.

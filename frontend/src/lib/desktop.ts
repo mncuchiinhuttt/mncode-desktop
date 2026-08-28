@@ -6,6 +6,7 @@ import type {
   DesktopBrowserSettings,
   DesktopBrowserSettingsInput,
   DesktopCatalog,
+  DesktopFilePreview,
   DesktopMCPServer,
   DesktopMCPServerInput,
   DesktopPersonalization,
@@ -54,6 +55,10 @@ export const desktop = {
   getBrowserSettings: () => call<DesktopBrowserSettings>("GetBrowserSettings"),
   updateBrowserSettings: (input: DesktopBrowserSettingsInput) =>
     call<DesktopBrowserSettings>("UpdateBrowserSettings", input),
+  importChromeBrowserData: () => call<DesktopBrowserSettings>("ImportChromeBrowserData"),
+  clearBrowserCacheData: () => call<DesktopBrowserSettings>("ClearBrowserCacheData"),
+  clearAllBrowserData: () => call<DesktopBrowserSettings>("ClearAllBrowserData"),
+  closeBrowserSession: () => call<DesktopBrowserSettings>("CloseBrowserSession"),
   getMCPServers: () => call<DesktopMCPServer[]>("GetMCPServers"),
   configureMCPServer: (input: DesktopMCPServerInput) =>
     call<DesktopMCPServer[]>("ConfigureMCPServer", input),
@@ -102,6 +107,7 @@ export const desktop = {
   logoutAccount: () => call<DesktopAccount>("LogoutAccount"),
   getCatalog: () => call<DesktopCatalog>("GetCatalog"),
   listWorkspaceTree: () => call<FileNode[]>("ListWorkspaceTree"),
+  readWorkspaceFile: (path: string) => call<DesktopFilePreview>("ReadWorkspaceFile", path),
   sendPrompt: (prompt: string) => call<void>("SendPrompt", prompt),
   steerPrompt: (prompt: string) => call<void>("SteerPrompt", prompt),
   cancelTurn: () => call<void>("CancelTurn"),

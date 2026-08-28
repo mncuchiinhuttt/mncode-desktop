@@ -124,8 +124,8 @@ function tokenClass(token: string): string {
   return "";
 }
 
-/** Very small, dependency-free syntax tinting for diff rows. */
-function HighlightedLine({ text }: { text: string }) {
+/** Very small, dependency-free syntax tinting for diff rows and file previews. */
+export function HighlightedLine({ text }: { text: string }) {
   const parts = useMemo(() => text.match(TOKEN_RE) ?? [text], [text]);
   return (
     <>

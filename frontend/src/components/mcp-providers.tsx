@@ -117,7 +117,7 @@ export function McpProviders({
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-5">
-                <div className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
+                <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
                   <p className="mb-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Connection guide
                   </p>
@@ -251,7 +251,7 @@ function ProviderLogo({ id }: { id: MCPServerID }) {
       ? "https://cdn.simpleicons.org/github/ffffff"
       : "https://cdn.simpleicons.org/notion/ffffff";
   return (
-    <div className="grid size-10 place-items-center rounded-xl bg-[#171717] text-white">
+    <div className="grid size-10 place-items-center rounded-lg bg-[#171717] text-white">
       {failed ? (
         <span className="font-serif text-lg font-bold">{id === "github" ? "GH" : "N"}</span>
       ) : (

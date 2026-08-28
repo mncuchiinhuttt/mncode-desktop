@@ -191,9 +191,9 @@ function FolderPanel({
 }
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] p-3">
-      <p className="text-[0.6875rem] text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
+    <div className="hud-stat">
+      <span className="hud-stat-label">{label}</span>
+      <span className="hud-stat-value !text-base">{value}</span>
     </div>
   );
 }
@@ -240,7 +240,7 @@ function SideChat({
           ))
         )}
       </div>
-      <div className="mt-4 rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface)] p-2">
+      <div className="mt-4 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] p-2">
         <textarea
           aria-label="Side chat note"
           value={prompt}

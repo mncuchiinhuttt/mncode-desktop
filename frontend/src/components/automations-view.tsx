@@ -161,12 +161,15 @@ export function AutomationsView({ workspace }: { workspace: WorkspaceInfo }) {
     | undefined
   >();
   const [deleteTarget, setDeleteTarget] = useState<Automation>();
+  const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     try {
       setAutomations(await desktop.listAutomations());
-    } catch {
+      setError("");
+    } catch (reason) {
       setAutomations([]);
+      setError(reason instanceof Error ? reason.message : "Could not load automations");
     }
   }, []);
 
@@ -192,10 +195,42 @@ export function AutomationsView({ workspace }: { workspace: WorkspaceInfo }) {
     setKeepAwake(enabled);
     try {
       await desktop.setKeepAwake(enabled);
-    } catch {
+      setError("");
+    } catch (reason) {
       setKeepAwake(!enabled);
+      setError(reason instanceof Error ? reason.message : "Could not update keep-awake setting");
     }
   };
+
+  async function toggleAutomation(id: string, enabled: boolean) {
+    try {
+      await desktop.toggleAutomation(id, enabled);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not update automation");
+    }
+  }
+
+  async function runAutomation(id: string) {
+    try {
+      setRunningId(id);
+      await desktop.runAutomationNow(id);
+    } catch (reason) {
+      setRunningId("");
+      setError(reason instanceof Error ? reason.message : "Could not run automation");
+    }
+  }
+
+  async function removeAutomation() {
+    if (!deleteTarget) return;
+    try {
+      await desktop.deleteAutomation(deleteTarget.id);
+      setDeleteTarget(undefined);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not delete automation");
+    }
+  }
 
   const templates = useMemo(() => (automations ?? []).length === 0, [automations]);
 
@@ -209,6 +244,13 @@ export function AutomationsView({ workspace }: { workspace: WorkspaceInfo }) {
           Schedule recurring tasks or queue background work that runs during idle time.
         </p>
       </div>
+
+      {error && (
+        <div className="mb-6 flex items-start gap-2 rounded-lg border border-rose-400/30 bg-rose-50/60 px-3 py-2 text-xs leading-5 text-rose-700 dark:bg-rose-300/[0.08] dark:text-rose-200">
+          <Info className="mt-0.5 size-3.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Keep-awake preference */}
       <div className="mb-8 flex items-center justify-between gap-4 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3">
@@ -268,10 +310,8 @@ export function AutomationsView({ workspace }: { workspace: WorkspaceInfo }) {
               key={automation.id}
               automation={automation}
               running={runningId === automation.id}
-              onToggle={(enabled) =>
-                void desktop.toggleAutomation(automation.id, enabled).catch(() => undefined)
-              }
-              onRun={() => void desktop.runAutomationNow(automation.id).catch(() => undefined)}
+              onToggle={(enabled) => void toggleAutomation(automation.id, enabled)}
+              onRun={() => void runAutomation(automation.id)}
               onEdit={() => setDialog({ mode: "edit", automation })}
               onDelete={() => setDeleteTarget(automation)}
             />
@@ -331,11 +371,7 @@ export function AutomationsView({ workspace }: { workspace: WorkspaceInfo }) {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => {
-                if (deleteTarget)
-                  void desktop.deleteAutomation(deleteTarget.id).catch(() => undefined);
-                setDeleteTarget(undefined);
-              }}
+              onClick={() => void removeAutomation()}
             >
               Delete automation
             </Button>

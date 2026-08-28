@@ -155,7 +155,7 @@ export function ModelsSettingsView({
           {error}
         </div>
       )}
-      <div className="grid min-h-[520px] overflow-hidden rounded-2xl border border-[var(--mn-line)] bg-[var(--mn-surface)] lg:grid-cols-[210px_minmax(0,1fr)]">
+      <div className="grid min-h-[520px] overflow-hidden rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface)] lg:grid-cols-[210px_minmax(0,1fr)]">
         <aside className="border-b border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-3 lg:border-b-0 lg:border-r">
           <p className="px-2 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Providers
@@ -677,7 +677,7 @@ function ProviderLayout({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="grid size-10 place-items-center rounded-xl bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
+          <div className="grid size-10 place-items-center rounded-lg bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
             <Icon className="size-5" />
           </div>
           <div>
@@ -708,7 +708,7 @@ function AccountList({
     <div className="space-y-3">
       <p className="text-xs font-medium">Logged-in accounts</p>
       {accounts.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--mn-line)] p-4 text-xs text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-[var(--mn-line)] p-4 text-xs text-muted-foreground">
           No accounts connected yet.
         </div>
       ) : (
@@ -718,7 +718,7 @@ function AccountList({
             key={account.id}
             onClick={() => onUse(account.id)}
             disabled={busy}
-            className="flex w-full items-center gap-3 rounded-xl border border-[var(--mn-line)] p-3 text-left transition-colors hover:bg-[var(--mn-surface-muted)]"
+            className="flex w-full items-center gap-3 rounded-lg border border-[var(--mn-line)] p-3 text-left transition-colors hover:bg-[var(--mn-surface-muted)]"
           >
             <div className="grid size-8 place-items-center rounded-full bg-[var(--mn-accent-soft)] text-[var(--mn-accent-strong)]">
               <UserRound className="size-3.5" />
@@ -760,7 +760,7 @@ function QuotaPanel({ quota, loading }: { quota?: ProviderQuota; loading?: boole
     },
   ];
   return (
-    <section className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
+    <section className="rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">Active account quota</p>
@@ -843,7 +843,7 @@ function QuotaPanel({ quota, loading }: { quota?: ProviderQuota; loading?: boole
 function QuotaSkeleton() {
   return (
     <section
-      className="rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4"
+      className="rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-4"
       aria-label="Loading quota"
     >
       <div className="h-4 w-40 animate-pulse rounded bg-[var(--mn-line)]" />
@@ -874,7 +874,7 @@ function ModelList({ models }: { models: DesktopCatalog["models"] }) {
     <div className="space-y-2">
       <p className="text-xs font-medium">Model list</p>
       {models.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--mn-line)] p-4 text-xs text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-[var(--mn-line)] p-4 text-xs text-muted-foreground">
           No models available for this provider yet.
         </div>
       ) : (

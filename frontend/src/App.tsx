@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { desktop, listen } from "@/lib/desktop";
+import { useActiveRunID } from "@/hooks/useActiveRunID";
 import type {
   ActivityItem,
   AgentRunSummary,
@@ -48,6 +49,8 @@ import { SettingsView } from "./components/settings-view";
 import { TerminalPanel } from "./components/terminal-panel";
 import { TopBar } from "./components/top-bar";
 import { RightSidebar, type RightPanel } from "./components/right-sidebar";
+import { FilePreviewDialog } from "./components/file-preview-dialog";
+import { ChatPeekPanel } from "./components/chat-peek-panel";
 import { RemoteCompanionDialog } from "./components/remote-companion-dialog";
 import { OnboardingFlow, type OnboardingPhase } from "./components/onboarding-flow";
 import { WorkspaceView } from "./components/workspace-view";
@@ -116,6 +119,8 @@ const emptyBrowserSettings: DesktopBrowserSettings = {
   ignoreCertificateErrors: false,
   chromeProfileFound: false,
   builtInBrowserAvailable: false,
+  sessionRunning: false,
+  profileDataDir: "",
 };
 const emptyPersonalization: DesktopPersonalization = {
   customInstructions: "",
@@ -322,6 +327,8 @@ export default function App() {
   const [workspace, setWorkspace] = useState<WorkspaceInfo>(emptyWorkspace);
   const [account, setAccount] = useState<DesktopAccount>(emptyAccount);
   const [files, setFiles] = useState<FileNode[]>([]);
+  const [previewFilePath, setPreviewFilePath] = useState<string | null>(null);
+  const [splitChatID, setSplitChatID] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [runUsage, setRunUsage] = useState<AgentRunUsage>(emptyRunUsage);
@@ -393,6 +400,7 @@ export default function App() {
   const runUsageRef = useRef<AgentRunUsage>(emptyRunUsage);
   const providerUsageRef = useRef<AgentRunUsage>(emptyRunUsage);
   const hasProviderUsageRef = useRef(false);
+  const { setActiveRunID, clearActiveRunID, isActiveRun } = useActiveRunID();
   const resizeRef = useRef<
     | {
         side: "left" | "right";
@@ -753,6 +761,10 @@ export default function App() {
 
   const applyWorkspace = useCallback(
     (info: WorkspaceInfo) => {
+      clearActiveRunID();
+      setRunning(false);
+      setPermission(undefined);
+      setQuestion(undefined);
       setWorkspace(info);
       if (info.ready) {
         void refreshFiles();
@@ -782,7 +794,8 @@ export default function App() {
 
     const cleanups = [
       listen<WorkspaceInfo>("workspace:opened", applyWorkspace),
-      listen<{ prompt: string }>("agent:start", ({ prompt: text }) => {
+      listen<{ prompt: string; runID: number }>("agent:start", ({ prompt: text, runID }) => {
+        setActiveRunID(runID);
         setRunning(true);
         setPrompt("");
         const now = Date.now();
@@ -831,7 +844,9 @@ export default function App() {
         inputTokens: number;
         outputTokens: number;
         thinkingTokens: number;
-      }>("agent:usage", ({ inputTokens, outputTokens, thinkingTokens }) => {
+        runID: number;
+      }>("agent:usage", ({ inputTokens, outputTokens, thinkingTokens, runID }) => {
+        if (!isActiveRun(runID)) return;
         if (inputTokens <= 0 && outputTokens <= 0 && thinkingTokens <= 0) return;
         const previous = providerUsageRef.current;
         const next = {
@@ -849,7 +864,8 @@ export default function App() {
         runUsageRef.current = next;
         setRunUsage(next);
       }),
-      listen<{ text: string }>("agent:token", ({ text }) => {
+      listen<{ text: string; runID: number }>("agent:token", ({ text, runID }) => {
+        if (!isActiveRun(runID)) return;
         setMessages((items) =>
           items.map((item) =>
             item.id === "streaming" ? { ...item, content: item.content + text } : item,
@@ -867,7 +883,8 @@ export default function App() {
           setRunUsage(next);
         }
       }),
-      listen<{ text: string }>("agent:thinking", ({ text }) => {
+      listen<{ text: string; runID: number }>("agent:thinking", ({ text, runID }) => {
+        if (!isActiveRun(runID)) return;
         setActivities((items) => {
           const existing = items.findIndex((item) => item.id === "thinking");
           const nextItem: ActivityItem = {
@@ -897,9 +914,10 @@ export default function App() {
           setRunUsage(next);
         }
       }),
-      listen<{ id?: string; name: string; args?: Record<string, unknown> }>(
+      listen<{ id?: string; name: string; args?: Record<string, unknown>; runID: number }>(
         "agent:tool-start",
-        ({ id, name, args }) =>
+        ({ id, name, args, runID }) => {
+          if (!isActiveRun(runID)) return;
           setActivities((items) => {
             const action = describeToolAction(name, args);
             const nextItem: ActivityItem = {
@@ -916,7 +934,8 @@ export default function App() {
                 action.kind === "file" ? toolArgument(args, "TargetFile", "path") : undefined,
             };
             return [nextItem, ...items].slice(0, 80);
-          }),
+          });
+        },
       ),
       listen<{
         name: string;
@@ -930,7 +949,9 @@ export default function App() {
           beforeSnippet?: string;
           afterSnippet?: string;
         };
-      }>("agent:tool-result", ({ name, result, isError, summary }) =>
+        runID: number;
+      }>("agent:tool-result", ({ name, result, isError, summary, runID }) => {
+        if (!isActiveRun(runID)) return;
         setActivities((items) => {
           const index = items.findIndex((item) => item.toolName === name && item.active);
           const action = describeToolAction(name);
@@ -969,11 +990,12 @@ export default function App() {
             afterSnippet: summary?.afterSnippet ?? current.afterSnippet,
           };
           return next;
-        }),
-      ),
-      listen<{ name: string; role: string; prompt: string }>(
+        });
+      }),
+      listen<{ name: string; role: string; prompt: string; runID: number }>(
         "agent:subagent-start",
-        ({ name, role, prompt: subagentPrompt }) => {
+        ({ name, role, prompt: subagentPrompt, runID }) => {
+          if (!isActiveRun(runID)) return;
           setInspectorOpen(true);
           setRightPanel("activity");
           const subagentItem: ActivityItem = {
@@ -992,9 +1014,10 @@ export default function App() {
           setActivities((items) => [subagentItem, ...items].slice(0, 80));
         },
       ),
-      listen<{ name: string; summary: string; result?: string }>(
+      listen<{ name: string; summary: string; result?: string; runID: number }>(
         "agent:subagent-complete",
-        ({ name, summary, result }) =>
+        ({ name, summary, result, runID }) => {
+          if (!isActiveRun(runID)) return;
           setActivities((items) => {
             const index = items.findIndex((item) => item.subagentName === name && item.active);
             if (index < 0) return items;
@@ -1009,11 +1032,13 @@ export default function App() {
               subagentResult: result,
             };
             return next;
-          }),
+          });
+        },
       ),
-      listen<{ goal: string; elapsed: number; turns: number; tools: number }>(
+      listen<{ goal: string; elapsed: number; turns: number; tools: number; runID: number }>(
         "agent:goal-done",
-        ({ goal, elapsed, turns, tools }) => {
+        ({ goal, elapsed, turns, tools, runID }) => {
+          if (!isActiveRun(runID)) return;
           const goalItem: ActivityItem = {
             id: `goal-${Date.now()}`,
             label: "Completed goal",
@@ -1027,8 +1052,14 @@ export default function App() {
           setActivities((items) => [goalItem, ...items].slice(0, 80));
         },
       ),
-      listen<PermissionRequest>("agent:permission", setPermission),
-      listen<QuestionRequest>("agent:question", setQuestion),
+      listen<PermissionRequest>("agent:permission", (request) => {
+        if (!isActiveRun(request.runID)) return;
+        setPermission(request);
+      }),
+      listen<QuestionRequest>("agent:question", (request) => {
+        if (!isActiveRun(request.runID)) return;
+        setQuestion(request);
+      }),
       listen<{ cwd: string }>("terminal:ready", ({ cwd }) => {
         setTerminalCwd(cwd);
         setTerminalRunning(false);
@@ -1053,7 +1084,9 @@ export default function App() {
       listen("remote:closed", () => {
         setRemoteSession(emptyRemoteSession);
       }),
-      listen("agent:done", () => {
+      listen("agent:done", ({ runID }: { runID: number }) => {
+        if (!isActiveRun(runID)) return;
+        clearActiveRunID();
         setRunning(false);
         finalizeRun();
         setMessages((items) =>
@@ -1074,7 +1107,9 @@ export default function App() {
         );
         void hydrateCatalog();
       }),
-      listen("agent:cancelled", () => {
+      listen("agent:cancelled", ({ runID }: { runID: number }) => {
+        if (!isActiveRun(runID)) return;
+        clearActiveRunID();
         setRunning(false);
         finalizeRun();
         setMessages((items) =>
@@ -1093,7 +1128,9 @@ export default function App() {
         );
         void hydrateCatalog();
       }),
-      listen<{ message: string }>("agent:error", ({ message }) => {
+      listen<{ message: string; runID: number }>("agent:error", ({ message, runID }) => {
+        if (!isActiveRun(runID)) return;
+        clearActiveRunID();
         setRunning(false);
         finalizeRun();
         setPermission(undefined);
@@ -1292,6 +1329,11 @@ export default function App() {
     setOnboardingStep((current) => Math.max(0, current - 1));
   }
   async function openWorkspace() {
+    if (running) void desktop.cancelTurn();
+    clearActiveRunID();
+    setRunning(false);
+    setPermission(undefined);
+    setQuestion(undefined);
     try {
       applyWorkspace(await desktop.chooseWorkspace());
       setRightPanel("workspace");
@@ -1311,6 +1353,11 @@ export default function App() {
     }
   }
   async function openStandaloneChat() {
+    if (running) void desktop.cancelTurn();
+    clearActiveRunID();
+    setRunning(false);
+    setPermission(undefined);
+    setQuestion(undefined);
     try {
       applyWorkspace(await desktop.openStandaloneChat());
       setFiles([]);
@@ -1402,6 +1449,50 @@ export default function App() {
       throw error;
     }
   }
+  async function importChromeBrowserData() {
+    try {
+      const next = await desktop.importChromeBrowserData();
+      setBrowserSettings(next);
+      notify("Imported cookies, bookmarks, and history from Chrome", "success");
+      return next;
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Could not import Chrome browser data");
+      throw error;
+    }
+  }
+  async function clearBrowserCacheData() {
+    try {
+      const next = await desktop.clearBrowserCacheData();
+      setBrowserSettings(next);
+      notify("Cleared built-in browser cache", "success");
+      return next;
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Could not clear browser cache");
+      throw error;
+    }
+  }
+  async function clearAllBrowserData() {
+    try {
+      const next = await desktop.clearAllBrowserData();
+      setBrowserSettings(next);
+      notify("Cleared all built-in browser data", "success");
+      return next;
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Could not clear browser data");
+      throw error;
+    }
+  }
+  async function closeBrowserSession() {
+    try {
+      const next = await desktop.closeBrowserSession();
+      setBrowserSettings(next);
+      notify("Closed the controlled browser session", "success");
+      return next;
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Could not close the browser session");
+      throw error;
+    }
+  }
   async function configureMCPServer(input: DesktopMCPServerInput) {
     try {
       setMCPServers(await desktop.configureMCPServer(input));
@@ -1447,6 +1538,11 @@ export default function App() {
   function openChat(chatID: string) {
     const selected = chatSessions.find((chat) => chat.id === chatID);
     if (!selected) return;
+    if (running) void desktop.cancelTurn();
+    clearActiveRunID();
+    setRunning(false);
+    setPermission(undefined);
+    setQuestion(undefined);
     persistCurrentChat();
     setActiveChatId(selected.id);
     setMessages(selected.messages);
@@ -1460,6 +1556,17 @@ export default function App() {
       current.map((chat) => (chat.id === chatID ? { ...chat, unread: false } : chat)),
     );
     navigateView("workspace");
+  }
+
+  function openSplitChat(chatID: string) {
+    if (chatID === activeChatId) return;
+    setSplitChatID(chatID);
+    navigateView("workspace");
+  }
+
+  function switchToSplitChat(chatID: string) {
+    openChat(chatID);
+    setSplitChatID(null);
   }
 
   function openRenameChat(chatID: string) {
@@ -1509,6 +1616,7 @@ export default function App() {
     const isActive = chatID === activeChatId;
     if (isActive && running) void desktop.cancelTurn();
     setChatSessions((current) => current.filter((chat) => chat.id !== chatID));
+    if (splitChatID === chatID) setSplitChatID(null);
     if (isActive) {
       setMessages([]);
       setActivities([]);
@@ -1556,6 +1664,11 @@ export default function App() {
   function branchResponse(messageID: string) {
     const messageIndex = messages.findIndex((message) => message.id === messageID);
     if (messageIndex < 0) return;
+    if (running) void desktop.cancelTurn();
+    clearActiveRunID();
+    setRunning(false);
+    setPermission(undefined);
+    setQuestion(undefined);
     persistCurrentChat();
     const branchMessages = messages.slice(0, messageIndex + 1);
     const branchID = `chat-${Date.now()}`;
@@ -1650,6 +1763,10 @@ export default function App() {
   }
   function newTask() {
     if (running) void desktop.cancelTurn();
+    clearActiveRunID();
+    setRunning(false);
+    setPermission(undefined);
+    setQuestion(undefined);
     persistCurrentChat();
     setMessages([]);
     setActivities([]);
@@ -1668,8 +1785,6 @@ export default function App() {
     const automation = label === "Automations" || label === "New automation";
     navigateView(automation ? "automations" : "mcp");
     setRightPanel("workspace");
-    if (label === "New automation")
-      notify("Automation editor is waiting for the scheduler bridge", "success");
   }
   function changeTheme(next: "system" | "light" | "dark") {
     setTheme(next);
@@ -1737,6 +1852,7 @@ export default function App() {
             onOpenRemote={openRemoteCompanion}
             onUtilityAction={utilityAction}
             onChatSelect={openChat}
+            onSplitChat={openSplitChat}
             onRenameChat={openRenameChat}
             onToggleChatPin={toggleChatPin}
             onDeleteChat={requestDeleteChat}
@@ -1772,46 +1888,55 @@ export default function App() {
             aria-label={view}
           >
             {view === "workspace" && (
-              <WorkspaceView
-                workspace={workspace}
-                account={account}
-                messages={messages}
-                activities={activities}
-                runSummary={runSummary}
-                runUsage={runUsage}
-                runStartedAt={runStartedAt}
-                prompt={prompt}
-                running={running}
-                permission={permission}
-                question={question}
-                catalog={catalog}
-                settings={settings}
-                onPromptChange={setPrompt}
-                onPromptPreset={promptPreset}
-                onSend={sendPrompt}
-                onSteer={steerPrompt}
-                onPermission={(allowed) =>
-                  permission &&
-                  desktop
-                    .resolvePermission(permission.id, allowed)
-                    .then(() => setPermission(undefined))
-                    .catch(() => undefined)
-                }
-                onQuestion={(answer) =>
-                  question &&
-                  desktop
-                    .answerQuestion(question.id, answer)
-                    .then(() => setQuestion(undefined))
-                    .catch(() => undefined)
-                }
-                onCopyResponse={copyResponse}
-                onBranchResponse={branchResponse}
-                onFeedback={setResponseFeedback}
-                onOpenWorkspace={openWorkspace}
-                onOpenStandaloneChat={openStandaloneChat}
-                onAttach={chooseAttachment}
-                onSettingsChange={updateSettings}
-              />
+              <div className="flex min-h-0 flex-1">
+                <WorkspaceView
+                  workspace={workspace}
+                  account={account}
+                  messages={messages}
+                  activities={activities}
+                  runSummary={runSummary}
+                  runUsage={runUsage}
+                  runStartedAt={runStartedAt}
+                  prompt={prompt}
+                  running={running}
+                  permission={permission}
+                  question={question}
+                  catalog={catalog}
+                  settings={settings}
+                  onPromptChange={setPrompt}
+                  onPromptPreset={promptPreset}
+                  onSend={sendPrompt}
+                  onSteer={steerPrompt}
+                  onPermission={(allowed) =>
+                    permission &&
+                    desktop
+                      .resolvePermission(permission.id, allowed)
+                      .then(() => setPermission(undefined))
+                      .catch(() => undefined)
+                  }
+                  onQuestion={(answer) =>
+                    question &&
+                    desktop
+                      .answerQuestion(question.id, answer)
+                      .then(() => setQuestion(undefined))
+                      .catch(() => undefined)
+                  }
+                  onCopyResponse={copyResponse}
+                  onBranchResponse={branchResponse}
+                  onFeedback={setResponseFeedback}
+                  onOpenWorkspace={openWorkspace}
+                  onOpenStandaloneChat={openStandaloneChat}
+                  onAttach={chooseAttachment}
+                  onSettingsChange={updateSettings}
+                />
+                {splitChatID && (
+                  <ChatPeekPanel
+                    chat={chatSessions.find((chat) => chat.id === splitChatID) ?? null}
+                    onClose={() => setSplitChatID(null)}
+                    onSwitchTo={switchToSplitChat}
+                  />
+                )}
+              </div>
             )}
             {view === "insights" && (
               <InsightsView workspace={workspace} onOpenWorkspace={openWorkspace} />
@@ -1835,6 +1960,10 @@ export default function App() {
                 onLoadProviderQuota={loadActiveAntigravityQuota}
                 onLoadBrowserSettings={loadBrowserSettings}
                 onUpdateBrowserSettings={updateBrowserSettings}
+                onImportChromeBrowserData={importChromeBrowserData}
+                onClearBrowserCacheData={clearBrowserCacheData}
+                onClearAllBrowserData={clearAllBrowserData}
+                onCloseBrowserSession={closeBrowserSession}
                 onConfigureMCP={configureMCPServer}
                 onLoadPersonalization={loadPersonalization}
                 onSavePersonalization={savePersonalization}
@@ -1902,7 +2031,7 @@ export default function App() {
               onSideSubmit={saveSideNote}
               onPromoteNote={promoteSideNote}
               onOpenWorkspace={openWorkspace}
-              onFileSelect={(node) => notify("Selected " + node.path, "success")}
+              onFileSelect={(node) => setPreviewFilePath(node.path)}
               onResizeStart={(event) => beginResize("right", event.clientX)}
             />
           </div>
@@ -1916,6 +2045,12 @@ export default function App() {
           onOpenChat={openChat}
         />
         <ShortcutDialog open={shortcutOpen} onOpenChange={setShortcutOpen} />
+        <FilePreviewDialog
+          path={previewFilePath}
+          onClose={() => setPreviewFilePath(null)}
+          onLoad={(path) => desktop.readWorkspaceFile(path)}
+          onNotify={notify}
+        />
         <RenameChatDialog
           open={Boolean(renameChatID)}
           value={renameDraft}

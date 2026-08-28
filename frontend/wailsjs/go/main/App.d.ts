@@ -47,6 +47,14 @@ export function GetAppInfo():Promise<main.DesktopAppInfo>;
 
 export function GetBrowserSettings():Promise<main.DesktopBrowserSettings>;
 
+export function ImportChromeBrowserData():Promise<main.DesktopBrowserSettings>;
+
+export function ClearBrowserCacheData():Promise<main.DesktopBrowserSettings>;
+
+export function ClearAllBrowserData():Promise<main.DesktopBrowserSettings>;
+
+export function CloseBrowserSession():Promise<main.DesktopBrowserSettings>;
+
 export function GetCatalog():Promise<main.DesktopCatalog>;
 
 export function GetKeepAwake():Promise<boolean>;
@@ -88,6 +96,8 @@ export function OpenExternalURL(arg1:string):Promise<void>;
 export function OpenStandaloneChat():Promise<main.WorkspaceInfo>;
 
 export function OpenTerminal():Promise<void>;
+
+export function ReadWorkspaceFile(arg1:string):Promise<main.DesktopFilePreview>;
 
 export function OpenUpdatePage(arg1:string):Promise<void>;
 

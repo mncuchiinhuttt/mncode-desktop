@@ -6,12 +6,14 @@ import {
   BrainCircuit,
   Check,
   Chrome,
+  CircleDot,
   Database,
   ExternalLink,
   Globe2,
   Info,
   Loader2,
   Monitor,
+  PowerOff,
   RefreshCw,
   Settings2,
   ShieldAlert,
@@ -103,6 +105,10 @@ interface SettingsViewProps {
   onLoadProviderQuota: () => Promise<ProviderQuota | null>;
   onLoadBrowserSettings: () => Promise<DesktopBrowserSettings>;
   onUpdateBrowserSettings: (input: DesktopBrowserSettingsInput) => Promise<DesktopBrowserSettings>;
+  onImportChromeBrowserData: () => Promise<DesktopBrowserSettings>;
+  onClearBrowserCacheData: () => Promise<DesktopBrowserSettings>;
+  onClearAllBrowserData: () => Promise<DesktopBrowserSettings>;
+  onCloseBrowserSession: () => Promise<DesktopBrowserSettings>;
   onConfigureMCP: (input: DesktopMCPServerInput) => Promise<void>;
   onLoadPersonalization: () => Promise<DesktopPersonalization>;
   onSavePersonalization: (input: DesktopPersonalizationInput) => Promise<DesktopPersonalization>;
@@ -182,6 +188,10 @@ export function SettingsView({
   onLoadProviderQuota,
   onLoadBrowserSettings,
   onUpdateBrowserSettings,
+  onImportChromeBrowserData,
+  onClearBrowserCacheData,
+  onClearAllBrowserData,
+  onCloseBrowserSession,
   onConfigureMCP,
   onLoadPersonalization,
   onSavePersonalization,
@@ -287,7 +297,7 @@ export function SettingsView({
             onClick={() => setSection("app-info")}
           />
         </nav>
-        <div className="mt-auto rounded-xl border border-dashed border-[var(--mn-line)] p-3">
+        <div className="mt-auto rounded-lg border border-dashed border-[var(--mn-line)] p-3">
           <p className="text-[0.75rem] font-medium">Settings sync with CLI</p>
           <p className="mt-1 text-[0.6875rem] leading-4 text-muted-foreground">
             Model and agent modes use the shared mncode config.
@@ -381,6 +391,10 @@ export function SettingsView({
               settings={browserSettings}
               onLoad={onLoadBrowserSettings}
               onUpdate={onUpdateBrowserSettings}
+              onImportChrome={onImportChromeBrowserData}
+              onClearCache={onClearBrowserCacheData}
+              onClearAll={onClearAllBrowserData}
+              onCloseSession={onCloseBrowserSession}
             />
           )}
           {section === "mcp" && (
@@ -1366,8 +1380,8 @@ function PersonalizationSection({
   if (loading) {
     return (
       <div className="mt-8 space-y-5">
-        <div className="h-72 animate-pulse rounded-xl bg-[var(--mn-surface-muted)]" />
-        <div className="h-56 animate-pulse rounded-xl bg-[var(--mn-surface-muted)]" />
+        <div className="h-72 animate-pulse rounded-lg bg-[var(--mn-surface-muted)]" />
+        <div className="h-56 animate-pulse rounded-lg bg-[var(--mn-surface-muted)]" />
       </div>
     );
   }
@@ -1411,7 +1425,7 @@ function PersonalizationSection({
   return (
     <div className="mt-8 space-y-5">
       {error && (
-        <div className="rounded-xl border border-rose-500/25 bg-rose-500/8 px-4 py-3 text-xs text-rose-700 dark:text-rose-200">
+        <div className="rounded-lg border border-rose-500/25 bg-rose-500/8 px-4 py-3 text-xs text-rose-700 dark:text-rose-200">
           {error}
         </div>
       )}
@@ -1551,7 +1565,7 @@ function PersonalizationSection({
           />
         </Card>
       </section>
-      <div className="flex items-start gap-2 rounded-xl border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-xs leading-5 text-muted-foreground">
+      <div className="flex items-start gap-2 rounded-lg border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-4 py-3 text-xs leading-5 text-muted-foreground">
         <Info className="mt-0.5 size-4 shrink-0 text-[var(--mn-accent-strong)]" />
         Personalization is applied locally by mncode. Memories are only stored when you explicitly
         ask the agent to remember something.
@@ -1583,13 +1597,25 @@ function BrowserSection({
   settings,
   onLoad,
   onUpdate,
+  onImportChrome,
+  onClearCache,
+  onClearAll,
+  onCloseSession,
 }: {
   settings: DesktopBrowserSettings;
   onLoad: () => Promise<DesktopBrowserSettings>;
   onUpdate: (input: DesktopBrowserSettingsInput) => Promise<DesktopBrowserSettings>;
+  onImportChrome: () => Promise<DesktopBrowserSettings>;
+  onClearCache: () => Promise<DesktopBrowserSettings>;
+  onClearAll: () => Promise<DesktopBrowserSettings>;
+  onCloseSession: () => Promise<DesktopBrowserSettings>;
 }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [busyAction, setBusyAction] = useState<"import" | "cache" | "clear-all" | "close" | null>(
+    null,
+  );
 
   useEffect(() => {
     let active = true;
@@ -1617,12 +1643,28 @@ function BrowserSection({
     }
   }
 
+  async function runAction(kind: "import" | "cache" | "clear-all" | "close") {
+    setError("");
+    setBusyAction(kind);
+    try {
+      if (kind === "import") await onImportChrome();
+      else if (kind === "cache") await onClearCache();
+      else if (kind === "clear-all") await onClearAll();
+      else await onCloseSession();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Browser action failed");
+    } finally {
+      setBusyAction(null);
+      setConfirmClearAll(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="mt-8 space-y-5">
-        <div className="h-24 animate-pulse rounded-xl bg-[var(--mn-surface-muted)]" />
-        <div className="h-24 animate-pulse rounded-xl bg-[var(--mn-surface-muted)]" />
-        <div className="h-52 animate-pulse rounded-xl bg-[var(--mn-surface-muted)]" />
+        <div className="h-24 animate-pulse rounded-lg bg-[var(--mn-surface-muted)]" />
+        <div className="h-24 animate-pulse rounded-lg bg-[var(--mn-surface-muted)]" />
+        <div className="h-52 animate-pulse rounded-lg bg-[var(--mn-surface-muted)]" />
       </div>
     );
   }
@@ -1630,19 +1672,19 @@ function BrowserSection({
   return (
     <div className="mt-8 space-y-5">
       {error && (
-        <div className="rounded-xl border border-rose-500/25 bg-rose-500/8 px-4 py-3 text-xs text-rose-700 dark:text-rose-200">
+        <div className="rounded-lg border border-rose-500/25 bg-rose-500/8 px-4 py-3 text-xs text-rose-700 dark:text-rose-200">
           {error}
         </div>
       )}
       <section>
         <SectionHeading
           title="Browser control"
-          description="Allow future agent sessions to access and control web pages in mncode."
+          description="Let the agent navigate, click, type, and read real web pages using a dedicated, isolated Chrome instance."
         />
         <Card className="mn-surface mn-settings-rows shadow-none">
           <SettingRow
-            title="Enable built-in browser control"
-            description="Saves the preference for the built-in browser surface."
+            title="Enable agent browser control"
+            description="Adds a control_browser tool the agent can use to drive a real Chrome window — navigate, click, type, read pages, and screenshot."
             control={
               <ToggleButton
                 checked={settings.controlEnabled}
@@ -1650,23 +1692,46 @@ function BrowserSection({
               />
             }
           />
-          <div className="flex items-center gap-2 border-t border-[var(--mn-line)] px-5 py-3 text-[0.75rem] text-muted-foreground">
-            <Globe2 className="size-3.5 text-[var(--mn-accent-strong)]" />
-            {settings.builtInBrowserAvailable
-              ? "Built-in browser is ready for new sessions."
-              : "Browser surface is not bundled yet; this preference is ready for it."}
+          <div className="flex items-center justify-between gap-3 border-t border-[var(--mn-line)] px-5 py-3 text-[0.75rem] text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <CircleDot
+                className={cn(
+                  "size-3.5",
+                  settings.sessionRunning ? "text-emerald-500" : "text-muted-foreground/50",
+                )}
+              />
+              {settings.sessionRunning
+                ? "The agent's browser session is currently open."
+                : "No browser session is currently open."}
+            </div>
+            {settings.sessionRunning && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busyAction !== null}
+                onClick={() => void runAction("close")}
+                className="h-7 gap-1.5 border-[var(--mn-line)] text-xs"
+              >
+                {busyAction === "close" ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <PowerOff className="size-3.5" />
+                )}
+                Close browser
+              </Button>
+            )}
           </div>
         </Card>
       </section>
       <section>
         <SectionHeading
           title="Security"
-          description="Certificate handling applies to the built-in browser only."
+          description="Certificate handling applies to the agent's controlled browser only."
         />
         <Card className="mn-surface mn-settings-rows shadow-none">
           <SettingRow
             title="Ignore certificate errors"
-            description="Stops verifying HTTPS certificates in the built-in browser. Restart to take effect."
+            description="Stops verifying HTTPS certificates in the controlled browser. Restart the session to take effect."
             control={
               <ToggleButton
                 checked={settings.ignoreCertificateErrors}
@@ -1679,7 +1744,7 @@ function BrowserSection({
       <section>
         <SectionHeading
           title="Browser data"
-          description="Import and manage data for the built-in browser profile."
+          description="Import and manage data for the agent's isolated browser profile."
         />
         <Card className="mn-surface mn-settings-rows shadow-none">
           <BrowserActionRow
@@ -1687,27 +1752,73 @@ function BrowserSection({
             title="Import Chrome browser data"
             description={
               settings.chromeProfileFound
-                ? "A Chrome profile was detected on this computer."
-                : "No default Chrome profile was detected."
+                ? "Copy cookies, bookmarks, and history from your default Chrome profile so the agent stays logged into sites. Saved passwords are never copied."
+                : "No default Chrome profile was detected on this computer."
             }
+            actionLabel="Import"
+            disabled={!settings.chromeProfileFound}
+            busy={busyAction === "import"}
+            onRun={() => void runAction("import")}
           />
           <BrowserActionRow
             icon={Database}
             title="Clear built-in browser cache"
-            description="Clear HTTP cache, Cache Storage, and service workers."
+            description="Clear HTTP cache, Cache Storage, and service workers. Cookies and history are kept."
+            actionLabel="Clear cache"
+            busy={busyAction === "cache"}
+            onRun={() => void runAction("cache")}
           />
           <BrowserActionRow
             icon={ShieldAlert}
             title="Clear all browser data"
-            description="Delete cookies, site data, and cache from the built-in browser."
+            description="Delete cookies, site data, history, and cache from the agent's isolated browser profile."
+            actionLabel="Clear all data"
             destructive
+            busy={busyAction === "clear-all"}
+            onRun={() => setConfirmClearAll(true)}
           />
           <div className="border-t border-[var(--mn-line)] px-5 py-3 text-[0.75rem] text-muted-foreground">
-            These actions will be enabled when mncode ships its isolated built-in browser data
-            store. Your Chrome profile is never modified by this screen.
+            These actions only ever touch mncode's isolated browser profile at{" "}
+            <code className="rounded bg-[var(--mn-surface-muted)] px-1 py-0.5">
+              {settings.profileDataDir || "~/.mncode/browser-profile"}
+            </code>
+            . Your real Chrome profile is never modified.
           </div>
         </Card>
       </section>
+
+      <Dialog open={confirmClearAll} onOpenChange={setConfirmClearAll}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear all browser data?</DialogTitle>
+            <DialogDescription>
+              This deletes cookies, history, bookmarks, and cache from the agent's isolated
+              browser profile. You'll need to log back into any sites the agent visits. This
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmClearAll(false)}
+              disabled={busyAction === "clear-all"}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => void runAction("clear-all")}
+              disabled={busyAction === "clear-all"}
+            >
+              {busyAction === "clear-all" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Clear all data"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1716,12 +1827,20 @@ function BrowserActionRow({
   icon: Icon,
   title,
   description,
+  actionLabel,
   destructive = false,
+  disabled = false,
+  busy = false,
+  onRun,
 }: {
   icon: ElementType;
   title: string;
   description: string;
+  actionLabel: string;
   destructive?: boolean;
+  disabled?: boolean;
+  busy?: boolean;
+  onRun: () => void;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--mn-line)] px-4 py-3 last:border-b-0">
@@ -1736,14 +1855,16 @@ function BrowserActionRow({
       </div>
       <Button
         variant={destructive ? "destructive" : "outline"}
-        disabled
+        disabled={disabled || busy}
+        onClick={onRun}
         className={destructive ? "shrink-0" : "shrink-0 border-[var(--mn-line)]"}
       >
-        Coming soon
+        {busy ? <Loader2 className="size-4 animate-spin" /> : actionLabel}
       </Button>
     </div>
   );
 }
+
 
 function AccountSection({
   account,

@@ -75,7 +75,7 @@ export function ActivityPanel({ activities, workspace, running }: ActivityPanelP
             </span>
           </div>
           {activities.length === 0 ? (
-            <div className="mn-dot-grid rounded-xl border border-dashed border-white/[0.1] px-4 py-7 text-center">
+            <div className="mn-dot-grid rounded-lg border border-dashed border-white/[0.1] px-4 py-7 text-center">
               <Clock3 className="mx-auto size-5 text-slate-600" />
               <p className="mt-3 text-xs text-slate-400">No active run</p>
               <p className="mt-1 text-[0.6875rem] leading-relaxed text-slate-600">

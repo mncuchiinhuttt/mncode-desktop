@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"mncode/pkg/browserctl"
 	"mncode/pkg/config"
 	"mncode/pkg/provider"
 	"mncode/pkg/remote"
@@ -272,10 +273,11 @@ func (a *App) SendPrompt(prompt string) error {
 	a.activeRunHadTool = false
 	a.cancel = cancel
 	session := a.session.session
+	session.UI = newDesktopUI(a, session.WorkspaceDir, runID)
 	a.mu.Unlock()
 
 	go func() {
-		a.emit("agent:start", map[string]string{"prompt": text})
+		a.emit("agent:start", map[string]interface{}{"prompt": text, "runID": runID})
 		holdKeepAwake := a.keepAwakeEnabled()
 		if holdKeepAwake {
 			a.automationSched.keepAwake.acquire()
@@ -298,9 +300,9 @@ func (a *App) SendPrompt(prompt string) error {
 		}
 		a.captureMemoryPrompt(text, toolAssisted)
 		if err != nil {
-			a.emit("agent:error", map[string]string{"message": err.Error()})
+			a.emit("agent:error", map[string]interface{}{"message": err.Error(), "runID": runID})
 		} else {
-			a.emit("agent:done", map[string]string{"message": "Turn completed"})
+			a.emit("agent:done", map[string]interface{}{"message": "Turn completed", "runID": runID})
 		}
 	}()
 	return nil
@@ -310,18 +312,20 @@ func (a *App) SendPrompt(prompt string) error {
 func (a *App) SteerPrompt(prompt string) error {
 	a.mu.RLock()
 	session := a.session
+	runID := a.activeRun
 	a.mu.RUnlock()
 	if session == nil {
 		return fmt.Errorf("open a workspace first")
 	}
 	session.session.EnqueueSteer(prompt)
-	a.emit("agent:steer", map[string]string{"prompt": strings.TrimSpace(prompt)})
+	a.emit("agent:steer", map[string]interface{}{"prompt": strings.TrimSpace(prompt), "runID": runID})
 	return nil
 }
 
 // CancelTurn interrupts the in-flight agent turn, if any.
 func (a *App) CancelTurn() {
 	a.mu.Lock()
+	runID := a.activeRun
 	if a.cancel != nil {
 		a.cancel()
 		a.cancel = nil
@@ -329,13 +333,14 @@ func (a *App) CancelTurn() {
 	a.activeRun = 0
 	a.resolvePendingLocked()
 	a.mu.Unlock()
-	a.emit("agent:cancelled", map[string]string{"message": "Turn cancelled"})
+	a.emit("agent:cancelled", map[string]interface{}{"message": "Turn cancelled", "runID": runID})
 }
 
 func (a *App) shutdown(_ context.Context) {
 	a.stopAutomationScheduler()
 	a.closeRemote()
 	a.closeTerminal()
+	_ = browserctl.CloseShared()
 	a.mu.Lock()
 	if a.cancel != nil {
 		a.cancel()

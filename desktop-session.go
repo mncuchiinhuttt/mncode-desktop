@@ -56,7 +56,7 @@ func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOpti
 	mcpManager := mcp.NewManager(workspace)
 	registry := tools.NewRegistry()
 	if !standalone {
-		registry = tools.DefaultRegistry(workspace, cfg.AutoApprove)
+		registry = tools.DefaultRegistry(workspace, cfg.AutoApprove, cfg)
 	}
 	tracker := stats.NewTracker()
 
@@ -67,7 +67,7 @@ func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOpti
 
 	ui := options.ui
 	if ui == nil {
-		ui = &desktopUI{app: a, workspace: workspace, pending: make(map[string][]pendingToolCall)}
+		ui = newDesktopUI(a, workspace, 0)
 	}
 
 	session := &agent.Session{
