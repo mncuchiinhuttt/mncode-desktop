@@ -14,7 +14,7 @@ import (
 	"mncode/pkg/config"
 )
 
-const desktopVersion = "v0.1.2-beta"
+const desktopVersion = "v0.1.3-beta"
 const desktopReleaseEndpoint = "/api/releases/desktop/latest"
 
 // DesktopAppInfo describes the running desktop build.
