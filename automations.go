@@ -178,6 +178,17 @@ func newAutomationFromInput(input AutomationInput) (Automation, error) {
 	prompt := strings.TrimSpace(input.Prompt)
 	kind := strings.TrimSpace(input.Kind)
 	schedule := strings.TrimSpace(input.Schedule)
+	workspace := strings.TrimSpace(input.Workspace)
+	if workspace != "" {
+		absPath, err := filepath.Abs(workspace)
+		if err != nil {
+			return Automation{}, fmt.Errorf("invalid workspace path: %w", err)
+		}
+		if st, err := os.Stat(absPath); err != nil || !st.IsDir() {
+			return Automation{}, fmt.Errorf("workspace directory does not exist: %s", absPath)
+		}
+		workspace = absPath
+	}
 
 	if name == "" || len(name) > 80 {
 		return Automation{}, fmt.Errorf("automation name must be 1-80 characters")
@@ -203,13 +214,12 @@ func newAutomationFromInput(input AutomationInput) (Automation, error) {
 		Prompt:    prompt,
 		Kind:      kind,
 		Schedule:  schedule,
-		Workspace: strings.TrimSpace(input.Workspace),
+		Workspace: workspace,
 		Enabled:   input.Enabled,
 		CreatedAt: timeNowMillis(),
 		Runs:      []AutomationRun{},
 	}, nil
 }
-
 func newAutomationID() string {
 	raw := make([]byte, 6)
 	if _, err := rand.Read(raw); err != nil {

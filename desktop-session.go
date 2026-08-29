@@ -56,10 +56,9 @@ func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOpti
 	mcpManager := mcp.NewManager(workspace)
 	registry := tools.NewRegistry()
 	if !standalone {
-		registry = tools.DefaultRegistry(workspace, cfg.AutoApprove, cfg)
+		registry = tools.DefaultRegistry(workspace, cfg.AutoApprove, cfg, accStore)
 	}
 	tracker := stats.NewTracker()
-
 	var llmProvider provider.Provider
 	if cfg.APIKey != "" && !shouldUseStoredAntigravity(cfg, accStore) {
 		llmProvider, _ = provider.NewProvider(cfg)

@@ -3,22 +3,23 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"mncode/pkg/browserctl"
+	"mncode/pkg/codex"
 	"mncode/pkg/config"
+	"mncode/pkg/persistence"
 	"mncode/pkg/provider"
 	"mncode/pkg/remote"
 )
-
-// App is the Wails facade. The frontend talks to this small surface while the
-// existing mncode agent remains responsible for provider and tool execution.
 type App struct {
 	ctx context.Context
 
@@ -39,6 +40,12 @@ type App struct {
 	terminal            *terminalSession
 	remoteMu            sync.Mutex
 	remote              *remote.RemoteManager
+	codexMu             sync.Mutex
+	codexClient        *codex.Client
+
+	persistenceOnce  sync.Once
+	persistenceStore *persistence.Store
+	persistenceErr   error
 
 	permissions map[string]chan bool
 	questions   map[string]chan string
@@ -134,8 +141,13 @@ func (a *App) OpenWorkspace(path string) (WorkspaceInfo, error) {
 	a.resolvePendingLocked()
 	oldSession := a.session
 	a.mu.Unlock()
-	if oldSession != nil && oldSession.session.MCP != nil {
-		oldSession.session.MCP.Close()
+	if oldSession != nil && oldSession.session != nil {
+		if oldSession.session.MCP != nil {
+			oldSession.session.MCP.Close()
+		}
+		if oldSession.session.Tools != nil {
+			_ = oldSession.session.Tools.Close()
+		}
 	}
 
 	info, runtimeState, err := a.loadWorkspace(path)
@@ -167,8 +179,13 @@ func (a *App) OpenStandaloneChat() (WorkspaceInfo, error) {
 	a.resolvePendingLocked()
 	oldSession := a.session
 	a.mu.Unlock()
-	if oldSession != nil && oldSession.session.MCP != nil {
-		oldSession.session.MCP.Close()
+	if oldSession != nil && oldSession.session != nil {
+		if oldSession.session.MCP != nil {
+			oldSession.session.MCP.Close()
+		}
+		if oldSession.session.Tools != nil {
+			_ = oldSession.session.Tools.Close()
+		}
 	}
 
 	runtimeState, err := a.buildSession("")
@@ -330,10 +347,11 @@ func (a *App) CancelTurn() {
 		a.cancel()
 		a.cancel = nil
 	}
-	a.activeRun = 0
 	a.resolvePendingLocked()
 	a.mu.Unlock()
-	a.emit("agent:cancelled", map[string]interface{}{"message": "Turn cancelled", "runID": runID})
+	if runID != 0 {
+		a.emit("agent:cancelled", map[string]interface{}{"runID": runID})
+	}
 }
 
 func (a *App) shutdown(_ context.Context) {
@@ -350,9 +368,23 @@ func (a *App) shutdown(_ context.Context) {
 	a.resolvePendingLocked()
 	oldSession := a.session
 	a.session = nil
+	store := a.persistenceStore
 	a.mu.Unlock()
-	if oldSession != nil && oldSession.session.MCP != nil {
+	a.codexMu.Lock()
+	codexClient := a.codexClient
+	a.codexClient = nil
+	a.codexMu.Unlock()
+	if codexClient != nil {
+		_ = codexClient.Close()
+	}
+	if oldSession != nil && oldSession.session != nil && oldSession.session.MCP != nil {
 		oldSession.session.MCP.Close()
+	}
+	if oldSession != nil && oldSession.session != nil && oldSession.session.Tools != nil {
+		_ = oldSession.session.Tools.Close()
+	}
+	if store != nil {
+		_ = store.Close()
 	}
 }
 
@@ -410,4 +442,346 @@ func defaultWorkspace() string {
 		}
 	}
 	return ""
+}
+
+func (a *App) canonicalPersistence() (*persistence.Store, error) {
+	a.persistenceOnce.Do(func() {
+		a.persistenceStore, a.persistenceErr = persistence.Open(context.Background(), persistence.StoreConfig{Profile: "default"})
+	})
+	return a.persistenceStore, a.persistenceErr
+}
+
+// MigrateLegacyLocalStorage imports the Desktop's old browser state into the
+// canonical store. The source is backed up first and remains untouched.
+func (a *App) MigrateLegacyLocalStorage(input DesktopMigrationInput) (DesktopMigrationReport, error) {
+	store, err := a.canonicalPersistence()
+	if err != nil {
+		return DesktopMigrationReport{Status: "failed", RecoveryStatus: "unavailable"}, err
+	}
+	automationJSON := strings.TrimSpace(input.AutomationJSON)
+	if automationJSON == "" {
+		if path, pathErr := automationsStorePath(); pathErr == nil {
+			if data, readErr := os.ReadFile(path); readErr == nil {
+				automationJSON = string(data)
+			}
+		}
+	}
+	return migrateDesktopLocalStorage(context.Background(), store, input.ChatJSON, input.NotesJSON, automationJSON, input.WorkspaceDir, filepath.Dir(storePathForProfile("default")))
+}
+
+func storePathForProfile(profile string) string {
+	path, _ := persistence.DefaultPath(profile)
+	return path
+}
+
+type desktopMigrationSource struct {
+	Chat       json.RawMessage `json:"chat,omitempty"`
+	Notes      json.RawMessage `json:"notes,omitempty"`
+	Automation json.RawMessage `json:"automation,omitempty"`
+}
+
+type legacyChat struct {
+	ID        string            `json:"id"`
+	Title     string            `json:"title"`
+	ChatID    string            `json:"chatId"`
+	RunID     string            `json:"runId"`
+	Model     string            `json:"model"`
+	Provider  string            `json:"provider"`
+	Messages  []json.RawMessage `json:"messages"`
+	CreatedAt json.RawMessage   `json:"createdAt"`
+	UpdatedAt json.RawMessage   `json:"updatedAt"`
+}
+
+type legacyMessage struct {
+	ID        string          `json:"id"`
+	Role      string          `json:"role"`
+	Content   string          `json:"content"`
+	Thinking  string          `json:"thinking"`
+	CreatedAt json.RawMessage `json:"timestamp"`
+}
+
+func migrateDesktopLocalStorage(ctx context.Context, store *persistence.Store, chatJSON, notesJSON, automationJSON, workspace, backupDir string) (DesktopMigrationReport, error) {
+	trim := func(value string) json.RawMessage {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return nil
+		}
+		return json.RawMessage(value)
+	}
+	source, err := json.Marshal(desktopMigrationSource{Chat: trim(chatJSON), Notes: trim(notesJSON), Automation: trim(automationJSON)})
+	if err != nil {
+		return DesktopMigrationReport{Status: "failed", RecoveryStatus: "unavailable"}, err
+	}
+	fingerprint := persistence.Fingerprint(source)
+	markerID := "desktop-localstorage:" + fingerprint
+	report := DesktopMigrationReport{Status: "started", SourceFingerprint: fingerprint, SourceHash: fingerprint}
+	marker := persistence.MigrationMarker{ID: markerID, SourceFingerprint: fingerprint, Status: "started", SourceHash: fingerprint}
+	if existing, getErr := store.GetMigration(ctx, markerID); getErr == nil {
+		if existing.Status == "complete" {
+			return migrationReport(existing, true), nil
+		}
+		marker = existing
+		marker.Status = "started"
+	} else if getErr != persistence.ErrNotFound {
+		return report, getErr
+	}
+	if err := store.PutMigration(ctx, marker); err != nil {
+		return report, err
+	}
+	backupPath, backupStatus, err := writeDesktopMigrationBackup(backupDir, fingerprint, source)
+	if err != nil {
+		marker.Status = "failed"
+		_ = store.PutMigration(ctx, marker)
+		report.Status, report.BackupStatus, report.RecoveryStatus = "failed", "failed", "available"
+		return report, err
+	}
+	report.BackupPath, report.BackupStatus, report.RecoveryStatus = backupPath, backupStatus, "available"
+	records, err := decodeDesktopMigrationRecords(source, workspace)
+	if err != nil {
+		marker.Status = "failed"
+		marker.BackupPath = backupPath
+		_ = store.PutMigration(ctx, marker)
+		report.Status = "failed"
+		return report, err
+	}
+	marker.SourceCount = len(records)
+	report.SourceCount = len(records)
+	for index, record := range records {
+		if err := store.SaveSession(ctx, record); err != nil {
+			marker.Status = "failed"
+			marker.BackupPath = backupPath
+			marker.ImportedCount = index
+			_ = store.PutMigration(ctx, marker)
+			report.Status, report.ImportedCount = "failed", index
+			return report, err
+		}
+	}
+	marker.Status, marker.BackupPath = "complete", backupPath
+	marker.ImportedCount = len(records)
+	marker.ImportedHash = persistence.StableSessionHash(records)
+	marker.CompletedAt = time.Now().UTC()
+	if err := store.PutMigration(ctx, marker); err != nil {
+		report.Status = "failed"
+		return report, err
+	}
+	return migrationReport(marker, false), nil
+}
+
+func migrationReport(marker persistence.MigrationMarker, already bool) DesktopMigrationReport {
+	status := marker.Status
+	recovery := "available"
+	if marker.BackupPath == "" {
+		recovery = "unavailable"
+	}
+	backupStatus := "created"
+	if already {
+		backupStatus = "existing"
+	}
+	return DesktopMigrationReport{
+		Status: status, AlreadyImported: already, SourceFingerprint: marker.SourceFingerprint,
+		SourceCount: marker.SourceCount, ImportedCount: marker.ImportedCount,
+		SourceHash: marker.SourceHash, ImportedHash: marker.ImportedHash,
+		BackupPath: marker.BackupPath, BackupStatus: backupStatus,
+		RecoveryStatus: recovery,
+	}
+}
+
+func writeDesktopMigrationBackup(dir, fingerprint string, source []byte) (string, string, error) {
+	if dir == "" {
+		return "", "failed", fmt.Errorf("migration backup directory is required")
+	}
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return "", "failed", err
+	}
+	path := filepath.Join(dir, "desktop-localstorage-"+fingerprint+".json")
+	if existing, err := os.ReadFile(path); err == nil {
+		if string(existing) != string(source) {
+			return "", "failed", fmt.Errorf("migration backup fingerprint collision")
+		}
+		return path, "existing", nil
+	}
+	tmp, err := os.CreateTemp(dir, ".desktop-localstorage-*")
+	if err != nil {
+		return "", "failed", err
+	}
+	tmpPath := tmp.Name()
+	defer os.Remove(tmpPath)
+	if err = tmp.Chmod(0o600); err == nil {
+		_, err = tmp.Write(source)
+	}
+	if err == nil {
+		err = tmp.Sync()
+	}
+	if closeErr := tmp.Close(); err == nil {
+		err = closeErr
+	}
+	if err == nil {
+		err = os.Rename(tmpPath, path)
+	}
+	if err != nil {
+		return "", "failed", err
+	}
+	return path, "created", os.Chmod(path, 0o600)
+}
+
+func decodeDesktopMigrationRecords(source []byte, workspace string) ([]persistence.SessionRecord, error) {
+	var payload desktopMigrationSource
+	if err := json.Unmarshal(source, &payload); err != nil {
+		return nil, err
+	}
+	var records []persistence.SessionRecord
+	if len(payload.Chat) != 0 {
+		var chats []legacyChat
+		if err := json.Unmarshal(payload.Chat, &chats); err != nil {
+			return nil, fmt.Errorf("decode chat history: %w", err)
+		}
+		for index, chat := range chats {
+			raw := payload.Chat
+			var rawChats []json.RawMessage
+			_ = json.Unmarshal(payload.Chat, &rawChats)
+			if index < len(rawChats) {
+				raw = rawChats[index]
+			}
+			id := strings.TrimSpace(chat.ID)
+			if id == "" {
+				id = "legacy-chat:" + persistence.Fingerprint(raw)
+			}
+			updated := legacyTime(chat.UpdatedAt)
+			if updated.IsZero() {
+				updated = time.Unix(0, 1).UTC()
+			}
+			created := legacyTime(chat.CreatedAt)
+			if created.IsZero() {
+				created = updated
+			}
+			record := persistence.SessionRecord{
+				ID: id, Title: strings.TrimSpace(chat.Title), WorkspaceDir: workspace, ProfileID: "default",
+				ChatID: strings.TrimSpace(chat.ChatID), RunID: strings.TrimSpace(chat.RunID),
+				Model: strings.TrimSpace(chat.Model), Provider: strings.TrimSpace(chat.Provider),
+				CreatedAt: created, UpdatedAt: updated,
+			}
+			for messageIndex, messageRaw := range chat.Messages {
+				var message legacyMessage
+				if err := json.Unmarshal(messageRaw, &message); err != nil {
+					return nil, fmt.Errorf("decode chat message: %w", err)
+				}
+				role := strings.TrimSpace(message.Role)
+				if role != "user" && role != "assistant" && role != "system" {
+					role = "system"
+				}
+				messageID := strings.TrimSpace(message.ID)
+				if messageID == "" {
+					messageID = fmt.Sprintf("%s:%d", id, messageIndex)
+				}
+				createdAt := legacyTime(message.CreatedAt)
+				if createdAt.IsZero() {
+					createdAt = updated
+				}
+				record.Messages = append(record.Messages, persistence.MessageRecord{
+					ID: messageID, Sequence: messageIndex, Role: role, Content: message.Content,
+					Thinking: message.Thinking, Payload: append(json.RawMessage(nil), messageRaw...), CreatedAt: createdAt,
+				})
+			}
+			if record.Title == "" {
+				for _, message := range record.Messages {
+					if message.Role == "user" && strings.TrimSpace(message.Content) != "" {
+						record.Title = strings.TrimSpace(message.Content)
+						break
+					}
+				}
+			}
+			records = append(records, record)
+		}
+	}
+	if len(payload.Notes) != 0 {
+		var notes []json.RawMessage
+		if err := json.Unmarshal(payload.Notes, &notes); err != nil {
+			var envelope struct{ Notes []json.RawMessage `json:"notes"` }
+			if envelopeErr := json.Unmarshal(payload.Notes, &envelope); envelopeErr != nil {
+				return nil, fmt.Errorf("decode notes: %w", err)
+			}
+			notes = envelope.Notes
+			if len(notes) == 0 {
+				notes = []json.RawMessage{append(json.RawMessage(nil), payload.Notes...)}
+			}
+		}
+		for _, raw := range notes {
+			content := strings.TrimSpace(string(raw))
+			var text string
+			if json.Unmarshal(raw, &text) == nil {
+				content = text
+			}
+			id := "legacy-note:" + persistence.Fingerprint(raw)
+			records = append(records, persistence.SessionRecord{
+				ID: id, Title: "Imported note", WorkspaceDir: workspace, ProfileID: "default", ChatID: id,
+				CreatedAt: time.Unix(0, 1).UTC(), UpdatedAt: time.Unix(0, 1).UTC(),
+				Messages: []persistence.MessageRecord{{ID: id + ":0", Sequence: 0, Role: "user", Content: content, Payload: append(json.RawMessage(nil), raw...), CreatedAt: time.Unix(0, 1).UTC()}},
+			})
+		}
+	}
+	if len(payload.Automation) != 0 {
+		var envelope struct{ Automations []json.RawMessage `json:"automations"` }
+		if err := json.Unmarshal(payload.Automation, &envelope); err != nil {
+			var automations []json.RawMessage
+			if arrayErr := json.Unmarshal(payload.Automation, &automations); arrayErr != nil {
+				return nil, fmt.Errorf("decode automations: %w", err)
+			}
+			envelope.Automations = automations
+		}
+		for _, raw := range envelope.Automations {
+			var automation struct {
+				ID string `json:"id"`
+				Name string `json:"name"`
+				Prompt string `json:"prompt"`
+				Workspace string `json:"workspace"`
+			}
+			if err := json.Unmarshal(raw, &automation); err != nil {
+				return nil, fmt.Errorf("decode automation: %w", err)
+			}
+			id := strings.TrimSpace(automation.ID)
+			if id == "" {
+				id = persistence.Fingerprint(raw)
+			}
+			id = "legacy-automation:" + id
+			automationWorkspace := strings.TrimSpace(automation.Workspace)
+			if automationWorkspace == "" {
+				automationWorkspace = workspace
+			}
+			records = append(records, persistence.SessionRecord{
+				ID: id, Title: strings.TrimSpace(automation.Name), WorkspaceDir: automationWorkspace, ProfileID: "default", ChatID: id,
+				CreatedAt: time.Unix(0, 1).UTC(), UpdatedAt: time.Unix(0, 1).UTC(),
+				Messages: []persistence.MessageRecord{{ID: id + ":0", Sequence: 0, Role: "system", Content: automation.Prompt, Payload: append(json.RawMessage(nil), raw...), CreatedAt: time.Unix(0, 1).UTC()}},
+			})
+		}
+	}
+	return records, nil
+}
+
+func legacyTime(raw json.RawMessage) time.Time {
+	if len(raw) == 0 || string(raw) == "null" {
+		return time.Time{}
+	}
+	var text string
+	if json.Unmarshal(raw, &text) == nil {
+		if parsed, err := time.Parse(time.RFC3339Nano, text); err == nil {
+			return parsed.UTC()
+		}
+		var number float64
+		if _, err := fmt.Sscan(text, &number); err == nil {
+			return legacyUnix(number)
+		}
+		return time.Time{}
+	}
+	var number float64
+	if json.Unmarshal(raw, &number) == nil {
+		return legacyUnix(number)
+	}
+	return time.Time{}
+}
+
+func legacyUnix(value float64) time.Time {
+	if value > 1e11 {
+		return time.UnixMilli(int64(value)).UTC()
+	}
+	return time.Unix(int64(value), int64((value-float64(int64(value)))*1e9)).UTC()
 }

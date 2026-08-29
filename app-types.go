@@ -94,6 +94,9 @@ type DesktopSettings struct {
 	TokenSaverRtk            bool    `json:"tokenSaverRtk"`
 	TokenSaverHeadroom       bool    `json:"tokenSaverHeadroom"`
 	Language                 string  `json:"language"`
+	SearchEngine             string  `json:"searchEngine"`
+	BraveSearchConfigured    bool    `json:"braveSearchConfigured"`
+	TavilySearchConfigured   bool    `json:"tavilySearchConfigured"`
 	Artifacts                bool    `json:"artifacts"`
 	InterruptMode            string  `json:"interruptMode"`
 	VerboseOutput            bool    `json:"verboseOutput"`
@@ -122,6 +125,9 @@ type DesktopSettingsInput struct {
 	SendShortcut             string `json:"sendShortcut"`
 	ContextWindow            string `json:"contextWindow"`
 	Language                 string `json:"language"`
+	SearchEngine             string `json:"searchEngine"`
+	BraveAPIKey              string `json:"braveApiKey"`
+	TavilyAPIKey             string `json:"tavilyApiKey"`
 	InterruptMode            string `json:"interruptMode"`
 	AutoCompact              *bool  `json:"autoCompact"`
 	TokenSaverConcise        *bool  `json:"tokenSaverConcise"`
@@ -285,6 +291,16 @@ type DesktopProviderQuota struct {
 	ErrorMessage    string              `json:"errorMessage"`
 }
 
+// DesktopCodexLoginResult holds OAuth flow details for official ChatGPT / Codex login.
+type DesktopCodexLoginResult struct {
+	Type            string `json:"type"`
+	AuthURL         string `json:"authUrl,omitempty"`
+	VerificationURI string `json:"verificationUri,omitempty"`
+	UserCode        string `json:"userCode,omitempty"`
+	ExpiresIn       int    `json:"expiresIn,omitempty"`
+	RuntimeVersion  string `json:"runtimeVersion,omitempty"`
+}
+
 // DesktopCustomModel is a user-defined model entry on a custom provider.
 type DesktopCustomModel struct {
 	ID            string `json:"id"`
@@ -330,4 +346,27 @@ type DesktopCatalog struct {
 	Themes      []DesktopTheme       `json:"themes"`
 	Settings    DesktopSettings      `json:"settings"`
 	Prompt      DesktopPromptCatalog `json:"prompt"`
+}
+// DesktopMigrationInput carries a browser localStorage export to the canonical
+// persistence endpoint. It intentionally contains only legacy data blobs.
+type DesktopMigrationInput struct {
+	ChatJSON       string `json:"chatJson,omitempty"`
+	NotesJSON      string `json:"notesJson,omitempty"`
+	AutomationJSON string `json:"automationJson,omitempty"`
+	WorkspaceDir   string `json:"workspaceDir,omitempty"`
+}
+
+// DesktopMigrationReport exposes migration metadata without echoing source
+// records, prompts, or credentials.
+type DesktopMigrationReport struct {
+	Status           string `json:"status"`
+	AlreadyImported  bool   `json:"alreadyImported"`
+	SourceFingerprint string `json:"sourceFingerprint"`
+	SourceCount      int    `json:"sourceCount"`
+	ImportedCount    int    `json:"importedCount"`
+	SourceHash       string `json:"sourceHash"`
+	ImportedHash     string `json:"importedHash"`
+	BackupPath       string `json:"backupPath,omitempty"`
+	BackupStatus     string `json:"backupStatus"`
+	RecoveryStatus   string `json:"recoveryStatus"`
 }
