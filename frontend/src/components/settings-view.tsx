@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ElementType, type ReactN
 import {
   ArrowLeft,
   BarChart3,
+  Bell,
   Blocks,
   BrainCircuit,
   Check,
@@ -22,6 +23,7 @@ import {
   Sun,
   Trash2,
   UserRound,
+  Volume2,
   Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { desktop, listen } from "@/lib/desktop";
+import { sounds } from "@/lib/audio-notifications";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -69,16 +72,18 @@ import { UsageHeatmap } from "./usage-heatmap";
 
 export type SettingsSection =
   | "general"
-  | "token-saving"
+  | "notifications"
   | "models"
   | "appearance"
   | "account"
+  | "token-saving"
   | "personalization"
   | "browser"
   | "mcp"
   | "skills"
   | "app-info";
 type AppTheme = "system" | "light" | "dark";
+type SettingsChange = (input: Partial<DesktopSettings>) => void | Promise<void>;
 
 const defaultCustomInstructions = `# Working style
 - Keep explanations concise and practical.
@@ -125,12 +130,16 @@ interface SettingsViewProps {
   onCheckForUpdate: () => Promise<UpdateInfo>;
   onOpenUpdate: (url: string) => void;
   onThemeChange: (theme: AppTheme) => void;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
 }
 const sectionMeta: Record<SettingsSection, { label: string; description: string }> = {
   general: {
     label: "General",
     description: "Workspace behavior and agent controls.",
+  },
+  notifications: {
+    label: "Notifications & Audio",
+    description: "System desktop notifications, audio chimes, and volume levels.",
   },
   models: {
     label: "Models",
@@ -243,6 +252,12 @@ export function SettingsView({
             onClick={() => setSection("general")}
           />
           <SettingsNavItem
+            active={section === "notifications"}
+            icon={Bell}
+            label="Notifications"
+            onClick={() => setSection("notifications")}
+          />
+          <SettingsNavItem
             active={section === "models"}
             icon={BrainCircuit}
             label="Models"
@@ -346,7 +361,11 @@ export function SettingsView({
               catalog={catalog}
               settings={settings}
               onSettingsChange={onSettingsChange}
+              onOpenURL={onOpenURL}
             />
+          )}
+          {section === "notifications" && (
+            <NotificationsSection />
           )}
           {section === "models" && (
             <ModelsSettingsView
@@ -455,7 +474,7 @@ function TokenSavingSection({
   onSettingsChange,
 }: {
   settings: DesktopSettings;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
 }) {
   const [rtkInstalled, setRtkInstalled] = useState<boolean | null>(null);
   const [rtkInstalling, setRtkInstalling] = useState(false);
@@ -672,10 +691,12 @@ function GeneralSection({
   catalog,
   settings,
   onSettingsChange,
+  onOpenURL,
 }: {
   catalog: DesktopCatalog;
   settings: DesktopSettings;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
+  onOpenURL: (url: string) => void;
 }) {
   return (
     <div className="mt-8 space-y-5">
@@ -684,10 +705,17 @@ function GeneralSection({
         settings={settings}
         onSettingsChange={onSettingsChange}
       />
+      <AudioPreferences />
+      <SearchPreferences
+        settings={settings}
+        onSettingsChange={onSettingsChange}
+        onOpenURL={onOpenURL}
+      />
       <ComposerPreferences settings={settings} onSettingsChange={onSettingsChange} />
     </div>
   );
 }
+
 function GeneralPreferences({
   catalog,
   settings,
@@ -695,7 +723,7 @@ function GeneralPreferences({
 }: {
   catalog: DesktopCatalog;
   settings: DesktopSettings;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
 }) {
   return (
     <section>
@@ -839,12 +867,261 @@ function GeneralPreferences({
     </section>
   );
 }
+
+function AudioPreferences() {
+  const [soundEnabled, setSoundEnabled] = useState(sounds.isSoundEnabled());
+  const [notifEnabled, setNotifEnabled] = useState(sounds.isNotificationEnabled());
+  const [volume, setVolume] = useState(Math.round(sounds.getVolume() * 100));
+
+  const handleSoundToggle = (enabled: boolean) => {
+    setSoundEnabled(enabled);
+    sounds.setSoundEnabled(enabled);
+    if (enabled) {
+      sounds.playTaskComplete();
+    }
+  };
+
+  const handleNotifToggle = (enabled: boolean) => {
+    setNotifEnabled(enabled);
+    sounds.setNotificationEnabled(enabled);
+  };
+
+  const handleVolumeChange = (val: number) => {
+    setVolume(val);
+    sounds.setVolume(val / 100);
+  };
+
+  return (
+    <section>
+      <SectionHeading
+        title="Audio & Notifications"
+        description="Configure completion chimes, prompt alerts, and desktop OS notifications."
+      />
+      <Card className="mn-surface mn-settings-rows shadow-none">
+        <SettingRow
+          title="Sound feedback on completion"
+          description="Plays a subtle harmonic chime when an agent turn or long-running subagent finishes."
+          prominent
+          control={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => sounds.playTaskComplete()}
+                disabled={!soundEnabled}
+                className="h-7 text-xs border-[var(--mn-line)]"
+              >
+                Test Chime
+              </Button>
+              <ToggleButton
+                checked={soundEnabled}
+                onChange={handleSoundToggle}
+              />
+            </div>
+          }
+        />
+        <SettingRow
+          title="Sound volume"
+          description="Master volume level for audio cues."
+          control={
+            <div className="flex items-center gap-3 w-44">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                disabled={!soundEnabled}
+                onChange={(e) => handleVolumeChange(parseInt(e.target.value, 10))}
+                className="w-full cursor-pointer accent-[var(--mn-accent-strong)]"
+              />
+              <span className="text-xs font-mono w-8 text-right text-muted-foreground">{volume}%</span>
+            </div>
+          }
+        />
+        <SettingRow
+          title="Desktop notifications"
+          description="Show an OS notification when an agent turn completes or waits for user approval."
+          prominent
+          control={
+            <ToggleButton
+              checked={notifEnabled}
+              onChange={handleNotifToggle}
+            />
+          }
+        />
+      </Card>
+    </section>
+  );
+}
+function SearchPreferences({
+  settings,
+  onSettingsChange,
+  onOpenURL,
+}: {
+  settings: DesktopSettings;
+  onSettingsChange: SettingsChange;
+  onOpenURL: (url: string) => void;
+}) {
+  const [braveKey, setBraveKey] = useState("");
+  const [tavilyKey, setTavilyKey] = useState("");
+  const [saving, setSaving] = useState<"brave" | "tavily" | null>(null);
+
+  async function saveBrave() {
+    const value = braveKey.trim();
+    if (!value) return;
+    setSaving("brave");
+    try {
+      await onSettingsChange({ braveApiKey: value });
+      setBraveKey("");
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function saveTavily() {
+    const value = tavilyKey.trim();
+    if (!value) return;
+    setSaving("tavily");
+    try {
+      await onSettingsChange({ tavilyApiKey: value });
+      setTavilyKey("");
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  return (
+    <section>
+      <SectionHeading
+        title="Web search"
+        description="Choose the backend for search_web. Keys are stored locally in ~/.mncode/config.json and are never sent back to this UI."
+      />
+      <Card className="mn-surface mn-settings-rows shadow-none">
+        <SettingRow
+          title="Search engine"
+          description="Auto prefers Google Grounding when Antigravity/Gemini is available, then Tavily, Brave, and the no-key DuckDuckGo fallback."
+          prominent
+          control={
+            <Select
+              value={settings.searchEngine || "auto"}
+              onValueChange={(value) =>
+                void onSettingsChange({
+                  searchEngine: value as DesktopSettings["searchEngine"],
+                })
+              }
+            >
+              <SelectTrigger className="w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Auto</SelectItem>
+                <SelectItem value="antigravity">Google Grounding</SelectItem>
+                <SelectItem value="tavily">Tavily</SelectItem>
+                <SelectItem value="brave">Brave Search</SelectItem>
+                <SelectItem value="duckduckgo">DuckDuckGo</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
+        <SettingRow
+          title="Brave Search API key"
+          description={
+            <span>
+              {settings.braveSearchConfigured ? "Configured. " : "Not configured. "}
+              Get a key from{" "}
+              <button
+                type="button"
+                className="text-foreground underline underline-offset-2"
+                onClick={() => onOpenURL("https://brave.com/search/api/")}
+              >
+                brave.com/search/api
+              </button>
+              .
+            </span>
+          }
+          prominent
+          control={
+            <div className="flex w-72 items-center gap-2">
+              <Input
+                type="password"
+                value={braveKey}
+                placeholder={settings.braveSearchConfigured ? "Enter to replace key" : "BSA_…"}
+                autoComplete="off"
+                onChange={(event) => setBraveKey(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") void saveBrave();
+                }}
+              />
+              <Button size="sm" disabled={!braveKey.trim() || saving !== null} onClick={() => void saveBrave()}>
+                {saving === "brave" ? "Saving…" : "Save"}
+              </Button>
+            </div>
+          }
+        />
+        <SettingRow
+          title="Tavily API key"
+          description={
+            <span>
+              {settings.tavilySearchConfigured ? "Configured. " : "Not configured. "}
+              Get a key from{" "}
+              <button
+                type="button"
+                className="text-foreground underline underline-offset-2"
+                onClick={() => onOpenURL("https://tavily.com/")}
+              >
+                tavily.com
+              </button>
+              .
+            </span>
+          }
+          prominent
+          control={
+            <div className="flex w-72 items-center gap-2">
+              <Input
+                type="password"
+                value={tavilyKey}
+                placeholder={settings.tavilySearchConfigured ? "Enter to replace key" : "tvly-…"}
+                autoComplete="off"
+                onChange={(event) => setTavilyKey(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") void saveTavily();
+                }}
+              />
+              <Button size="sm" disabled={!tavilyKey.trim() || saving !== null} onClick={() => void saveTavily()}>
+                {saving === "tavily" ? "Saving…" : "Save"}
+              </Button>
+            </div>
+          }
+        />
+        <SettingRow
+          title="Google Search Grounding"
+          description="No separate key is required. Sign in with /login antigravity or connect an Antigravity account in Models."
+          prominent
+          control={
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-[0.5625rem] uppercase tracking-widest",
+                settings.provider === "antigravity"
+                  ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                  : "border-[var(--mn-line)] text-muted-foreground",
+              )}
+            >
+              {settings.provider === "antigravity" ? "Available" : "Via Antigravity"}
+            </Badge>
+          }
+        />
+      </Card>
+    </section>
+  );
+}
+
 function ComposerPreferences({
   settings,
   onSettingsChange,
 }: {
   settings: DesktopSettings;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
 }) {
   return (
     <section>
@@ -900,7 +1177,7 @@ function AppearanceSection({
   theme: AppTheme;
   settings: DesktopSettings;
   onThemeChange: (theme: AppTheme) => void;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
 }) {
   return (
     <div className="mt-8 space-y-5">
@@ -923,7 +1200,7 @@ function InterfaceAppearance({
   theme: AppTheme;
   settings: DesktopSettings;
   onThemeChange: (theme: AppTheme) => void;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
 }) {
   return (
     <section>
@@ -973,7 +1250,7 @@ function CodeAppearance({
   onSettingsChange,
 }: {
   settings: DesktopSettings;
-  onSettingsChange: (input: Partial<DesktopSettings>) => void;
+  onSettingsChange: SettingsChange;
 }) {
   const lightThemes = [
     { id: "catppuccin-latte", label: "Catppuccin Latte" },
@@ -1090,7 +1367,7 @@ function SettingRow({
   prominent = false,
 }: {
   title: string;
-  description: string;
+  description: ReactNode;
   control: ReactNode;
   prominent?: boolean;
 }) {
@@ -2103,6 +2380,123 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between gap-4 border-b border-[var(--mn-line)] px-4 py-3 last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function NotificationsSection() {
+  const [soundEnabled, setSoundEnabled] = useState(sounds.isSoundEnabled());
+  const [notifEnabled, setNotifEnabled] = useState(sounds.isNotificationEnabled());
+  const [volume, setVolume] = useState(Math.round(sounds.getVolume() * 100));
+  const [testSent, setTestSent] = useState(false);
+
+  const handleSoundToggle = (enabled: boolean) => {
+    setSoundEnabled(enabled);
+    sounds.setSoundEnabled(enabled);
+    if (enabled) {
+      sounds.playTaskComplete();
+    }
+  };
+
+  const handleNotifToggle = (enabled: boolean) => {
+    setNotifEnabled(enabled);
+    sounds.setNotificationEnabled(enabled);
+  };
+
+  const handleVolumeChange = (val: number) => {
+    setVolume(val);
+    sounds.setVolume(val / 100);
+  };
+
+  const sendTestNotification = () => {
+    sounds.notify("mncode Notification Test", "Desktop notifications are configured and working properly!");
+    setTestSent(true);
+    setTimeout(() => setTestSent(false), 3000);
+  };
+
+  return (
+    <div className="mt-8 space-y-6">
+      <section>
+        <SectionHeading
+          title="Desktop Notifications"
+          description="Control system desktop notifications sent when tasks complete or when user input is needed."
+        />
+        <Card className="mn-surface mn-settings-rows shadow-none">
+          <SettingRow
+            title="Enable Desktop Notifications"
+            description="Send an OS notification when an agent turn finishes or waits for approval."
+            prominent
+            control={
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={sendTestNotification}
+                  disabled={!notifEnabled}
+                  className="h-7 text-xs border-[var(--mn-line)]"
+                >
+                  {testSent ? <Check className="mr-1 size-3 text-emerald-400" /> : <Bell className="mr-1 size-3" />}
+                  {testSent ? "Notification Sent!" : "Send Test"}
+                </Button>
+                <ToggleButton
+                  checked={notifEnabled}
+                  onChange={handleNotifToggle}
+                />
+              </div>
+            }
+          />
+        </Card>
+      </section>
+
+      <section>
+        <SectionHeading
+          title="Audio Feedback & Chimes"
+          description="Procedural harmonic audio cues synthesized using Web Audio API."
+        />
+        <Card className="mn-surface mn-settings-rows shadow-none">
+          <SettingRow
+            title="Task Completion Chime"
+            description="Plays a subtle harmonic chime when an agent turn or long-running subagent finishes."
+            prominent
+            control={
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => sounds.playTaskComplete()}
+                  disabled={!soundEnabled}
+                  className="h-7 text-xs border-[var(--mn-line)]"
+                >
+                  <Volume2 className="mr-1 size-3" />
+                  Test Chime
+                </Button>
+                <ToggleButton
+                  checked={soundEnabled}
+                  onChange={handleSoundToggle}
+                />
+              </div>
+            }
+          />
+          <SettingRow
+            title="Master Audio Volume"
+            description="Volume level for all desktop sound effects."
+            control={
+              <div className="flex items-center gap-3 w-48">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  disabled={!soundEnabled}
+                  onChange={(e) => handleVolumeChange(parseInt(e.target.value, 10))}
+                  className="w-full cursor-pointer accent-[var(--mn-accent-strong)]"
+                />
+                <span className="text-xs font-mono w-9 text-right text-muted-foreground">{volume}%</span>
+              </div>
+            }
+          />
+        </Card>
+      </section>
     </div>
   );
 }
