@@ -26,6 +26,8 @@ import type {
   UpdateInfo,
   UsageStats,
   WorkspaceInfo,
+  DesktopCombo,
+  DesktopRoleMeta,
 } from "@/types";
 
 type WailsMethod = (...args: unknown[]) => unknown;
@@ -123,6 +125,11 @@ export const desktop = {
     call<DesktopSettings>("UpdateSettings", settings),
   resolvePermission: (id: string, allowed: boolean) => call<void>("ResolvePermission", id, allowed),
   answerQuestion: (id: string, answer: string) => call<void>("AnswerQuestion", id, answer),
+  getCombos: () => call<DesktopCombo[]>("GetCombos"),
+  saveCombo: (combo: DesktopCombo) => call<void>("SaveCombo", combo),
+  deleteCombo: (id: string) => call<void>("DeleteCombo", id),
+  getStandardRoles: () => call<DesktopRoleMeta[]>("GetStandardRoles"),
+  runCombo: (comboID: string, prompt: string) => call<void>("RunCombo", comboID, prompt),
 };
 
 export function listen<T>(eventName: string, handler: (payload: T) => void) {

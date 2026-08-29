@@ -1,5 +1,4 @@
 export type ViewName = "workspace" | "insights" | "settings" | "skills" | "automations" | "mcp";
-
 export interface LanguageStat {
   name: string;
   count: number;
@@ -60,6 +59,40 @@ export interface ChatSession {
   runSummary?: AgentRunSummary;
   runUsage?: AgentRunUsage;
   activeRunID?: number;
+}
+export interface DesktopComboMember {
+  id: string;
+  role: string;
+  baseAgent: string;
+  promptOverlay?: string;
+  model?: string;
+  fallbackModel?: string;
+  thinkingBudget?: number;
+  permissions?: string[];
+  isolatedWorktree?: boolean;
+}
+
+export interface DesktopCombo {
+  id: string;
+  name: string;
+  description: string;
+  mode: "pipeline" | "debate" | "fan_out";
+  maxDebateRounds?: number;
+  members: DesktopComboMember[];
+  isBuiltin?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DesktopRoleMeta {
+  role: string;
+  title: string;
+  description: string;
+  defaultBaseAgent: string;
+  autoPrimaryModel: string;
+  autoFallbackModel: string;
+  defaultPermissions?: string[];
+  requiresWorktreeBase?: boolean;
 }
 
 export interface AgentRunUsage {
