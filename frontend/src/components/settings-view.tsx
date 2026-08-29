@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Globe2,
   Info,
+  Layers,
   Loader2,
   Monitor,
   PowerOff,
@@ -69,11 +70,13 @@ import { ModelsSettingsView } from "./models-settings-view";
 import { McpProviders } from "./mcp-providers";
 import { SkillsMarketplace } from "./skills-marketplace";
 import { UsageHeatmap } from "./usage-heatmap";
+import { CombosSettingsView } from "./combos-settings-view";
 
 export type SettingsSection =
   | "general"
   | "notifications"
   | "models"
+  | "combos"
   | "appearance"
   | "account"
   | "token-saving"
@@ -144,6 +147,10 @@ const sectionMeta: Record<SettingsSection, { label: string; description: string 
   models: {
     label: "Models",
     description: "Providers, accounts, API keys, and model catalogs.",
+  },
+  combos: {
+    label: "Combos & Swarms",
+    description: "Group multiple specialized subagents into sequential pipelines, debate swarms, or parallel teams.",
   },
   appearance: {
     label: "Appearance",
@@ -264,6 +271,12 @@ export function SettingsView({
             onClick={() => setSection("models")}
           />
           <SettingsNavItem
+            active={section === "combos"}
+            icon={Layers}
+            label="Combos & Swarms"
+            onClick={() => setSection("combos")}
+          />
+          <SettingsNavItem
             active={section === "appearance"}
             icon={Sun}
             label="Appearance"
@@ -379,6 +392,9 @@ export function SettingsView({
               onSaveCustom={onSaveCustomProvider}
               onDeleteCustom={onDeleteCustomProvider}
             />
+          )}
+          {section === "combos" && (
+            <CombosSettingsView />
           )}
           {section === "appearance" && (
             <AppearanceSection
