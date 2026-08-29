@@ -1,9 +1,12 @@
 import {
+  Activity,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   CircleDashed,
   FilePenLine,
+  Layers,
+  List,
   Loader2,
   MessageCircle,
   UsersRound,
@@ -11,7 +14,8 @@ import {
 import { useState } from "react";
 import type { ActivityItem } from "@/types";
 import { DiffView } from "./diff-view";
-
+import { SubagentSwarmVisualizer } from "./subagent-swarm-visualizer";
+import { Button } from "@/components/ui/button";
 function statusIcon(item: ActivityItem) {
   if (item.active) return <Loader2 className="size-3 animate-spin" />;
   if (item.status === "error") return <CircleDashed className="size-3" />;
@@ -108,6 +112,7 @@ function EditedFileCard({ item }: { item: ActivityItem }) {
 }
 
 export function AgentRunPanel({ activities }: { activities: ActivityItem[] }) {
+  const [viewMode, setViewMode] = useState<"list" | "swarm">("swarm");
   const subagents = activities
     .filter((item) => item.kind === "subagent")
     .slice()
@@ -116,29 +121,59 @@ export function AgentRunPanel({ activities }: { activities: ActivityItem[] }) {
     .filter((item) => item.kind === "file" && item.status === "complete" && item.filePath)
     .slice()
     .reverse();
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 px-1">
-        <UsersRound className="size-3.5 text-cyan-600 dark:text-cyan-300" />
-        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Subagents
-        </p>
-        <span className="ml-auto font-mono text-[0.6875rem] text-muted-foreground">
-          {subagents.length.toString().padStart(2, "0")}
-        </span>
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <UsersRound className="size-3.5 text-cyan-600 dark:text-cyan-300" />
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Subagents & Swarm
+          </p>
+        </div>
+        <div className="flex rounded-md border border-[var(--mn-line)] p-0.5 bg-[var(--mn-surface-muted)]">
+          <Button
+            variant={viewMode === "swarm" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("swarm")}
+            className={viewMode === "swarm" ? "h-6 px-2 text-[0.6875rem] mn-accent-button" : "h-6 px-2 text-[0.6875rem]"}
+          >
+            <Layers className="mr-1 size-3" />
+            Swarm
+          </Button>
+          <Button
+            variant={viewMode === "list" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+            className={viewMode === "list" ? "h-6 px-2 text-[0.6875rem] mn-accent-button" : "h-6 px-2 text-[0.6875rem]"}
+          >
+            <List className="mr-1 size-3" />
+            List
+          </Button>
+        </div>
       </div>
-      {subagents.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-[var(--mn-line)] px-3 py-6 text-center text-xs text-muted-foreground">
-          <MessageCircle className="mx-auto size-4" />
-          <p className="mt-2">No subagents spawned yet.</p>
+
+      {viewMode === "swarm" ? (
+        <div className="h-[380px] rounded-xl border border-[var(--mn-line)] overflow-hidden shadow-sm">
+          <SubagentSwarmVisualizer activities={activities} running={activities.some(a => a.active)} />
         </div>
       ) : (
-        <div className="space-y-2">
-          {subagents.map((item) => (
-            <SubagentCard key={item.id} item={item} />
-          ))}
-        </div>
+        <>
+          {subagents.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-[var(--mn-line)] px-3 py-6 text-center text-xs text-muted-foreground">
+              <MessageCircle className="mx-auto size-4" />
+              <p className="mt-2">No subagents spawned yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {subagents.map((item) => (
+                <SubagentCard key={item.id} item={item} />
+              ))}
+            </div>
+          )}
+        </>
       )}
+
       <div className="flex items-center gap-2 px-1 pt-2">
         <FilePenLine className="size-3.5 text-[var(--mn-accent-strong)]" />
         <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
