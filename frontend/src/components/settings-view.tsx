@@ -71,7 +71,7 @@ import { McpProviders } from "./mcp-providers";
 import { SkillsMarketplace } from "./skills-marketplace";
 import { UsageHeatmap } from "./usage-heatmap";
 import { CombosSettingsView } from "./combos-settings-view";
-
+import { MemorySettingsView } from "./memory-settings-view";
 export type SettingsSection =
   | "general"
   | "notifications"
@@ -81,6 +81,7 @@ export type SettingsSection =
   | "account"
   | "token-saving"
   | "personalization"
+  | "memory"
   | "browser"
   | "mcp"
   | "skills"
@@ -151,6 +152,10 @@ const sectionMeta: Record<SettingsSection, { label: string; description: string 
   combos: {
     label: "Combos & Swarms",
     description: "Group multiple specialized subagents into sequential pipelines, debate swarms, or parallel teams.",
+  },
+  memory: {
+    label: "Shared Memory & Reflection",
+    description: "Manage cross-session workspace memories and Hermes self-reflection rules.",
   },
   appearance: {
     label: "Appearance",
@@ -301,6 +306,12 @@ export function SettingsView({
             onClick={() => setSection("personalization")}
           />
           <SettingsNavItem
+            active={section === "memory"}
+            icon={BrainCircuit}
+            label="Memory & Reflection"
+            onClick={() => setSection("memory")}
+          />
+          <SettingsNavItem
             active={section === "browser"}
             icon={Globe2}
             label="Browser"
@@ -420,6 +431,9 @@ export function SettingsView({
               onSave={onSavePersonalization}
               onDeleteMemories={onDeleteLocalMemories}
             />
+          )}
+          {section === "memory" && (
+            <MemorySettingsView settings={settings} onSettingsChange={onSettingsChange} />
           )}
           {section === "browser" && (
             <BrowserSection
