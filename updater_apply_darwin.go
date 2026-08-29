@@ -1,7 +1,7 @@
 //go:build darwin
 
-// macOS apply helper: a detached script waits for the app to exit, unzips the
-// downloaded bundle over the old one, and relaunches the app.
+// macOS apply helper: a detached script waits for the app to exit, extracts a
+// previously validated bundle into a private staging directory, and relaunches.
 package main
 
 import (
@@ -14,28 +14,46 @@ import (
 )
 
 func writeApplyScript(downloadedPath, executable string) (string, error) {
-	// executable: <App>.app/Contents/MacOS/<bin> — the bundle is three levels up.
 	appPath := executable
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		appPath = filepath.Dir(appPath)
 	}
 	if !strings.HasSuffix(appPath, ".app") {
 		return "", fmt.Errorf("cannot locate the .app bundle for %s", executable)
 	}
-	parentDir := filepath.Dir(appPath)
-
-	scriptPath := filepath.Join(os.TempDir(), "mncode-apply-update.sh")
-	script := fmt.Sprintf(`#!/bin/bash
-sleep 2
-rm -rf "%s"
-unzip -o -q "%s" -d "%s"
-open "%s"
-rm -f "%s"
-`, appPath, downloadedPath, parentDir, appPath, scriptPath)
-	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
+	scriptPath, err := os.CreateTemp(os.TempDir(), "mncode-apply-update-*.sh")
+	if err != nil {
 		return "", err
 	}
-	return scriptPath, nil
+	path := scriptPath.Name()
+	if err := scriptPath.Chmod(0700); err != nil {
+		_ = scriptPath.Close()
+		_ = os.Remove(path)
+		return "", err
+	}
+	script := fmt.Sprintf(`#!/bin/bash
+set -eu
+sleep 2
+staging=$(mktemp -d "${TMPDIR:-/tmp}/mncode-update.XXXXXX")
+cleanup() { rm -rf -- "$staging"; rm -f -- %s; }
+trap cleanup EXIT
+unzip -o -q -- %s -d "$staging"
+bundle=$(find "$staging" -maxdepth 1 -type d -name '*.app' -print -quit)
+test -n "$bundle"
+rm -rf -- %s
+ditto "$bundle" %s
+open %s
+`, shellQuote(path), shellQuote(downloadedPath), shellQuote(appPath), shellQuote(appPath), shellQuote(appPath))
+	if _, err := scriptPath.WriteString(script); err != nil {
+		_ = scriptPath.Close()
+		_ = os.Remove(path)
+		return "", err
+	}
+	if err := scriptPath.Close(); err != nil {
+		_ = os.Remove(path)
+		return "", err
+	}
+	return path, nil
 }
 
 func spawnDetached(scriptPath string) error {

@@ -2,12 +2,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"mncode/pkg/accounts"
+	"mncode/pkg/codex"
 	"mncode/pkg/config"
 )
 
@@ -69,14 +72,82 @@ func (a *App) LoginProvider(providerID, accountID, token string) error {
 		return err
 	}
 	var account *accounts.Account
-	switch strings.ToLower(strings.TrimSpace(providerID)) {
+	token = strings.TrimSpace(token)
+	id := strings.TrimSpace(accountID)
+	p := strings.ToLower(strings.TrimSpace(providerID))
+
+	switch p {
 	case "antigravity":
 		account, err = accounts.StartAntigravityWebLogin(store)
-	case "codex", "openai":
-		if strings.TrimSpace(token) == "" {
-			return fmt.Errorf("a Codex/OpenAI token is required")
+	case "codex":
+		if token == "" {
+			return fmt.Errorf("a Codex session token is required")
 		}
-		account, err = accounts.AddCodexAccount(store, strings.TrimSpace(accountID), token)
+		account, err = accounts.AddCodexAccount(store, id, token)
+	case "openai":
+		if token == "" {
+			return fmt.Errorf("an OpenAI API key is required")
+		}
+		if id == "" {
+			id = fmt.Sprintf("openai-%d", time.Now().Unix())
+		}
+		account = &accounts.Account{
+			ID:          id,
+			Email:       id,
+			Provider:    accounts.ProviderTypeOpenAI,
+			AccessToken: token,
+			IsActive:    true,
+			CreatedAt:   time.Now(),
+		}
+		err = store.AddOrUpdate(account)
+	case "openrouter":
+		if token == "" {
+			return fmt.Errorf("an OpenRouter API key is required")
+		}
+		if id == "" {
+			id = fmt.Sprintf("openrouter-%d", time.Now().Unix())
+		}
+		account = &accounts.Account{
+			ID:          id,
+			Email:       id,
+			Provider:    accounts.ProviderTypeOpenRouter,
+			AccessToken: token,
+			IsActive:    true,
+			CreatedAt:   time.Now(),
+		}
+		err = store.AddOrUpdate(account)
+	case "anthropic":
+		if token == "" {
+			return fmt.Errorf("an Anthropic API key is required")
+		}
+		if id == "" {
+			id = fmt.Sprintf("anthropic-%d", time.Now().Unix())
+		}
+		account = &accounts.Account{
+			ID:          id,
+			Email:       id,
+			Provider:    accounts.ProviderTypeAnthropic,
+			AccessToken: token,
+			IsActive:    true,
+			CreatedAt:   time.Now(),
+		}
+		err = store.AddOrUpdate(account)
+	case "gemini":
+		if token == "" {
+			return fmt.Errorf("a Google Gemini API key is required")
+		}
+		if id == "" {
+			id = fmt.Sprintf("gemini-%d", time.Now().Unix())
+		}
+		account = &accounts.Account{
+			ID:          id,
+			Email:       id,
+			Provider:    accounts.ProviderTypeGemini,
+			AccessToken: token,
+			IsActive:    true,
+			CreatedAt:   time.Now(),
+		}
+		err = store.AddOrUpdate(account)
 	default:
 		return fmt.Errorf("unsupported login provider: %s", providerID)
 	}
@@ -84,6 +155,101 @@ func (a *App) LoginProvider(providerID, accountID, token string) error {
 		return err
 	}
 	return a.activateProviderAccount(store, account)
+}
+
+// CheckCodexInstalled verifies if official Codex binary is installed.
+func (a *App) CheckCodexInstalled() (DesktopCodexLoginResult, error) {
+	rt, err := codex.DiscoverRuntime(context.Background())
+	if err != nil {
+		return DesktopCodexLoginResult{}, err
+	}
+	return DesktopCodexLoginResult{
+		RuntimeVersion: rt.Version,
+	}, nil
+}
+
+// StartCodexOAuthLogin starts the official browser or device-code login flow.
+func (a *App) StartCodexOAuthLogin(mode string) (DesktopCodexLoginResult, error) {
+	a.codexMu.Lock()
+	if a.codexClient != nil {
+		_ = a.codexClient.Close()
+		a.codexClient = nil
+	}
+
+	client, err := codex.StartAppServer(context.Background(), "", "")
+	if err != nil {
+		a.codexMu.Unlock()
+		return DesktopCodexLoginResult{}, fmt.Errorf("could not launch official codex app-server: %w", err)
+	}
+	a.codexClient = client
+	a.codexMu.Unlock()
+
+	mode = strings.ToLower(strings.TrimSpace(mode))
+	if mode == "device" {
+		res, err := codex.LoginDeviceCodeFlow(context.Background(), client)
+		if err != nil {
+			return DesktopCodexLoginResult{}, err
+		}
+		return DesktopCodexLoginResult{
+			Type:            "device",
+			VerificationURI: res.VerificationURI,
+			UserCode:        res.UserCode,
+			ExpiresIn:       res.ExpiresIn,
+		}, nil
+	}
+
+	res, err := codex.LoginBrowserFlow(context.Background(), client)
+	if err != nil {
+		return DesktopCodexLoginResult{}, err
+	}
+	return DesktopCodexLoginResult{
+		Type:    "browser",
+		AuthURL: res.AuthURL,
+	}, nil
+}
+
+// CompleteCodexOAuthLogin waits/checks for login completion, records the account, and activates it.
+func (a *App) CompleteCodexOAuthLogin() (*DesktopProviderAccount, error) {
+	a.codexMu.Lock()
+	client := a.codexClient
+	a.codexMu.Unlock()
+
+	if client == nil {
+		return nil, fmt.Errorf("no active Codex login in progress")
+	}
+
+	accInfo, err := codex.WaitForLoginComplete(context.Background(), client, 8*time.Second)
+	if err != nil {
+		return nil, fmt.Errorf("login check failed: %w", err)
+	}
+	if accInfo == nil || accInfo.AccountID == "" {
+		return nil, fmt.Errorf("login not yet completed; please finish authentication in your browser")
+	}
+
+	store, err := accounts.NewStore("")
+	if err != nil {
+		return nil, err
+	}
+
+	acc := &accounts.Account{
+		ID:          accInfo.AccountID,
+		Email:       accInfo.Email,
+		Provider:    accounts.ProviderTypeCodex,
+		AccessToken: "codex-appserver-session",
+		IsActive:    true,
+	}
+	if err := store.AddOrUpdate(acc); err != nil {
+		return nil, err
+	}
+	_ = a.activateProviderAccount(store, acc)
+
+	return &DesktopProviderAccount{
+		ID:        acc.ID,
+		Email:     acc.Email,
+		Provider:  "codex",
+		Active:    true,
+		Available: true,
+	}, nil
 }
 
 // UseProviderAccount promotes one pooled account to the active slot.
@@ -223,17 +389,32 @@ func (a *App) activateProviderAccount(store *accounts.Store, account *accounts.A
 	if err != nil {
 		return err
 	}
-	cfg.APIKey = account.AccessToken
+	if account.AccessToken != "codex-appserver-session" {
+		cfg.APIKey = account.AccessToken
+	}
 	cfg.CustomProviderID = ""
 	switch account.Provider {
 	case accounts.ProviderTypeAntigravity:
 		cfg.Provider = config.ProviderAntigravity
 		cfg.BaseURL = ""
-	case accounts.ProviderTypeCodex, accounts.ProviderTypeOpenAI:
+	case accounts.ProviderTypeCodex:
+		if cfg.Provider == "" {
+			cfg.Provider = config.ProviderOpenAI
+		}
+	case accounts.ProviderTypeOpenAI:
 		cfg.Provider = config.ProviderOpenAI
 		cfg.BaseURL = "https://api.openai.com/v1"
+	case accounts.ProviderTypeOpenRouter:
+		cfg.Provider = config.ProviderOpenRouter
+		cfg.BaseURL = "https://openrouter.ai/api/v1"
+	case accounts.ProviderTypeAnthropic:
+		cfg.Provider = config.ProviderAnthropic
+		cfg.BaseURL = "https://api.anthropic.com/v1"
+	case accounts.ProviderTypeGemini:
+		cfg.Provider = config.ProviderGemini
+		cfg.BaseURL = ""
 	default:
-		return fmt.Errorf("unsupported account provider: %s", account.Provider)
+		cfg.Provider = config.ProviderType(account.Provider)
 	}
 	if err := config.SaveConfig(cfg); err != nil {
 		return err

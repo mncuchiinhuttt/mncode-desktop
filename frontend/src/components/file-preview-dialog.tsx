@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
-import { Copy, FileWarning, Loader2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FileWarning, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { HighlightedLine } from "./diff-view";
+import { InAppCodeEditor } from "./in-app-code-editor";
 import type { DesktopFilePreview } from "@/types";
-
 interface FilePreviewDialogProps {
   path: string | null;
   onClose: () => void;
@@ -69,70 +64,31 @@ export function FilePreviewDialog({ path, onClose, onLoad, onNotify }: FilePrevi
     <Dialog open={Boolean(path)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[85vh] w-full max-w-4xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl"
+        className="flex h-[88vh] w-full max-w-5xl flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl border-0 bg-transparent shadow-none"
       >
-        <DialogHeader className="flex-row items-center justify-between gap-3 space-y-0 border-b border-[var(--mn-line)] px-4 py-3">
-          <div className="min-w-0">
-            <DialogTitle className="truncate font-mono text-sm">
-              {preview?.path ?? path ?? ""}
-            </DialogTitle>
-            <DialogDescription className="text-[0.6875rem]">
-              {preview && !preview.binary
-                ? `${preview.lines} lines · ${formatBytes(preview.size)}${preview.truncated ? " · truncated preview" : ""}`
-                : "Read-only preview"}
-            </DialogDescription>
+        {loading ? (
+          <div className="flex h-64 items-center justify-center gap-2 text-xs text-muted-foreground bg-background rounded-xl border border-[var(--mn-line)]">
+            <Loader2 className="size-4 animate-spin text-[var(--mn-accent-strong)]" />
+            Reading file…
           </div>
-          <div className="flex shrink-0 items-center gap-1">
-            {preview && !preview.binary && (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => void copyContent()}
-                aria-label="Copy file contents"
-              >
-                <Copy className="size-4" />
-              </Button>
-            )}
-            <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close preview">
-              <X className="size-4" />
-            </Button>
+        ) : error ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-2 p-6 text-center text-xs text-destructive bg-background rounded-xl border border-destructive/30">
+            <FileWarning className="size-5" />
+            {error}
           </div>
-        </DialogHeader>
-        <div className="min-h-0 flex-1 overflow-auto">
-          {loading && (
-            <div className="flex h-40 items-center justify-center text-muted-foreground">
-              <Loader2 className="size-5 animate-spin" />
-            </div>
-          )}
-          {!loading && error && (
-            <div className="flex h-40 flex-col items-center justify-center gap-2 px-6 text-center text-sm text-muted-foreground">
-              <FileWarning className="size-5 text-rose-500" />
-              {error}
-            </div>
-          )}
-          {!loading && !error && preview?.binary && (
-            <div className="flex h-40 flex-col items-center justify-center gap-2 px-6 text-center text-sm text-muted-foreground">
-              <FileWarning className="size-5" />
-              This looks like a binary file and can&apos;t be previewed as text.
-            </div>
-          )}
-          {!loading && !error && preview && !preview.binary && (
-            <pre className="m-0 min-w-full text-[0.75rem] leading-5">
-              <code className="grid grid-cols-[auto_1fr]">
-                {lines.map((line, index) => (
-                  <span key={index} className="contents">
-                    <span className="select-none border-r border-[var(--mn-line)] bg-[var(--mn-surface-muted)] px-3 py-0 text-right text-muted-foreground/60">
-                      {index + 1}
-                    </span>
-                    <span className="whitespace-pre px-3 font-mono">
-                      <HighlightedLine text={line || " "} />
-                    </span>
-                  </span>
-                ))}
-              </code>
-            </pre>
-          )}
-        </div>
+        ) : preview?.binary ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-2 p-6 text-center text-xs text-muted-foreground bg-background rounded-xl border border-[var(--mn-line)]">
+            <FileWarning className="size-5" />
+            Binary file preview not supported in text editor.
+          </div>
+        ) : preview ? (
+          <InAppCodeEditor
+            filePath={preview.path}
+            initialContent={preview.content}
+            onClose={onClose}
+            onNotify={onNotify}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   );

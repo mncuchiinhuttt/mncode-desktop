@@ -2,15 +2,13 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
 	"mncode/pkg/agent"
 	"mncode/pkg/config"
+	"mncode/pkg/stats"
 	"mncode/pkg/ui"
 )
 
-// GetUsageStats aggregates local token telemetry for the dashboard.
+// GetUsageStats aggregates local and cloud token telemetry for the dashboard.
 func (a *App) GetUsageStats() (DesktopUsageStats, error) {
 	a.mu.RLock()
 	var session *sessionRuntime
@@ -20,39 +18,79 @@ func (a *App) GetUsageStats() (DesktopUsageStats, error) {
 	a.mu.RUnlock()
 
 	var cfg *config.Config
-	if session != nil && session.session != nil && session.session.Config != nil {
+	var tracker *stats.Tracker
+	if session != nil && session.session != nil {
 		cfg = session.session.Config
-	} else {
+		if tr, ok := session.session.Tracker.(*stats.Tracker); ok {
+			tracker = tr
+		}
+	}
+	if tracker == nil {
+		tracker = stats.NewTracker()
+	}
+	if cfg == nil {
 		var err error
 		cfg, err = config.LoadConfig("")
 		if err != nil {
-			return DesktopUsageStats{}, err
+			return localUsageStats(tracker), nil
 		}
-	}
-	if cfg.GetTelemetryKey() == "" {
-		return DesktopUsageStats{}, fmt.Errorf("sign in to mncode-web to view usage")
 	}
 
-	stats, err := ui.FetchUsageStats(&agent.Session{Config: cfg})
-	if err != nil {
-		if strings.Contains(err.Error(), "server returned 401") || strings.Contains(err.Error(), "server returned 403") {
-			if _, identityErr := ui.FetchWhoAmI(&agent.Session{Config: cfg}); identityErr == nil {
-				return DesktopUsageStats{}, fmt.Errorf("usage service needs an update; your sync key is valid, but the deployed stats service still rejects API-key access")
+	// If cloud sync key is available, attempt fetching latest synced stats from cloud
+	if cfg.GetTelemetryKey() != "" {
+		statsRes, err := ui.FetchUsageStats(&agent.Session{Config: cfg})
+		if err == nil && statsRes != nil && statsRes.Success {
+			result := DesktopUsageStats{
+				Summary: DesktopUsageSummary{
+					TotalTokens:    statsRes.Summary.TotalTokens,
+					InputTokens:    statsRes.Summary.InputTokens,
+					OutputTokens:   statsRes.Summary.OutputTokens,
+					ThinkingTokens: statsRes.Summary.ThinkingTokens,
+					TotalSessions:  statsRes.Summary.TotalSessions,
+					RecordsCount:   statsRes.Summary.RecordsCount,
+				},
+				DailyUsage: make([]DesktopUsageDay, 0, len(statsRes.DailyUsage)),
 			}
-			return DesktopUsageStats{}, fmt.Errorf("mncode-web sync key is expired or revoked; sign in again to refresh usage access")
+			for _, day := range statsRes.DailyUsage {
+				result.DailyUsage = append(result.DailyUsage, DesktopUsageDay{
+					Date:     day.Date,
+					Tokens:   day.Tokens,
+					Sessions: day.Sessions,
+				})
+			}
+			return result, nil
 		}
-		return DesktopUsageStats{}, err
 	}
-	result := DesktopUsageStats{
+
+	// Seamless fallback to local tracker data if offline or remote unreachable
+	return localUsageStats(tracker), nil
+}
+
+func localUsageStats(tracker *stats.Tracker) DesktopUsageStats {
+	if tracker == nil {
+		tracker = stats.NewTracker()
+	}
+	lifetime := tracker.GetLifetime()
+	history := tracker.GetDailyHistory(30)
+	streak := tracker.GetStreakStats()
+	daily := make([]DesktopUsageDay, 0, len(history))
+	for _, pt := range history {
+		daily = append(daily, DesktopUsageDay{
+			Date:     pt.DateKey,
+			Tokens:   pt.Tokens,
+			Sessions: 1,
+		})
+	}
+
+	return DesktopUsageStats{
 		Summary: DesktopUsageSummary{
-			TotalTokens: stats.Summary.TotalTokens, InputTokens: stats.Summary.InputTokens,
-			OutputTokens: stats.Summary.OutputTokens, ThinkingTokens: stats.Summary.ThinkingTokens,
-			TotalSessions: stats.Summary.TotalSessions, RecordsCount: stats.Summary.RecordsCount,
+			TotalTokens:    lifetime.TotalTokens,
+			InputTokens:    lifetime.InputTokens,
+			OutputTokens:   lifetime.OutputTokens,
+			ThinkingTokens: lifetime.ThinkingTokens,
+			TotalSessions:  int64(streak.Sessions),
+			RecordsCount:   int64(len(tracker.Records())),
 		},
-		DailyUsage: make([]DesktopUsageDay, 0, len(stats.DailyUsage)),
+		DailyUsage: daily,
 	}
-	for _, day := range stats.DailyUsage {
-		result.DailyUsage = append(result.DailyUsage, DesktopUsageDay{Date: day.Date, Tokens: day.Tokens, Sessions: day.Sessions})
-	}
-	return result, nil
 }

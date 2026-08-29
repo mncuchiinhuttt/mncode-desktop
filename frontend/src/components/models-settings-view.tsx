@@ -4,6 +4,10 @@ import {
   ChevronRight,
   Cloud,
   Code2,
+  Compass,
+  Copy,
+  ExternalLink,
+  Globe,
   KeyRound,
   Loader2,
   Plus,
@@ -11,6 +15,7 @@ import {
   Sparkles,
   Trash2,
   UserRound,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { desktop } from "@/lib/desktop";
 import type {
   CustomModel,
   CustomProvider,
@@ -30,7 +36,6 @@ import type {
   ProviderQuota,
   ProviderSettings,
 } from "@/types";
-
 const formats = [
   { id: "anthropic-messages", label: "Anthropic messages (/v1/messages)" },
   { id: "chat-completions", label: "Chat completions (/chat/completions)" },
@@ -131,23 +136,27 @@ export function ModelsSettingsView({
   }
 
   const custom = settings.customProviders.find((provider) => provider.id === selected);
-  const accounts = settings.accounts.filter((account) =>
-    selected === "antigravity"
-      ? account.provider === "antigravity"
-      : account.provider === "codex" || account.provider === "openai",
-  );
+  const accounts = settings.accounts.filter((account) => {
+    if (selected === "antigravity") return account.provider === "antigravity";
+    if (selected === "codex") return account.provider === "codex";
+    if (selected === "openai") return account.provider === "openai";
+    if (selected === "openrouter") return account.provider === "openrouter";
+    if (selected === "anthropic") return account.provider === "anthropic";
+    return false;
+  });
   const models = useMemo(
     () =>
-      catalog.models.filter((model) =>
-        selected === "antigravity"
-          ? model.tag.includes("Antigravity")
-          : selected === "codex"
-            ? model.provider === "openai" || model.tag.includes("OpenAI")
-            : model.provider === "opencode" || model.tag.includes("OpenCode"),
-      ),
+      catalog.models.filter((model) => {
+        if (selected === "antigravity") return model.tag.includes("Antigravity");
+        if (selected === "codex") return model.provider === "openai" || model.tag.includes("OpenAI") || model.tag.includes("Codex");
+        if (selected === "openai") return model.provider === "openai" || model.tag.includes("OpenAI");
+        if (selected === "openrouter") return model.provider === "openrouter" || model.tag.includes("OpenRouter");
+        if (selected === "anthropic") return model.provider === "anthropic" || model.tag.includes("Anthropic");
+        if (selected === "opencode") return model.provider === "opencode" || model.tag.includes("OpenCode");
+        return false;
+      }),
     [catalog.models, selected],
   );
-
   return (
     <div className="mt-8 space-y-4">
       {error && (
@@ -163,23 +172,42 @@ export function ModelsSettingsView({
           <ProviderButton
             selected={selected === "antigravity"}
             icon={Cloud}
-            label="Antigravity"
-            status={accounts.some((account) => account.active)}
+            label="Antigravity (Google)"
+            status={settings.accounts.some((account) => account.provider === "antigravity" && account.active)}
             onClick={() => setSelected("antigravity")}
           />
           <ProviderButton
             selected={selected === "codex"}
             icon={Code2}
-            label="Codex / OpenAI"
-            status={settings.accounts.some(
-              (account) => account.provider === "codex" || account.provider === "openai",
-            )}
+            label="Codex (ChatGPT)"
+            status={settings.accounts.some((account) => account.provider === "codex" && account.active)}
             onClick={() => setSelected("codex")}
           />
           <ProviderButton
-            selected={selected === "opencode"}
+            selected={selected === "openai"}
+            icon={Zap}
+            label="OpenAI API"
+            status={settings.accounts.some((account) => account.provider === "openai" && account.active)}
+            onClick={() => setSelected("openai")}
+          />
+          <ProviderButton
+            selected={selected === "openrouter"}
+            icon={Globe}
+            label="OpenRouter"
+            status={settings.accounts.some((account) => account.provider === "openrouter" && account.active)}
+            onClick={() => setSelected("openrouter")}
+          />
+          <ProviderButton
+            selected={selected === "anthropic"}
             icon={Sparkles}
-            label="OpenCode"
+            label="Anthropic Claude"
+            status={settings.accounts.some((account) => account.provider === "anthropic" && account.active)}
+            onClick={() => setSelected("anthropic")}
+          />
+          <ProviderButton
+            selected={selected === "opencode"}
+            icon={Server}
+            label="OpenCode Zen"
             status={settings.openCodeConfigured}
             onClick={() => setSelected("opencode")}
           />
@@ -233,7 +261,30 @@ export function ModelsSettingsView({
               accounts={accounts}
               models={models}
               busy={busy}
-              onLogin={(id, token) => void run(() => onLogin("codex", id, token))}
+              onUseAccount={(id) => void run(() => onUseAccount(id))}
+            />
+          ) : selected === "openai" ? (
+            <OpenAIProvider
+              accounts={accounts}
+              models={models}
+              busy={busy}
+              onLogin={(id, token) => void run(() => onLogin("openai", id, token))}
+              onUseAccount={(id) => void run(() => onUseAccount(id))}
+            />
+          ) : selected === "openrouter" ? (
+            <OpenRouterProvider
+              accounts={accounts}
+              models={models}
+              busy={busy}
+              onLogin={(id, token) => void run(() => onLogin("openrouter", id, token))}
+              onUseAccount={(id) => void run(() => onUseAccount(id))}
+            />
+          ) : selected === "anthropic" ? (
+            <AnthropicProvider
+              accounts={accounts}
+              models={models}
+              busy={busy}
+              onLogin={(id, token) => void run(() => onLogin("anthropic", id, token))}
               onUseAccount={(id) => void run(() => onUseAccount(id))}
             />
           ) : selected === "opencode" ? (
@@ -364,6 +415,222 @@ function CodexProvider({
   accounts,
   models,
   busy,
+  onUseAccount,
+}: {
+  accounts: ProviderAccount[];
+  models: DesktopCatalog["models"];
+  busy: boolean;
+  onUseAccount: (id: string) => void;
+}) {
+  const [mode, setMode] = useState<"oauth" | "device">("oauth");
+  const [oauthLoading, setOauthLoading] = useState(false);
+  const [oauthResult, setOauthResult] = useState<{
+    authUrl?: string;
+    verificationUri?: string;
+    userCode?: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [oauthError, setOauthError] = useState("");
+
+  const startOAuth = async (loginMode: "browser" | "device") => {
+    setOauthLoading(true);
+    setOauthError("");
+    try {
+      const res = await desktop.startCodexOAuthLogin(loginMode);
+      setOauthResult(res);
+      if (loginMode === "browser" && res.authUrl) {
+        await desktop.openExternalURL(res.authUrl);
+      }
+    } catch (err) {
+      setOauthError(err instanceof Error ? err.message : "Failed to start Codex login");
+    } finally {
+      setOauthLoading(false);
+    }
+  };
+
+  const completeOAuth = async () => {
+    setOauthLoading(true);
+    setOauthError("");
+    try {
+      await desktop.completeCodexOAuthLogin();
+      setOauthResult(null);
+    } catch (err) {
+      setOauthError(err instanceof Error ? err.message : "Login not completed yet");
+    } finally {
+      setOauthLoading(false);
+    }
+  };
+
+  const copyCode = () => {
+    if (oauthResult?.userCode) {
+      navigator.clipboard.writeText(oauthResult.userCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <ProviderLayout
+      title="Codex (ChatGPT)"
+      description="Sign in directly with your ChatGPT Plus/Team/Pro subscription via official OpenAI Codex OAuth. No API keys required."
+      icon={Code2}
+      action={null}
+    >
+      <div className="flex gap-2 border-b border-border/40 pb-3">
+        <Button
+          variant={mode === "oauth" ? "default" : "outline"}
+          size="sm"
+          onClick={() => { setMode("oauth"); setOauthResult(null); setOauthError(""); }}
+          className={mode === "oauth" ? "mn-accent-button" : ""}
+        >
+          <Globe className="mr-1.5 size-3.5" />
+          ChatGPT OAuth (Browser)
+        </Button>
+        <Button
+          variant={mode === "device" ? "default" : "outline"}
+          size="sm"
+          onClick={() => { setMode("device"); setOauthResult(null); setOauthError(""); }}
+          className={mode === "device" ? "mn-accent-button" : ""}
+        >
+          <Sparkles className="mr-1.5 size-3.5" />
+          Device Code
+        </Button>
+      </div>
+
+      {oauthError && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
+          {oauthError}
+        </div>
+      )}
+
+      {mode === "oauth" && (
+        <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-3.5">
+          <p className="text-xs text-muted-foreground">
+            Click below to open the official OpenAI ChatGPT sign-in window in your browser.
+          </p>
+          {!oauthResult ? (
+            <Button
+              size="sm"
+              onClick={() => void startOAuth("browser")}
+              disabled={oauthLoading || busy}
+              className="mn-accent-button"
+            >
+              {oauthLoading ? (
+                <Loader2 className="mr-2 size-3.5 animate-spin" />
+              ) : (
+                <Globe className="mr-2 size-3.5" />
+              )}
+              Sign in with ChatGPT
+            </Button>
+          ) : (
+            <div className="space-y-2.5">
+              <p className="text-xs text-emerald-400">
+                ✓ Browser authorization opened. Complete sign-in in your browser then click Verify below.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => void completeOAuth()}
+                  disabled={oauthLoading}
+                  className="mn-accent-button"
+                >
+                  {oauthLoading ? (
+                    <Loader2 className="mr-2 size-3.5 animate-spin" />
+                  ) : (
+                    <Check className="mr-2 size-3.5" />
+                  )}
+                  Verify & Finish Login
+                </Button>
+                {oauthResult.authUrl && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void desktop.openExternalURL(oauthResult.authUrl!)}
+                  >
+                    <ExternalLink className="mr-1.5 size-3.5" />
+                    Re-open Browser
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {mode === "device" && (
+        <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-3.5">
+          <p className="text-xs text-muted-foreground">
+            Authenticate via one-time device code for headless or remote environments.
+          </p>
+          {!oauthResult ? (
+            <Button
+              size="sm"
+              onClick={() => void startOAuth("device")}
+              disabled={oauthLoading || busy}
+              className="mn-accent-button"
+            >
+              {oauthLoading ? (
+                <Loader2 className="mr-2 size-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 size-3.5" />
+              )}
+              Generate Device Code
+            </Button>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">Your Code:</span>
+                <span className="rounded bg-background px-2 py-1 font-mono text-sm font-bold tracking-wider text-primary">
+                  {oauthResult.userCode}
+                </span>
+                <Button size="sm" variant="ghost" onClick={copyCode} className="h-7 px-2">
+                  {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+                </Button>
+              </div>
+              {oauthResult.verificationUri && (
+                <p className="text-xs text-muted-foreground">
+                  Open{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      void desktop.openExternalURL(oauthResult.verificationUri!);
+                    }}
+                    className="text-primary underline hover:opacity-80"
+                  >
+                    {oauthResult.verificationUri}
+                  </a>{" "}
+                  and enter the code above.
+                </p>
+              )}
+              <Button
+                size="sm"
+                onClick={() => void completeOAuth()}
+                disabled={oauthLoading}
+                className="mn-accent-button"
+              >
+                {oauthLoading ? (
+                  <Loader2 className="mr-2 size-3.5 animate-spin" />
+                ) : (
+                  <Check className="mr-2 size-3.5" />
+                )}
+                Verify & Finish Login
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <AccountList accounts={accounts} busy={busy} onUse={onUseAccount} />
+      <ModelList models={models} />
+    </ProviderLayout>
+  );
+}
+
+function OpenAIProvider({
+  accounts,
+  models,
+  busy,
   onLogin,
   onUseAccount,
 }: {
@@ -373,13 +640,14 @@ function CodexProvider({
   onLogin: (id: string, token: string) => void;
   onUseAccount: (id: string) => void;
 }) {
-  const [id, setId] = useState("codex-main");
+  const [id, setId] = useState("openai-main");
   const [token, setToken] = useState("");
+
   return (
     <ProviderLayout
-      title="Codex / OpenAI"
-      description="Connect a Codex or OpenAI token, matching the CLI account pool."
-      icon={Code2}
+      title="OpenAI API"
+      description="Connect your OpenAI Platform API key to access GPT-4o, o1, and o3-mini models."
+      icon={Zap}
       action={
         <Button
           size="sm"
@@ -390,33 +658,155 @@ function CodexProvider({
           disabled={busy || !token.trim()}
           className="mn-accent-button"
         >
-          {busy ? (
-            <Loader2 className="mr-2 size-3.5 animate-spin" />
-          ) : (
-            <KeyRound className="mr-2 size-3.5" />
-          )}
-          Connect token
+          {busy ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : <KeyRound className="mr-2 size-3.5" />}
+          Connect API key
         </Button>
       }
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-xs text-muted-foreground">
-          Account ID
+          Account label
           <Input
             value={id}
-            onChange={(event) => setId(event.target.value)}
+            onChange={(e) => setId(e.target.value)}
             className="mt-2"
-            placeholder="codex-main"
+            placeholder="openai-main"
           />
         </label>
         <label className="text-xs text-muted-foreground">
-          API token
+          OpenAI API Key
           <Input
             type="password"
             value={token}
-            onChange={(event) => setToken(event.target.value)}
+            onChange={(e) => setToken(e.target.value)}
             className="mt-2"
-            placeholder="sk-…"
+            placeholder="sk-proj-…"
+          />
+        </label>
+      </div>
+      <AccountList accounts={accounts} busy={busy} onUse={onUseAccount} />
+      <ModelList models={models} />
+    </ProviderLayout>
+  );
+}
+
+function OpenRouterProvider({
+  accounts,
+  models,
+  busy,
+  onLogin,
+  onUseAccount,
+}: {
+  accounts: ProviderAccount[];
+  models: DesktopCatalog["models"];
+  busy: boolean;
+  onLogin: (id: string, token: string) => void;
+  onUseAccount: (id: string) => void;
+}) {
+  const [id, setId] = useState("openrouter-main");
+  const [token, setToken] = useState("");
+
+  return (
+    <ProviderLayout
+      title="OpenRouter"
+      description="Connect an OpenRouter API key to access Claude 3.7, DeepSeek R1, Llama 3.3, and hundreds of models."
+      icon={Globe}
+      action={
+        <Button
+          size="sm"
+          onClick={() => {
+            onLogin(id, token);
+            setToken("");
+          }}
+          disabled={busy || !token.trim()}
+          className="mn-accent-button"
+        >
+          {busy ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : <KeyRound className="mr-2 size-3.5" />}
+          Connect OpenRouter
+        </Button>
+      }
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="text-xs text-muted-foreground">
+          Account label
+          <Input
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            className="mt-2"
+            placeholder="openrouter-main"
+          />
+        </label>
+        <label className="text-xs text-muted-foreground">
+          OpenRouter API Key
+          <Input
+            type="password"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="mt-2"
+            placeholder="sk-or-v1-…"
+          />
+        </label>
+      </div>
+      <AccountList accounts={accounts} busy={busy} onUse={onUseAccount} />
+      <ModelList models={models} />
+    </ProviderLayout>
+  );
+}
+
+function AnthropicProvider({
+  accounts,
+  models,
+  busy,
+  onLogin,
+  onUseAccount,
+}: {
+  accounts: ProviderAccount[];
+  models: DesktopCatalog["models"];
+  busy: boolean;
+  onLogin: (id: string, token: string) => void;
+  onUseAccount: (id: string) => void;
+}) {
+  const [id, setId] = useState("anthropic-main");
+  const [token, setToken] = useState("");
+
+  return (
+    <ProviderLayout
+      title="Anthropic Claude"
+      description="Connect your direct Anthropic API key to access Claude 3.7 Sonnet (Thinking), Claude 3.5 Sonnet, and Opus."
+      icon={Sparkles}
+      action={
+        <Button
+          size="sm"
+          onClick={() => {
+            onLogin(id, token);
+            setToken("");
+          }}
+          disabled={busy || !token.trim()}
+          className="mn-accent-button"
+        >
+          {busy ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : <KeyRound className="mr-2 size-3.5" />}
+          Connect Claude key
+        </Button>
+      }
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="text-xs text-muted-foreground">
+          Account label
+          <Input
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            className="mt-2"
+            placeholder="anthropic-main"
+          />
+        </label>
+        <label className="text-xs text-muted-foreground">
+          Anthropic API Key
+          <Input
+            type="password"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="mt-2"
+            placeholder="sk-ant-api03-…"
           />
         </label>
       </div>

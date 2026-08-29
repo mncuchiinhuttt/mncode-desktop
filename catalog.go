@@ -223,6 +223,14 @@ func applySettings(cfg *config.Config, session *agent.Session, input DesktopSett
 		}
 		cfg.SetSetting("language", value)
 	}
+	if value := strings.TrimSpace(input.SearchEngine); value != "" {
+		allowed := map[string]bool{"auto": true, "antigravity": true, "brave": true, "tavily": true, "duckduckgo": true}
+		if !allowed[strings.ToLower(value)] {
+			return DesktopSettings{}, fmt.Errorf("unknown search engine: %s", value)
+		}
+		cfg.SearchEngine = strings.ToLower(value)
+		cfg.SetSetting("search_engine", strings.ToLower(value))
+	}
 	if input.Artifacts != nil {
 		cfg.SetSetting("artifacts", strconv.FormatBool(*input.Artifacts))
 	}
@@ -235,6 +243,14 @@ func applySettings(cfg *config.Config, session *agent.Session, input DesktopSett
 	if input.VerboseOutput != nil {
 		cfg.Verbose = *input.VerboseOutput
 		cfg.SetSetting("verbose_output", strconv.FormatBool(*input.VerboseOutput))
+	}
+	if value := strings.TrimSpace(input.BraveAPIKey); value != "" {
+		cfg.BraveAPIKey = value
+		delete(cfg.Settings, "brave_api_key")
+	}
+	if value := strings.TrimSpace(input.TavilyAPIKey); value != "" {
+		cfg.TavilyAPIKey = value
+		delete(cfg.Settings, "tavily_api_key")
 	}
 	if err := config.SaveConfig(cfg); err != nil {
 		return DesktopSettings{}, err
@@ -307,6 +323,7 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 	tokenSaverRtk := settingBool(cfg, "token_saver_rtk", false)
 	tokenSaverHeadroom := settingBool(cfg, "token_saver_headroom", false)
 	language := cfg.GetSetting("language", "Default (English)")
+	searchEngine := cfg.GetSearchEngine()
 	artifacts := settingBool(cfg, "artifacts", true)
 	interruptMode := cfg.GetSetting("interrupt_mode", "queue")
 	if interruptMode != "queue" && interruptMode != "steer" {
@@ -318,6 +335,8 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 		provider = "custom:" + cfg.CustomProviderID
 	}
 	usage := session.GetContextUsage()
+	braveConfigured := cfg.GetBraveAPIKey() != ""
+	tavilyConfigured := cfg.GetTavilyAPIKey() != ""
 	return DesktopSettings{
 		Model: cfg.Model, Provider: provider, Workflow: workflow,
 		Effort: effort, ThinkingBudget: cfg.ThinkingBudget,
@@ -327,7 +346,8 @@ func settingsFromConfig(cfg *config.Config, session *agent.Session) DesktopSetti
 		DarkCodeTheme: darkCodeTheme, ShowLineNumbers: showLineNumbers,
 		WrapLines: wrapLines, ShowContextWindowUsage: showContextWindowUsage,
 		SuggestedPrompts: suggestedPrompts, SendShortcut: sendShortcut,
-		ContextWindow: contextWindow, AutoCompact: autoCompact, Language: language,
+		ContextWindow: contextWindow, AutoCompact: autoCompact, Language: language, SearchEngine: searchEngine,
+		BraveSearchConfigured: braveConfigured, TavilySearchConfigured: tavilyConfigured,
 		TokenSaverConcise: tokenSaverConcise, TokenSaverCapThinking: tokenSaverCapThinking,
 		TokenSaverCompressOutput: tokenSaverCompressOutput, TokenSaverTargetedEdits: tokenSaverTargetedEdits, TokenSaverRtk: tokenSaverRtk, TokenSaverHeadroom: tokenSaverHeadroom,
 		Artifacts: artifacts, InterruptMode: interruptMode, VerboseOutput: verboseOutput,

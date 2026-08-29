@@ -77,7 +77,7 @@ terminal:ready/command/output/exit/closed · remote:closed
 ## Security posture
 
 - Workspace MCP servers are only auto-started for **trusted workspaces**; the child-process environment is sanitized (whitelist) so API keys never leak into MCP servers.
-- Provider/API and telemetry credentials are persisted in `~/.mncode/config.json`; the config directory is `0700` and the file is `0600`. OS keychain storage remains a future hardening option.
+- Provider/API, telemetry, and optional Brave/Tavily search credentials are persisted in `~/.mncode/config.json`; the config directory is `0700` and the file is `0600`. Search keys enter through UI password fields and settings responses expose only configured flags. OS keychain storage remains a future hardening option.
 - Remote companion sessions require explicit pairing; the pairing URL carries the secret in the URL fragment, never the query string.
 
 ## Conventions
