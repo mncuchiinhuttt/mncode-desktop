@@ -28,6 +28,7 @@ import type {
   WorkspaceInfo,
   DesktopCombo,
   DesktopRoleMeta,
+  DesktopMemoryItem,
 } from "@/types";
 
 type WailsMethod = (...args: unknown[]) => unknown;
@@ -130,6 +131,9 @@ export const desktop = {
   deleteCombo: (id: string) => call<void>("DeleteCombo", id),
   getStandardRoles: () => call<DesktopRoleMeta[]>("GetStandardRoles"),
   runCombo: (comboID: string, prompt: string) => call<void>("RunCombo", comboID, prompt),
+  getSharedMemories: () => call<DesktopMemoryItem[]>("GetSharedMemories"),
+  saveSharedMemory: (item: DesktopMemoryItem) => call<void>("SaveSharedMemory", item),
+  deleteSharedMemory: (id: string) => call<void>("DeleteSharedMemory", id),
 };
 
 export function listen<T>(eventName: string, handler: (payload: T) => void) {

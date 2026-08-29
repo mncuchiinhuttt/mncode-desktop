@@ -1,9 +1,9 @@
 // Custom instructions, personality flags, and local memory management.
 package main
-
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"mncode/pkg/config"
 	"mncode/pkg/memory"
@@ -131,4 +131,80 @@ func memoryCandidate(prompt string) string {
 		}
 	}
 	return ""
+}
+type DesktopMemoryItem struct {
+	ID           string `json:"id"`
+	Topic        string `json:"topic"`
+	Category     string `json:"category"`
+	Tier         string `json:"tier"`
+	Summary      string `json:"summary"`
+	Mistake      string `json:"mistake,omitempty"`
+	Correction   string `json:"correction,omitempty"`
+	Confidence   int    `json:"confidence"`
+	HitCount     int    `json:"hitCount"`
+	SupersedesID string `json:"supersedesId,omitempty"`
+	CreatedAt    string `json:"createdAt"`
+	UpdatedAt    string `json:"updatedAt"`
+}
+
+// GetSharedMemories returns all memories across workspace and global tiers.
+func (a *App) GetSharedMemories() ([]DesktopMemoryItem, error) {
+	ws := a.GetWorkspace().Path
+	store, err := memory.NewHierarchicalStore(ws)
+	if err != nil {
+		return nil, err
+	}
+	all := store.ListAll()
+	res := make([]DesktopMemoryItem, 0, len(all))
+	for _, it := range all {
+		res = append(res, DesktopMemoryItem{
+			ID:           it.ID,
+			Topic:        it.Topic,
+			Category:     string(it.Category),
+			Tier:         string(it.Tier),
+			Summary:      it.Summary,
+			Mistake:      it.Mistake,
+			Correction:   it.Correction,
+			Confidence:   it.Confidence,
+			HitCount:     it.HitCount,
+			SupersedesID: it.SupersedesID,
+			CreatedAt:    it.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:    it.UpdatedAt.Format(time.RFC3339),
+		})
+	}
+	return res, nil
+}
+
+// SaveSharedMemory persists or evolves a shared memory entry.
+func (a *App) SaveSharedMemory(item DesktopMemoryItem) error {
+	ws := a.GetWorkspace().Path
+	store, err := memory.NewHierarchicalStore(ws)
+	if err != nil {
+		return err
+	}
+	tier := memory.TierWorkspace
+	if item.Tier == "global" {
+		tier = memory.TierGlobal
+	}
+	lesson := memory.ReflectiveLesson{
+		Topic:      item.Topic,
+		Category:   memory.MemoryCategory(item.Category),
+		Summary:    item.Summary,
+		Mistake:    item.Mistake,
+		Correction: item.Correction,
+		Confidence: item.Confidence,
+		Source:     "desktop-ui",
+	}
+	_, _, err = memory.EvolveMemory(store, lesson, tier)
+	return err
+}
+
+// DeleteSharedMemory deletes a memory entry by ID.
+func (a *App) DeleteSharedMemory(id string) error {
+	ws := a.GetWorkspace().Path
+	store, err := memory.NewHierarchicalStore(ws)
+	if err != nil {
+		return err
+	}
+	return store.Delete(id)
 }

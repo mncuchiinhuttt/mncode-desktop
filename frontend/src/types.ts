@@ -94,6 +94,20 @@ export interface DesktopRoleMeta {
   defaultPermissions?: string[];
   requiresWorktreeBase?: boolean;
 }
+export interface DesktopMemoryItem {
+  id: string;
+  topic: string;
+  category: string;
+  tier: "workspace" | "global";
+  summary: string;
+  mistake?: string;
+  correction?: string;
+  confidence: number;
+  hitCount: number;
+  supersedesId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface AgentRunUsage {
   inputTokens: number;
@@ -207,6 +221,8 @@ export interface DesktopSettings {
 	/** Write-only credentials; the backend never returns their values. */
 	braveApiKey?: string;
 	tavilyApiKey?: string;
+	sharedMemoryEnabled?: boolean;
+	hermesReflectionEnabled?: boolean;
 }
 
 export interface DesktopBrowserSettings {
