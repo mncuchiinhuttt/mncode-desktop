@@ -161,13 +161,19 @@ export interface DesktopSettings {
   tokenSaverTargetedEdits: boolean;
   tokenSaverRtk: boolean;
   tokenSaverHeadroom: boolean;
-  language: string;
-  artifacts: boolean;
-  interruptMode: "queue" | "steer";
-  verboseOutput: boolean;
-  contextPercent: number;
-  contextUsed: number;
-  contextLimit: number;
+	language: string;
+	searchEngine: "auto" | "antigravity" | "brave" | "tavily" | "duckduckgo";
+	braveSearchConfigured: boolean;
+	tavilySearchConfigured: boolean;
+	artifacts: boolean;
+	interruptMode: "queue" | "steer";
+	verboseOutput: boolean;
+	contextPercent: number;
+	contextUsed: number;
+	contextLimit: number;
+	/** Write-only credentials; the backend never returns their values. */
+	braveApiKey?: string;
+	tavilyApiKey?: string;
 }
 
 export interface DesktopBrowserSettings {
@@ -276,6 +282,15 @@ export interface ProviderAccount {
   active: boolean;
   available: boolean;
   lastError?: string;
+}
+
+export interface DesktopCodexLoginResult {
+  type: string;
+  authUrl?: string;
+  verificationUri?: string;
+  userCode?: string;
+  expiresIn?: number;
+  runtimeVersion?: string;
 }
 
 export interface ProviderModelQuota {
@@ -415,4 +430,24 @@ export interface DesktopCatalog {
   themes: ThemeOption[];
   settings: DesktopSettings;
   prompt: PromptCatalog;
+}
+
+export interface DesktopMigrationInput {
+  chatJson?: string;
+  notesJson?: string;
+  automationJson?: string;
+  workspaceDir?: string;
+}
+
+export interface DesktopMigrationReport {
+  status: string;
+  alreadyImported: boolean;
+  sourceFingerprint: string;
+  sourceCount: number;
+  importedCount: number;
+  sourceHash: string;
+  importedHash: string;
+  backupPath?: string;
+  backupStatus: string;
+  recoveryStatus: string;
 }

@@ -9,6 +9,8 @@ export function ApplyUpdateAndRestart(arg1:string):Promise<void>;
 
 export function CancelTurn():Promise<void>;
 
+export function CheckCodexInstalled():Promise<main.DesktopCodexLoginResult>;
+
 export function CheckForUpdate():Promise<main.DesktopUpdateInfo>;
 
 export function CheckHeadroomInstalled():Promise<boolean>;
@@ -19,7 +21,15 @@ export function ChooseAttachment():Promise<string>;
 
 export function ChooseWorkspace():Promise<main.WorkspaceInfo>;
 
+export function ClearAllBrowserData():Promise<main.DesktopBrowserSettings>;
+
+export function ClearBrowserCacheData():Promise<main.DesktopBrowserSettings>;
+
+export function CloseBrowserSession():Promise<main.DesktopBrowserSettings>;
+
 export function CloseTerminal():Promise<void>;
+
+export function CompleteCodexOAuthLogin():Promise<main.DesktopProviderAccount>;
 
 export function ConfigureMCPServer(arg1:main.DesktopMCPServerInput):Promise<Array<main.DesktopMCPServer>>;
 
@@ -47,14 +57,6 @@ export function GetAppInfo():Promise<main.DesktopAppInfo>;
 
 export function GetBrowserSettings():Promise<main.DesktopBrowserSettings>;
 
-export function ImportChromeBrowserData():Promise<main.DesktopBrowserSettings>;
-
-export function ClearBrowserCacheData():Promise<main.DesktopBrowserSettings>;
-
-export function ClearAllBrowserData():Promise<main.DesktopBrowserSettings>;
-
-export function CloseBrowserSession():Promise<main.DesktopBrowserSettings>;
-
 export function GetCatalog():Promise<main.DesktopCatalog>;
 
 export function GetKeepAwake():Promise<boolean>;
@@ -72,6 +74,8 @@ export function GetSkillsMarketplace():Promise<skills.SkillsMarketplace>;
 export function GetUsageStats():Promise<main.DesktopUsageStats>;
 
 export function GetWorkspace():Promise<main.WorkspaceInfo>;
+
+export function ImportChromeBrowserData():Promise<main.DesktopBrowserSettings>;
 
 export function InstallHeadroom():Promise<void>;
 
@@ -91,19 +95,21 @@ export function LoginProvider(arg1:string,arg2:string,arg3:string):Promise<void>
 
 export function LogoutAccount():Promise<main.DesktopAccount>;
 
+export function MigrateLegacyLocalStorage(arg1:main.DesktopMigrationInput):Promise<main.DesktopMigrationReport>;
+
 export function OpenExternalURL(arg1:string):Promise<void>;
 
 export function OpenStandaloneChat():Promise<main.WorkspaceInfo>;
 
 export function OpenTerminal():Promise<void>;
 
-export function ReadWorkspaceFile(arg1:string):Promise<main.DesktopFilePreview>;
-
 export function OpenUpdatePage(arg1:string):Promise<void>;
 
 export function OpenWorkspace(arg1:string):Promise<main.WorkspaceInfo>;
 
 export function ReadAutomationLog(arg1:string):Promise<string>;
+
+export function ReadWorkspaceFile(arg1:string):Promise<main.DesktopFilePreview>;
 
 export function ResolvePermission(arg1:string,arg2:boolean):Promise<void>;
 
@@ -120,6 +126,8 @@ export function SendPrompt(arg1:string):Promise<void>;
 export function SetKeepAwake(arg1:boolean):Promise<void>;
 
 export function SetModel(arg1:string):Promise<void>;
+
+export function StartCodexOAuthLogin(arg1:string):Promise<main.DesktopCodexLoginResult>;
 
 export function StartRemoteSession():Promise<main.DesktopRemoteSession>;
 

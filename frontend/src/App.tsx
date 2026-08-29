@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { desktop, listen } from "@/lib/desktop";
+import { sounds } from "@/lib/audio-notifications";
 import { useActiveRunID } from "@/hooks/useActiveRunID";
 import type {
   ActivityItem,
@@ -25,6 +26,8 @@ import type {
   DesktopBrowserSettings,
   DesktopBrowserSettingsInput,
   DesktopCatalog,
+  DesktopMigrationInput,
+  DesktopMigrationReport,
   DesktopSettings,
   DesktopMCPServer,
   DesktopMCPServerInput,
@@ -107,6 +110,9 @@ const emptySettings: DesktopSettings = {
   tokenSaverRtk: false,
   tokenSaverHeadroom: false,
   language: "Default (English)",
+  searchEngine: "auto",
+  braveSearchConfigured: false,
+  tavilySearchConfigured: false,
   artifacts: true,
   interruptMode: "queue",
   verboseOutput: false,
@@ -155,7 +161,7 @@ const emptyCatalog: DesktopCatalog = {
   prompt: emptyPromptCatalog,
 };
 const defaultAppInfo: AppInfo = {
-  version: "v0.1-beta",
+  version: "v0.1.4-beta",
   channel: "beta",
   description: "A local-first AI workspace for building with your code.",
   repository: "https://github.com/mncuchiinhuttt/mncode",
@@ -164,6 +170,68 @@ const defaultAppInfo: AppInfo = {
 const chatHistoryKey = "mncode-chat-history";
 const DEBUG_ONBOARDING_ALWAYS = true;
 const leftSidebarWidthKey = "mncode-left-sidebar-width";
+
+type MigrationAppBinding = {
+  MigrateLegacyLocalStorage?: (input: DesktopMigrationInput) => Promise<DesktopMigrationReport>;
+};
+
+type LegacyMigrationTarget =
+  | { kind: "workspace"; workspaceDir: string }
+  | { kind: "standalone" };
+
+type LegacyMigrationInFlight = {
+  key: string;
+  promise: Promise<DesktopMigrationReport | undefined>;
+};
+
+let legacyMigrationInFlight: LegacyMigrationInFlight | undefined;
+
+function migrateLegacyLocalStorage(input: DesktopMigrationInput) {
+  const windowWithBindings = window as unknown as {
+    go?: { main?: { App?: MigrationAppBinding } };
+  };
+  const app = windowWithBindings.go?.main?.App;
+  return app?.MigrateLegacyLocalStorage?.(input);
+}
+
+function migrationErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object" && "message" in error) {
+    return String(error.message);
+  }
+  return "";
+}
+
+function isTransientMigrationError(error: unknown) {
+  return /(?:busy|locked|temporar|timed?\s*out|network|connection\s+(?:reset|refused|closed)|service\s+unavailable|not\s+ready|try\s+again|\b50[234]\b)/i.test(
+    migrationErrorMessage(error),
+  );
+}
+
+function runLegacyLocalStorageMigration(input: DesktopMigrationInput) {
+  const key = JSON.stringify(input);
+  if (legacyMigrationInFlight?.key === key) return legacyMigrationInFlight.promise;
+
+  const promise = (async () => {
+    const firstAttempt = migrateLegacyLocalStorage(input);
+    if (!firstAttempt) return undefined;
+    try {
+      return await firstAttempt;
+    } catch (error) {
+      if (!isTransientMigrationError(error)) throw error;
+      const { promise, resolve } = Promise.withResolvers<void>();
+      window.setTimeout(resolve, 250);
+      await promise;
+      // The backend migration is fingerprinted/idempotent, so a single retry
+      // is safe after a transient runtime or persistence failure.
+      return await migrateLegacyLocalStorage(input);
+    }
+  })();
+  legacyMigrationInFlight = { key, promise };
+  return promise;
+}
+
 const rightSidebarWidthKey = "mncode-right-sidebar-width";
 
 function storedWidth(key: string, fallback: number, min: number, max: number) {
@@ -336,6 +404,17 @@ export default function App() {
   const [runStartedAt, setRunStartedAt] = useState<number>();
   const [catalog, setCatalog] = useState<DesktopCatalog>(emptyCatalog);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>(readChatHistory);
+  const [legacyMigrationSource] = useState<DesktopMigrationInput>(() => ({
+    chatJson: localStorage.getItem(chatHistoryKey) ?? undefined,
+    notesJson:
+      localStorage.getItem("mncode-notes") ??
+      localStorage.getItem("mncode-side-notes") ??
+      undefined,
+    automationJson:
+      localStorage.getItem("mncode-automations") ??
+      localStorage.getItem("mncode-automation") ??
+      undefined,
+  }));
   const [activeChatId, setActiveChatId] = useState(() => `chat-${Date.now()}`);
   const [renameChatID, setRenameChatID] = useState<string>();
   const [renameDraft, setRenameDraft] = useState("");
@@ -386,6 +465,7 @@ export default function App() {
   const [remoteOpen, setRemoteOpen] = useState(false);
   const [remoteBusy, setRemoteBusy] = useState(false);
   const [remoteError, setRemoteError] = useState("");
+  const [workspaceBootstrapReady, setWorkspaceBootstrapReady] = useState(false);
   const [remoteSession, setRemoteSession] = useState<DesktopRemoteSession>(emptyRemoteSession);
   const [bootPhase, setBootPhase] = useState<"loading" | "exiting" | "done">("loading");
   const [accountHydrated, setAccountHydrated] = useState(false);
@@ -401,6 +481,7 @@ export default function App() {
   const providerUsageRef = useRef<AgentRunUsage>(emptyRunUsage);
   const hasProviderUsageRef = useRef(false);
   const { setActiveRunID, clearActiveRunID, isActiveRun } = useActiveRunID();
+  const migrationStartedRef = useRef(false);
   const resizeRef = useRef<
     | {
         side: "left" | "right";
@@ -657,9 +738,32 @@ export default function App() {
   }, [settings.uiFontSize, settings.codeFontSize]);
 
   useEffect(() => {
-    localStorage.setItem(chatHistoryKey, JSON.stringify(chatSessions));
-  }, [chatSessions]);
+    // GetWorkspace is initially empty while the Wails app mounts its session.
+    // Do not import records into that transient empty workspace.
+    const standaloneBootstrapReady = workspaceBootstrapReady && bootPhase === "done";
+    if (!workspace.ready && !standaloneBootstrapReady) return;
+    if (migrationStartedRef.current) return;
 
+    const target: LegacyMigrationTarget =
+      workspace.ready && workspace.path
+        ? { kind: "workspace", workspaceDir: workspace.path }
+        : { kind: "standalone" };
+    const input: DesktopMigrationInput = { ...legacyMigrationSource };
+    if (target.kind === "workspace") input.workspaceDir = target.workspaceDir;
+    if (!input.chatJson && !input.notesJson && !input.automationJson) {
+      migrationStartedRef.current = true;
+      return;
+    }
+
+    migrationStartedRef.current = true;
+    const migration = runLegacyLocalStorageMigration(input);
+    if (!migration) return;
+    void migration
+      .then((report) => {
+        if (report?.status === "failed") notify("Could not migrate legacy Desktop data");
+      })
+      .catch(() => notify("Could not migrate legacy Desktop data"));
+  }, [bootPhase, legacyMigrationSource, notify, workspace, workspaceBootstrapReady]);
   useEffect(() => {
     if (messages.length === 0) return;
     if (chatSaveTimer.current) window.clearTimeout(chatSaveTimer.current);
@@ -694,6 +798,13 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runSummary]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(chatHistoryKey, JSON.stringify(chatSessions));
+    } catch {
+      // Storage quota exceeded
+    }
+  }, [chatSessions]);
   const refreshFiles = useCallback(async () => {
     try {
       setFiles(await desktop.listWorkspaceTree());
@@ -765,6 +876,7 @@ export default function App() {
       setRunning(false);
       setPermission(undefined);
       setQuestion(undefined);
+      setWorkspaceBootstrapReady(true);
       setWorkspace(info);
       if (info.ready) {
         void refreshFiles();
@@ -776,6 +888,7 @@ export default function App() {
   );
 
   useEffect(() => {
+    let cancelled = false;
     function finalizeRun() {
       const startedAt = runStartedAtRef.current;
       const durationMs = startedAt ? Date.now() - startedAt : 0;
@@ -1055,10 +1168,14 @@ export default function App() {
       listen<PermissionRequest>("agent:permission", (request) => {
         if (!isActiveRun(request.runID)) return;
         setPermission(request);
+        sounds.playPromptAlert();
+        sounds.notify("Approval required", "mncode is waiting for your tool permission.");
       }),
       listen<QuestionRequest>("agent:question", (request) => {
         if (!isActiveRun(request.runID)) return;
         setQuestion(request);
+        sounds.playPromptAlert();
+        sounds.notify("Question from agent", request.question || "mncode needs your input.");
       }),
       listen<{ cwd: string }>("terminal:ready", ({ cwd }) => {
         setTerminalCwd(cwd);
@@ -1098,6 +1215,8 @@ export default function App() {
         );
         setPermission(undefined);
         setQuestion(undefined);
+        sounds.playTaskComplete();
+        sounds.notify("Task completed", "Agent finished executing your request.");
         setActivities((items) =>
           items.map((item) =>
             item.active
@@ -1170,20 +1289,26 @@ export default function App() {
         notify(`${provider} connected for this session`, "success"),
       ),
     ];
-    let cancelled = false;
     async function hydrateWorkspace() {
+      let observedWorkspaceState = false;
       for (let attempt = 0; attempt < 8 && !cancelled; attempt += 1) {
         try {
           const info = await desktop.getWorkspace();
+          observedWorkspaceState = true;
           if (info.ready) {
             if (!cancelled) applyWorkspace(info);
             return;
           }
         } catch {
-          return;
+          // Keep polling while Wails finishes binding the bootstrap methods.
         }
-        await new Promise((resolve) => window.setTimeout(resolve, 250));
+        if (attempt < 7) {
+          await new Promise((resolve) => window.setTimeout(resolve, 250));
+        }
       }
+      // An observed empty workspace is a settled standalone bootstrap, not a
+      // transient state that should receive workspace-bound legacy records.
+      if (!cancelled && observedWorkspaceState) setWorkspaceBootstrapReady(true);
     }
     void hydrateWorkspace();
     void hydrateAccount();

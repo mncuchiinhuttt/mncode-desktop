@@ -254,6 +254,9 @@ export namespace main {
 	    tokenSaverRtk: boolean;
 	    tokenSaverHeadroom: boolean;
 	    language: string;
+	    searchEngine: string;
+	    braveSearchConfigured: boolean;
+	    tavilySearchConfigured: boolean;
 	    artifacts: boolean;
 	    interruptMode: string;
 	    verboseOutput: boolean;
@@ -293,6 +296,9 @@ export namespace main {
 	        this.tokenSaverRtk = source["tokenSaverRtk"];
 	        this.tokenSaverHeadroom = source["tokenSaverHeadroom"];
 	        this.language = source["language"];
+	        this.searchEngine = source["searchEngine"];
+	        this.braveSearchConfigured = source["braveSearchConfigured"];
+	        this.tavilySearchConfigured = source["tavilySearchConfigured"];
 	        this.artifacts = source["artifacts"];
 	        this.interruptMode = source["interruptMode"];
 	        this.verboseOutput = source["verboseOutput"];
@@ -399,6 +405,28 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class DesktopCodexLoginResult {
+	    type: string;
+	    authUrl?: string;
+	    verificationUri?: string;
+	    userCode?: string;
+	    expiresIn?: number;
+	    runtimeVersion?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DesktopCodexLoginResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.type = source["type"];
+	        this.authUrl = source["authUrl"];
+	        this.verificationUri = source["verificationUri"];
+	        this.userCode = source["userCode"];
+	        this.expiresIn = source["expiresIn"];
+	        this.runtimeVersion = source["runtimeVersion"];
+	    }
+	}
 	export class DesktopCustomModel {
 	    id: string;
 	    name: string;
@@ -495,6 +523,32 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class DesktopFilePreview {
+	    path: string;
+	    name: string;
+	    language: string;
+	    content: string;
+	    size: number;
+	    lines: number;
+	    truncated: boolean;
+	    binary: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new DesktopFilePreview(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.name = source["name"];
+	        this.language = source["language"];
+	        this.content = source["content"];
+	        this.size = source["size"];
+	        this.lines = source["lines"];
+	        this.truncated = source["truncated"];
+	        this.binary = source["binary"];
+	    }
+	}
 	export class DesktopMCPServer {
 	    id: string;
 	    name: string;
@@ -529,6 +583,54 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.token = source["token"];
+	    }
+	}
+	export class DesktopMigrationInput {
+	    chatJson?: string;
+	    notesJson?: string;
+	    automationJson?: string;
+	    workspaceDir?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DesktopMigrationInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.chatJson = source["chatJson"];
+	        this.notesJson = source["notesJson"];
+	        this.automationJson = source["automationJson"];
+	        this.workspaceDir = source["workspaceDir"];
+	    }
+	}
+	export class DesktopMigrationReport {
+	    status: string;
+	    alreadyImported: boolean;
+	    sourceFingerprint: string;
+	    sourceCount: number;
+	    importedCount: number;
+	    sourceHash: string;
+	    importedHash: string;
+	    backupPath?: string;
+	    backupStatus: string;
+	    recoveryStatus: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DesktopMigrationReport(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.status = source["status"];
+	        this.alreadyImported = source["alreadyImported"];
+	        this.sourceFingerprint = source["sourceFingerprint"];
+	        this.sourceCount = source["sourceCount"];
+	        this.importedCount = source["importedCount"];
+	        this.sourceHash = source["sourceHash"];
+	        this.importedHash = source["importedHash"];
+	        this.backupPath = source["backupPath"];
+	        this.backupStatus = source["backupStatus"];
+	        this.recoveryStatus = source["recoveryStatus"];
 	    }
 	}
 	
@@ -707,6 +809,90 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class ReleaseKeyRotation {
+	    keyID: string;
+	    publicKey: string;
+	    signature: string;
+	    issuedAt: string;
+	    expiresAt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ReleaseKeyRotation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.keyID = source["keyID"];
+	        this.publicKey = source["publicKey"];
+	        this.signature = source["signature"];
+	        this.issuedAt = source["issuedAt"];
+	        this.expiresAt = source["expiresAt"];
+	    }
+	}
+	export class DesktopUpdateAsset {
+	    name: string;
+	    url: string;
+	    size: number;
+	    sha256: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DesktopUpdateAsset(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.url = source["url"];
+	        this.size = source["size"];
+	        this.sha256 = source["sha256"];
+	    }
+	}
+	export class DesktopReleaseManifest {
+	    schemaVersion: number;
+	    version: string;
+	    channel: string;
+	    issuedAt: string;
+	    expiresAt: string;
+	    keyID: string;
+	    signature: string;
+	    assets: DesktopUpdateAsset[];
+	    keyRotation?: ReleaseKeyRotation;
+	
+	    static createFrom(source: any = {}) {
+	        return new DesktopReleaseManifest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.schemaVersion = source["schemaVersion"];
+	        this.version = source["version"];
+	        this.channel = source["channel"];
+	        this.issuedAt = source["issuedAt"];
+	        this.expiresAt = source["expiresAt"];
+	        this.keyID = source["keyID"];
+	        this.signature = source["signature"];
+	        this.assets = this.convertValues(source["assets"], DesktopUpdateAsset);
+	        this.keyRotation = this.convertValues(source["keyRotation"], ReleaseKeyRotation);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class DesktopRemoteDevice {
 	    id: string;
 	    name: string;
@@ -787,6 +973,9 @@ export namespace main {
 	    sendShortcut: string;
 	    contextWindow: string;
 	    language: string;
+	    searchEngine: string;
+	    braveApiKey: string;
+	    tavilyApiKey: string;
 	    interruptMode: string;
 	    autoCompact?: boolean;
 	    tokenSaverConcise?: boolean;
@@ -822,6 +1011,9 @@ export namespace main {
 	        this.sendShortcut = source["sendShortcut"];
 	        this.contextWindow = source["contextWindow"];
 	        this.language = source["language"];
+	        this.searchEngine = source["searchEngine"];
+	        this.braveApiKey = source["braveApiKey"];
+	        this.tavilyApiKey = source["tavilyApiKey"];
 	        this.interruptMode = source["interruptMode"];
 	        this.autoCompact = source["autoCompact"];
 	        this.tokenSaverConcise = source["tokenSaverConcise"];
@@ -835,22 +1027,7 @@ export namespace main {
 	    }
 	}
 	
-	export class DesktopUpdateAsset {
-	    name: string;
-	    url: string;
-	    size: number;
 	
-	    static createFrom(source: any = {}) {
-	        return new DesktopUpdateAsset(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.name = source["name"];
-	        this.url = source["url"];
-	        this.size = source["size"];
-	    }
-	}
 	export class DesktopUpdateInfo {
 	    currentVersion: string;
 	    latestVersion: string;
@@ -859,6 +1036,7 @@ export namespace main {
 	    releaseUrl: string;
 	    notes: string;
 	    assets: DesktopUpdateAsset[];
+	    manifest: DesktopReleaseManifest;
 	    updateAvailable: boolean;
 	
 	    static createFrom(source: any = {}) {
@@ -874,6 +1052,7 @@ export namespace main {
 	        this.releaseUrl = source["releaseUrl"];
 	        this.notes = source["notes"];
 	        this.assets = this.convertValues(source["assets"], DesktopUpdateAsset);
+	        this.manifest = this.convertValues(source["manifest"], DesktopReleaseManifest);
 	        this.updateAvailable = source["updateAvailable"];
 	    }
 	
@@ -1002,32 +1181,6 @@ export namespace main {
 		    return a;
 		}
 	}
-	export class DesktopFilePreview {
-	    path: string;
-	    name: string;
-	    language: string;
-	    content: string;
-	    size: number;
-	    lines: number;
-	    truncated: boolean;
-	    binary: boolean;
-
-	    static createFrom(source: any = {}) {
-	        return new DesktopFilePreview(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.path = source["path"];
-	        this.name = source["name"];
-	        this.language = source["language"];
-	        this.content = source["content"];
-	        this.size = source["size"];
-	        this.lines = source["lines"];
-	        this.truncated = source["truncated"];
-	        this.binary = source["binary"];
-	    }
-	}
 	export class LanguageStat {
 	    name: string;
 	    count: number;
@@ -1042,6 +1195,7 @@ export namespace main {
 	        this.count = source["count"];
 	    }
 	}
+	
 	export class WorkspaceInfo {
 	    path: string;
 	    name: string;

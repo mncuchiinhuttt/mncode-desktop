@@ -14,6 +14,10 @@ export function CancelTurn() {
   return window['go']['main']['App']['CancelTurn']();
 }
 
+export function CheckCodexInstalled() {
+  return window['go']['main']['App']['CheckCodexInstalled']();
+}
+
 export function CheckForUpdate() {
   return window['go']['main']['App']['CheckForUpdate']();
 }
@@ -34,8 +38,24 @@ export function ChooseWorkspace() {
   return window['go']['main']['App']['ChooseWorkspace']();
 }
 
+export function ClearAllBrowserData() {
+  return window['go']['main']['App']['ClearAllBrowserData']();
+}
+
+export function ClearBrowserCacheData() {
+  return window['go']['main']['App']['ClearBrowserCacheData']();
+}
+
+export function CloseBrowserSession() {
+  return window['go']['main']['App']['CloseBrowserSession']();
+}
+
 export function CloseTerminal() {
   return window['go']['main']['App']['CloseTerminal']();
+}
+
+export function CompleteCodexOAuthLogin() {
+  return window['go']['main']['App']['CompleteCodexOAuthLogin']();
 }
 
 export function ConfigureMCPServer(arg1) {
@@ -90,22 +110,6 @@ export function GetBrowserSettings() {
   return window['go']['main']['App']['GetBrowserSettings']();
 }
 
-export function ImportChromeBrowserData() {
-  return window['go']['main']['App']['ImportChromeBrowserData']();
-}
-
-export function ClearBrowserCacheData() {
-  return window['go']['main']['App']['ClearBrowserCacheData']();
-}
-
-export function ClearAllBrowserData() {
-  return window['go']['main']['App']['ClearAllBrowserData']();
-}
-
-export function CloseBrowserSession() {
-  return window['go']['main']['App']['CloseBrowserSession']();
-}
-
 export function GetCatalog() {
   return window['go']['main']['App']['GetCatalog']();
 }
@@ -140,6 +144,10 @@ export function GetUsageStats() {
 
 export function GetWorkspace() {
   return window['go']['main']['App']['GetWorkspace']();
+}
+
+export function ImportChromeBrowserData() {
+  return window['go']['main']['App']['ImportChromeBrowserData']();
 }
 
 export function InstallHeadroom() {
@@ -178,6 +186,10 @@ export function LogoutAccount() {
   return window['go']['main']['App']['LogoutAccount']();
 }
 
+export function MigrateLegacyLocalStorage(arg1) {
+  return window['go']['main']['App']['MigrateLegacyLocalStorage'](arg1);
+}
+
 export function OpenExternalURL(arg1) {
   return window['go']['main']['App']['OpenExternalURL'](arg1);
 }
@@ -190,10 +202,6 @@ export function OpenTerminal() {
   return window['go']['main']['App']['OpenTerminal']();
 }
 
-export function ReadWorkspaceFile(arg1) {
-  return window['go']['main']['App']['ReadWorkspaceFile'](arg1);
-}
-
 export function OpenUpdatePage(arg1) {
   return window['go']['main']['App']['OpenUpdatePage'](arg1);
 }
@@ -204,6 +212,10 @@ export function OpenWorkspace(arg1) {
 
 export function ReadAutomationLog(arg1) {
   return window['go']['main']['App']['ReadAutomationLog'](arg1);
+}
+
+export function ReadWorkspaceFile(arg1) {
+  return window['go']['main']['App']['ReadWorkspaceFile'](arg1);
 }
 
 export function ResolvePermission(arg1, arg2) {
@@ -236,6 +248,10 @@ export function SetKeepAwake(arg1) {
 
 export function SetModel(arg1) {
   return window['go']['main']['App']['SetModel'](arg1);
+}
+
+export function StartCodexOAuthLogin(arg1) {
+  return window['go']['main']['App']['StartCodexOAuthLogin'](arg1);
 }
 
 export function StartRemoteSession() {
