@@ -1434,7 +1434,7 @@ export default function App() {
   }
 
   function nextOnboardingStep() {
-    if (onboardingStep < 3) {
+    if (onboardingStep < 4) {
       setOnboardingStep((current) => current + 1);
       return;
     }

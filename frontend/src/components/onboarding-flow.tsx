@@ -60,6 +60,10 @@ const steps = [
     title: "Choose your vibe",
     detail: "Decide whether mncode should bring the CLI’s brainrot energy into your chats.",
   },
+  {
+    title: "Shared Memory & Self-Reflection",
+    detail: "Let agents learn from test errors and share lessons across all chat sessions in the workspace (Hermes style).",
+  },
 ];
 
 function Choice({
@@ -318,6 +322,31 @@ export function OnboardingFlow({
                       </p>
                     </>
                   )}
+                  {step === 4 && (
+                    <>
+                      <Choice
+                        active={settings.sharedMemoryEnabled !== false}
+                        onClick={() =>
+                          onSettingsChange({ sharedMemoryEnabled: true, hermesReflectionEnabled: true })
+                        }
+                        icon={BrainCircuit}
+                      >
+                        Enable Shared Memory &amp; Reflection
+                      </Choice>
+                      <Choice
+                        active={settings.sharedMemoryEnabled === false}
+                        onClick={() =>
+                          onSettingsChange({ sharedMemoryEnabled: false, hermesReflectionEnabled: false })
+                        }
+                        icon={ShieldCheck}
+                      >
+                        Ephemeral Sessions Only
+                      </Choice>
+                      <p className="col-span-full text-xs leading-5 text-muted-foreground">
+                        When enabled, agents self-reflect on test fixes and error resolutions, saving insights to shared workspace memory so other chat tabs immediately benefit.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="relative flex items-center justify-between gap-3">
@@ -325,7 +354,6 @@ export function OnboardingFlow({
                   type="button"
                   variant="ghost"
                   onClick={onBack}
-                  disabled={step === 0}
                   className="gap-2"
                 >
                   <ArrowLeft className="size-4" /> Back
