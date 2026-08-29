@@ -12,6 +12,7 @@ Native desktop cockpit for the [mncode](https://github.com/mncuchiinhuttt/mncode
 - **Skills Marketplace** — curated free skills from MCP Market & [skills.sh](https://skills.sh), installed into the shared `~/.mncode/skills` directory
 - **Automations** — scheduled (cron) and idle-time agent tasks with run history and keep-awake; see [docs/AUTOMATIONS.md](docs/AUTOMATIONS.md)
 - **Multi-provider models** — Antigravity, OpenAI Codex, OpenCode, OpenRouter, and custom OpenAI-compatible providers with account pools and quota HUD
+- **Multi-engine web search** — agent-invoked Google Grounding, Tavily, Brave, and DuckDuckGo with engine selection and local key setup in Settings → General
 - **Remote companion** — pair a phone to steer runs from the couch
 - **Personalization** — custom instructions, personality modes (including Brainrot 🧠), and local memories
 - **RMIT-inspired design system** — dark-void surfaces, hairline grids, bracket eyebrows, pink/cyan HUD accents, light & dark themes
@@ -95,7 +96,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the layers talk to each
 
 ## Privacy
 
-Everything runs locally: workspace scanning, agent turns, and usage telemetry stay on this machine. Provider and account credentials are persisted in `~/.mncode` with restrictive local permissions (`0700` directory, `0600` credential files). Optional mncode account sign-in only syncs settings and usage summaries you explicitly push.
+Everything runs locally: workspace scanning, agent turns, and usage telemetry stay on this machine. Provider, account, and optional search credentials are persisted in `~/.mncode/config.json`; the `~/.mncode` directory is `0700` and the config file is `0600`. Desktop Settings accepts search keys through password inputs and returns only configured/not-configured status. Optional mncode account sign-in only syncs settings and usage summaries you explicitly push.
 
 ## License
 
