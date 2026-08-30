@@ -19,6 +19,12 @@ import {
   Sparkles,
   Trash2,
   UserRound,
+  ShieldAlert,
+  FlaskConical,
+  Binary,
+  Swords,
+  Video,
+  FileCheck2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -175,6 +181,48 @@ export function AppSidebar({
             collapsed={collapsed}
             active={view === "skills"}
             onClick={() => onViewChange("skills")}
+          />
+          <SidebarAction
+            icon={ShieldAlert}
+            label="Drift Sentinel"
+            collapsed={collapsed}
+            active={view === "drift"}
+            onClick={() => onViewChange("drift")}
+          />
+          <SidebarAction
+            icon={FlaskConical}
+            label="Sandbox Studio"
+            collapsed={collapsed}
+            active={view === "sandbox"}
+            onClick={() => onViewChange("sandbox")}
+          />
+          <SidebarAction
+            icon={Binary}
+            label="Code Index"
+            collapsed={collapsed}
+            active={view === "index"}
+            onClick={() => onViewChange("index")}
+          />
+          <SidebarAction
+            icon={Swords}
+            label="Red Team Arena"
+            collapsed={collapsed}
+            active={view === "arena"}
+            onClick={() => onViewChange("arena")}
+          />
+          <SidebarAction
+            icon={Video}
+            label="Flight Recorder"
+            collapsed={collapsed}
+            active={view === "replay"}
+            onClick={() => onViewChange("replay")}
+          />
+          <SidebarAction
+            icon={FileCheck2}
+            label="Spec Contracts"
+            collapsed={collapsed}
+            active={view === "spec"}
+            onClick={() => onViewChange("spec")}
           />
         </div>
       </TooltipProvider>

@@ -1,0 +1,159 @@
+import { useEffect, useState } from "react";
+import { ShieldAlert, RefreshCw, CheckCircle2, AlertTriangle, XCircle, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { desktop } from "@/lib/desktop";
+import type { DriftReport } from "@/types";
+
+export function DriftView() {
+  const [report, setReport] = useState<DriftReport | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [accepting, setAccepting] = useState(false);
+
+  const fetchReport = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await desktop.getDriftReport();
+      setReport(res);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load drift report");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAccept = async () => {
+    setAccepting(true);
+    try {
+      await desktop.acceptDriftBaseline();
+      await fetchReport();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to accept baseline");
+    } finally {
+      setAccepting(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReport();
+  }, []);
+
+  const totalViolations = report?.findings?.length || 0;
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden bg-[var(--background)] p-6 text-[var(--foreground)]">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[var(--mn-line)] pb-4">
+        <div className="flex items-center gap-3">
+          <div className="grid size-10 place-items-center rounded-lg border border-[var(--mn-line)] bg-[var(--card)] text-[var(--mn-accent)]">
+            <ShieldAlert className="size-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">Architectural Drift Sentinel</h1>
+            <p className="text-xs text-muted-foreground">
+              AST-level dependency boundaries, cyclic imports, and layer enforcement.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={fetchReport} disabled={loading}>
+            <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
+            Re-Scan
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleAccept}
+            disabled={accepting || loading}
+            className="bg-[var(--mn-accent)] text-white hover:bg-[var(--mn-accent-strong)]"
+          >
+            <CheckCircle2 className="size-3.5" />
+            Accept Baseline
+          </Button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+          {error}
+        </div>
+      )}
+
+      {/* Metric Cards */}
+      <div className="mt-6 grid grid-cols-4 gap-4">
+        <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Status</span>
+          <div className="mt-2 flex items-center gap-2">
+            {totalViolations === 0 ? (
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
+                <CheckCircle2 className="size-4" /> Healthy
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-rose-400">
+                <XCircle className="size-4" /> {totalViolations} Violations
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Added Files</span>
+          <div className="mt-2 text-2xl font-mono font-bold text-[var(--mn-cyan)]">
+            +{report?.added_files?.length || 0}
+          </div>
+        </div>
+        <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Removed Files</span>
+          <div className="mt-2 text-2xl font-mono font-bold text-muted-foreground">
+            -{report?.removed_files?.length || 0}
+          </div>
+        </div>
+        <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Baseline ID</span>
+          <div className="mt-2 truncate font-mono text-sm font-semibold text-[var(--foreground)]">
+            {report?.baseline_id || "None"}
+          </div>
+        </div>
+      </div>
+
+      {/* Findings List */}
+      <div className="mt-6 flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--mn-line)] bg-[var(--card)]">
+        <div className="border-b border-[var(--mn-line)] px-4 py-3 text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+          Drift Findings Feed ({totalViolations})
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
+          {totalViolations === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+              <CheckCircle2 className="size-10 text-emerald-400/60 mb-2" />
+              <p className="text-sm font-medium">Architecture is consistent with active baseline</p>
+              <p className="text-xs">No forbidden layer accesses or circular imports detected.</p>
+            </div>
+          ) : (
+            report?.findings?.map((f, i) => (
+              <div
+                key={i}
+                className="flex items-start justify-between rounded-md border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-3 text-xs"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-1.5 py-0.5 font-mono text-[10px] uppercase font-bold rounded ${
+                        f.severity === "high"
+                          ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                          : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                      }`}
+                    >
+                      {f.severity}
+                    </span>
+                    <span className="font-mono text-muted-foreground">{f.kind}</span>
+                  </div>
+                  <p className="font-medium text-[var(--foreground)]">{f.message}</p>
+                  <p className="font-mono text-[11px] text-[var(--mn-cyan)]">{f.file}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

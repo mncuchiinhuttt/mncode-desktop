@@ -58,6 +58,12 @@ import { RemoteCompanionDialog } from "./components/remote-companion-dialog";
 import { OnboardingFlow, type OnboardingPhase } from "./components/onboarding-flow";
 import { WorkspaceView } from "./components/workspace-view";
 import { AutomationsView } from "./components/automations-view";
+import { DriftView } from "./components/drift-view";
+import { SandboxView } from "./components/sandbox-view";
+import { IndexView } from "./components/index-view";
+import { ArenaView } from "./components/arena-view";
+import { ReplayView } from "./components/replay-view";
+import { SpecView } from "./components/spec-view";
 import "./style.css";
 
 type UpdatePhase = "idle" | "downloading" | "ready";
@@ -2118,6 +2124,12 @@ export default function App() {
                 onOpenURL={openExternalURL}
               />
             )}
+            {view === "drift" && <DriftView />}
+            {view === "sandbox" && <SandboxView />}
+            {view === "index" && <IndexView />}
+            {view === "arena" && <ArenaView />}
+            {view === "replay" && <ReplayView />}
+            {view === "spec" && <SpecView />}
           </div>
           {!standaloneSettings && terminalOpen && (
             <TerminalPanel
