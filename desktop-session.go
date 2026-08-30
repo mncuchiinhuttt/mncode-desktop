@@ -30,7 +30,7 @@ func (a *App) buildSession(workspace string) (*sessionRuntime, error) {
 // buildSessionWithOptions assembles a full agent session. Automation runs pass
 // their own UI listener and interactive=false.
 func (a *App) buildSessionWithOptions(workspace string, options sessionBuildOptions) (*sessionRuntime, error) {
-	cfg, err := config.LoadConfig(workspace)
+	cfg, err := config.LoadConfigWithoutWorkspaceEnv(workspace)
 	if err != nil {
 		return nil, err
 	}

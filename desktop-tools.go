@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"mncode/pkg/drift"
 	"mncode/pkg/index"
@@ -12,14 +14,23 @@ import (
 
 // GetDriftReport scans workspace architecture and compares against baseline.
 func (a *App) GetDriftReport() (*drift.Report, error) {
-	ws := a.currentWorkspaceDir()
-	sentinel, err := drift.New(ws, drift.Policy{})
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
+	ws, err := a.requireWorkspaceDir()
+	if err != nil {
+		return nil, err
+	}
+	policy, _, err := drift.LoadPolicy(ws, "")
+	if err != nil {
+		return nil, fmt.Errorf("load drift policy: %w", err)
+	}
+	sentinel, err := drift.New(ws, policy)
 	if err != nil {
 		return nil, fmt.Errorf("init drift sentinel: %w", err)
 	}
 	baseline, err := sentinel.Load()
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			b, capErr := sentinel.Capture(context.Background())
 			if capErr != nil {
 				return nil, fmt.Errorf("capture drift baseline: %w", capErr)
@@ -41,8 +52,17 @@ func (a *App) GetDriftReport() (*drift.Report, error) {
 
 // AcceptDriftBaseline captures and saves the current architecture as baseline.
 func (a *App) AcceptDriftBaseline() (*drift.Baseline, error) {
-	ws := a.currentWorkspaceDir()
-	sentinel, err := drift.New(ws, drift.Policy{})
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
+	ws, err := a.requireWorkspaceDir()
+	if err != nil {
+		return nil, err
+	}
+	policy, _, err := drift.LoadPolicy(ws, "")
+	if err != nil {
+		return nil, fmt.Errorf("load drift policy: %w", err)
+	}
+	sentinel, err := drift.New(ws, policy)
 	if err != nil {
 		return nil, fmt.Errorf("init drift sentinel: %w", err)
 	}
@@ -58,7 +78,12 @@ func (a *App) AcceptDriftBaseline() (*drift.Baseline, error) {
 
 // ListSandboxFixtures returns all available sandbox fixtures.
 func (a *App) ListSandboxFixtures() ([]sandbox.Fixture, error) {
-	ws := a.currentWorkspaceDir()
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
+	ws, err := a.requireWorkspaceDir()
+	if err != nil {
+		return nil, err
+	}
 	harness, err := sandbox.New(ws)
 	if err != nil {
 		return nil, fmt.Errorf("init sandbox harness: %w", err)
@@ -70,9 +95,14 @@ func (a *App) ListSandboxFixtures() ([]sandbox.Fixture, error) {
 	return fixtures, nil
 }
 
-// RunSandboxFixture executes a sandbox fixture safely in a copy workspace.
+// RunSandboxFixture executes a bounded fixture in a temporary workspace copy.
 func (a *App) RunSandboxFixture(id string, args []string, keep bool) (*sandbox.RunResult, error) {
-	ws := a.currentWorkspaceDir()
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
+	ws, err := a.requireWorkspaceDir()
+	if err != nil {
+		return nil, err
+	}
 	harness, err := sandbox.New(ws)
 	if err != nil {
 		return nil, fmt.Errorf("init sandbox harness: %w", err)
@@ -91,15 +121,24 @@ func (a *App) RunSandboxFixture(id string, args []string, keep bool) (*sandbox.R
 
 // QueryCodeIndex executes a local BM25 + AST search.
 func (a *App) QueryCodeIndex(query string, kind string, pathGlob string, limit int) ([]index.Hit, error) {
-	ws := a.currentWorkspaceDir()
-	idx, err := index.Open(ws)
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
+	ws, err := a.requireWorkspaceDir()
 	if err != nil {
-		ctx := context.Background()
-		idx, err = index.Build(ctx, ws, index.Options{})
+		return nil, err
+	}
+	idx, err := index.Open(ws)
+	if err != nil && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, index.ErrStale) {
+		return nil, fmt.Errorf("open code index: %w", err)
+	}
+	if err != nil {
+		idx, err = index.Build(context.Background(), ws, index.Options{})
 		if err != nil {
 			return nil, fmt.Errorf("build code index: %w", err)
 		}
-		_ = idx.Save()
+		if err := idx.Save(); err != nil {
+			return nil, fmt.Errorf("save code index: %w", err)
+		}
 	}
 	hits := idx.Search(index.Query{
 		Text:     query,
@@ -112,20 +151,30 @@ func (a *App) QueryCodeIndex(query string, kind string, pathGlob string, limit i
 
 // RebuildCodeIndex forcefully rebuilds the local code index.
 func (a *App) RebuildCodeIndex() error {
-	ws := a.currentWorkspaceDir()
-	ctx := context.Background()
-	idx, err := index.Build(ctx, ws, index.Options{})
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
+	ws, err := a.requireWorkspaceDir()
+	if err != nil {
+		return err
+	}
+	idx, err := index.Build(context.Background(), ws, index.Options{})
 	if err != nil {
 		return fmt.Errorf("rebuild index: %w", err)
 	}
-	return idx.Save()
+	if err := idx.Save(); err != nil {
+		return fmt.Errorf("save rebuilt index: %w", err)
+	}
+	return nil
 }
 
-func (a *App) currentWorkspaceDir() string {
+func (a *App) requireWorkspaceDir() (string, error) {
+	if a == nil {
+		return "", fmt.Errorf("desktop app is required")
+	}
 	a.mu.RLock()
 	defer a.mu.RUnlock()
-	if a.workspace.Path != "" {
-		return a.workspace.Path
+	if !a.workspace.Ready || strings.TrimSpace(a.workspace.Path) == "" {
+		return "", fmt.Errorf("workspace is not open")
 	}
-	return "."
+	return a.workspace.Path, nil
 }
