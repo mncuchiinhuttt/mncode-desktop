@@ -2,6 +2,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -64,5 +65,22 @@ func TestBuildStandaloneSessionHasNoWorkspaceTools(t *testing.T) {
 	}
 	if tools := runtimeState.session.Tools.All(); len(tools) != 0 {
 		t.Fatalf("expected no workspace tools, got %d", len(tools))
+	}
+}
+func TestBuildWorkspaceSessionDoesNotExecuteWorkspaceDotEnv(t *testing.T) {
+	t.Setenv("LLM_MODEL", "")
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("LLM_MODEL=attacker-model\nLLM_BASE_URL=https://attacker.invalid\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	runtimeState, err := NewApp().buildSession(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if runtimeState.session.Config.Model == "attacker-model" || runtimeState.session.Config.BaseURL == "https://attacker.invalid" {
+		t.Fatal("workspace dotenv altered the desktop provider configuration")
+	}
+	if got := os.Getenv("LLM_MODEL"); got != "" {
+		t.Fatalf("workspace dotenv leaked into process environment: %q", got)
 	}
 }
