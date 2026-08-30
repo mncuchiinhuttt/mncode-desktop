@@ -1,4 +1,16 @@
-export type ViewName = "workspace" | "insights" | "settings" | "skills" | "automations" | "mcp";
+export type ViewName =
+  | "workspace"
+  | "insights"
+  | "settings"
+  | "skills"
+  | "automations"
+  | "mcp"
+  | "drift"
+  | "sandbox"
+  | "index"
+  | "arena"
+  | "replay"
+  | "spec";
 export interface LanguageStat {
   name: string;
   count: number;
@@ -38,6 +50,143 @@ export interface DesktopFilePreview {
   lines: number;
   truncated: boolean;
   binary: boolean;
+}
+export interface DriftFinding {
+  kind: string;
+  severity: "high" | "medium" | "low";
+  file: string;
+  symbol?: string;
+  message: string;
+}
+
+export interface DriftReport {
+  schema_version: number;
+  workspace_id: string;
+  checked_at: string;
+  baseline_id: string;
+  findings: DriftFinding[];
+  added_files: string[];
+  removed_files: string[];
+  changed_files: string[];
+}
+
+export interface DriftBaseline {
+  id: string;
+  workspace_id: string;
+  created_at: string;
+  files: Record<string, unknown>;
+}
+
+export interface SandboxFixture {
+  id: string;
+  name: string;
+  root: string;
+  command: string[];
+  timeout_seconds: number;
+}
+
+export interface SandboxRunResult {
+  id: string;
+  fixture_id: string;
+  exit_code: number;
+  stdout: string;
+  stderr: string;
+  error?: string;
+  timed_out: boolean;
+  truncated: boolean;
+  duration_ms: number;
+}
+
+export interface CodeIndexHit {
+  id: string;
+  path: string;
+  language: string;
+  score: number;
+  symbol?: string;
+  kind?: string;
+  snippet?: string;
+}
+
+export interface ArenaFinding {
+  role: string;
+  severity: "high" | "medium" | "low";
+  category: string;
+  file: string;
+  line: number;
+  evidence: string;
+  impact?: string;
+  recommendation?: string;
+}
+
+export interface ArenaReport {
+  schema_version: number;
+  workspace_id: string;
+  created_at: string;
+  verdict: "BLOCK" | "WARN" | "PASS";
+  findings: ArenaFinding[];
+}
+
+export interface ReplayEvent {
+  seq: number;
+  turn: number;
+  kind: string;
+  timestamp: string;
+  data: unknown;
+}
+
+export interface ReplayTrace {
+  id: string;
+  session_id: string;
+  started_at: string;
+  events: number;
+  complete: boolean;
+  model?: string;
+  provider?: string;
+}
+
+export interface ReplayTraceDetail {
+  trace: ReplayTrace;
+  events: ReplayEvent[];
+}
+
+export interface SpecCase {
+  id: string;
+  name: string;
+  kind: "command" | "file_exists" | "file_contains" | "invariant";
+  input: unknown;
+  expected: unknown;
+}
+
+export interface SpecInvariant {
+  id: string;
+  description: string;
+  kind: string;
+}
+
+export interface SpecContract {
+  id: string;
+  title: string;
+  description: string;
+  version: number;
+  invariants: SpecInvariant[];
+  cases: SpecCase[];
+}
+
+export interface SpecCaseResult {
+  case_id: string;
+  passed: boolean;
+  status: "PASS" | "FAIL" | "SKIPPED" | "INVALID";
+  output?: string;
+  error?: string;
+  duration_ms: number;
+}
+
+export interface SpecMatrix {
+  schema_version: number;
+  contract_id: string;
+  evaluated_at: string;
+  passed: boolean;
+  results: SpecCaseResult[];
 }
 
 export interface ChatMessage {
