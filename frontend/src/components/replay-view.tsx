@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { Video, GitFork, RefreshCw, Play, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Video, GitFork, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { desktop } from "@/lib/desktop";
+import { ReplayRecordingControls } from "./replay-recording-controls";
 import type { ReplayTrace, ReplayTraceDetail } from "@/types";
 
 export function ReplayView() {
@@ -25,14 +26,20 @@ export function ReplayView() {
     }
   };
 
+  const traceRequest = useRef(0);
   const handleSelectTrace = async (id: string) => {
+    const requestID = ++traceRequest.current;
     setSelectedId(id);
+    setDetail(null);
+    setStepIndex(0);
     setError(null);
     try {
       const d = await desktop.getReplayTrace(id);
+      if (requestID !== traceRequest.current) return;
       setDetail(d);
       setStepIndex(d.events.length > 0 ? d.events.length - 1 : 0);
     } catch (err: unknown) {
+      if (requestID !== traceRequest.current) return;
       setError(err instanceof Error ? err.message : "Failed to load trace details");
     }
   };
@@ -61,7 +68,6 @@ export function ReplayView() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--background)] p-6 text-[var(--foreground)]">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-[var(--mn-line)] pb-4">
         <div className="flex items-center gap-3">
           <div className="grid size-10 place-items-center rounded-lg border border-[var(--mn-line)] bg-[var(--card)] text-[var(--mn-accent)]">
@@ -75,14 +81,18 @@ export function ReplayView() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <ReplayRecordingControls onComplete={() => void fetchTraces()} />
           <Button
             size="sm"
             onClick={handleFork}
-            disabled={forking || !detail}
+            disabled={forking || !detail || !detail.trace.complete}
             className="bg-[var(--mn-accent)] text-white hover:bg-[var(--mn-accent-strong)]"
           >
-            <GitFork className={`size-3.5 ${forking ? "animate-spin" : ""}`} />
-            Fork At Step {stepIndex + 1}
+            {detail
+              ? detail.trace.complete
+                ? `Fork At Step ${stepIndex + 1}`
+                : "Trace Incomplete"
+              : "Select Trace"}
           </Button>
         </div>
       </div>
@@ -100,9 +110,7 @@ export function ReplayView() {
         </div>
       )}
 
-      {/* Main Grid */}
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-12 gap-6">
-        {/* Left: Traces */}
         <div className="col-span-4 flex flex-col rounded-lg border border-[var(--mn-line)] bg-[var(--card)]">
           <div className="border-b border-[var(--mn-line)] px-4 py-3 text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
             Recorded Traces ({traces.length})
@@ -134,11 +142,9 @@ export function ReplayView() {
           </div>
         </div>
 
-        {/* Right: Step Scrubber & Payload */}
         <div className="col-span-8 flex flex-col rounded-lg border border-[var(--mn-line)] bg-[var(--card)]">
           {detail ? (
             <>
-              {/* Scrubber Controls */}
               <div className="flex items-center justify-between border-b border-[var(--mn-line)] px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Clock className="size-4 text-[var(--mn-cyan)]" />
@@ -156,7 +162,6 @@ export function ReplayView() {
                 />
               </div>
 
-              {/* Event Card */}
               <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
                 {activeEvent ? (
                   <div className="space-y-3">

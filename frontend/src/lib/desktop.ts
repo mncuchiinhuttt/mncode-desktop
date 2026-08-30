@@ -156,6 +156,9 @@ export const desktop = {
     call<ArenaReport>("RunArenaReview", baseRef, headRef, model, rounds),
   listReplayTraces: () => call<ReplayTrace[]>("ListReplayTraces"),
   getReplayTrace: (traceID: string) => call<ReplayTraceDetail>("GetReplayTrace", traceID),
+  getReplayRecordingID: () => call<string>("GetReplayRecordingID"),
+  startReplayRecording: () => call<string>("StartReplayRecording"),
+  stopReplayRecording: () => call<void>("StopReplayRecording"),
   forkReplaySession: (traceID: string, atStep: number, newID: string) =>
     call<void>("ForkReplaySession", traceID, atStep, newID),
   listSpecContracts: () => call<SpecContract[]>("ListSpecContracts"),

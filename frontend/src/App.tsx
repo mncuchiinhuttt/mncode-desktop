@@ -1294,6 +1294,44 @@ export default function App() {
       listen<{ provider: string }>("provider:configured", ({ provider }) =>
         notify(`${provider} connected for this session`, "success"),
       ),
+      listen<{
+        sessionID: string;
+        history: Array<{ role: string; content?: string }>;
+      }>("session:forked", ({ sessionID, history }) => {
+        const forkMessages: ChatMessage[] = history
+          .filter(
+            (message) =>
+              (message.role === "user" || message.role === "assistant" || message.role === "system") &&
+              Boolean(message.content?.trim()),
+          )
+          .map((message, index) => ({
+            id: `fork-${sessionID}-${index}`,
+            role: message.role as ChatMessage["role"],
+            content: message.content ?? "",
+            timestamp: "replay",
+          }));
+        clearActiveRunID();
+        setRunning(false);
+        setPermission(undefined);
+        setQuestion(undefined);
+        setActiveChatId(sessionID);
+        setMessages(forkMessages);
+        setActivities([]);
+        setRunSummary(undefined);
+        setRunUsage({ ...emptyRunUsage });
+        setRunStartedAt(undefined);
+        setPrompt("");
+        setChatSessions((current) =>
+          upsertChatHistory(current, sessionID, {
+            messages: forkMessages,
+            activities: [],
+            runUsage: { ...emptyRunUsage },
+          }),
+        );
+        setSettingsExiting(false);
+        setView("workspace");
+        notify("Forked replay into a new chat", "success");
+      }),
     ];
     async function hydrateWorkspace() {
       let observedWorkspaceState = false;
@@ -2124,12 +2162,12 @@ export default function App() {
                 onOpenURL={openExternalURL}
               />
             )}
-            {view === "drift" && <DriftView />}
-            {view === "sandbox" && <SandboxView />}
-            {view === "index" && <IndexView />}
-            {view === "arena" && <ArenaView />}
-            {view === "replay" && <ReplayView />}
-            {view === "spec" && <SpecView />}
+            {view === "drift" && <DriftView key={workspace.path} />}
+            {view === "sandbox" && <SandboxView key={workspace.path} />}
+            {view === "index" && <IndexView key={workspace.path} />}
+            {view === "arena" && <ArenaView key={workspace.path} />}
+            {view === "replay" && <ReplayView key={workspace.path} />}
+            {view === "spec" && <SpecView key={workspace.path} />}
           </div>
           {!standaloneSettings && terminalOpen && (
             <TerminalPanel
