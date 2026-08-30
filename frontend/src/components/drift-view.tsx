@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ShieldAlert, RefreshCw, CheckCircle2, AlertTriangle, XCircle, ArrowRight } from "lucide-react";
+import { ShieldAlert, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { desktop } from "@/lib/desktop";
 import type { DriftReport } from "@/types";
@@ -13,6 +13,7 @@ export function DriftView() {
   const fetchReport = async () => {
     setLoading(true);
     setError(null);
+    setReport(null);
     try {
       const res = await desktop.getDriftReport();
       setReport(res);
@@ -25,8 +26,9 @@ export function DriftView() {
 
   const handleAccept = async () => {
     setAccepting(true);
+    setError(null);
+    setReport(null);
     try {
-      await desktop.acceptDriftBaseline();
       await fetchReport();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to accept baseline");
@@ -39,7 +41,8 @@ export function DriftView() {
     fetchReport();
   }, []);
 
-  const totalViolations = report?.findings?.length || 0;
+  const totalViolations = report?.findings?.length ?? 0;
+  const statusHealthy = report !== null && !report.drifted;
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--background)] p-6 text-[var(--foreground)]">
@@ -57,7 +60,7 @@ export function DriftView() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={fetchReport} disabled={loading}>
+          <Button variant="outline" size="sm" onClick={fetchReport} disabled={loading || accepting}>
             <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
             Re-Scan
           </Button>
@@ -84,27 +87,27 @@ export function DriftView() {
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
           <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Status</span>
           <div className="mt-2 flex items-center gap-2">
-            {totalViolations === 0 ? (
+            {statusHealthy ? (
               <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
                 <CheckCircle2 className="size-4" /> Healthy
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-sm font-semibold text-rose-400">
-                <XCircle className="size-4" /> {totalViolations} Violations
+                <XCircle className="size-4" /> {totalViolations} Findings
               </span>
             )}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Added Files</span>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Changed Files</span>
           <div className="mt-2 text-2xl font-mono font-bold text-[var(--mn-cyan)]">
-            +{report?.added_files?.length || 0}
+            {report?.changed_files ?? 0}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Removed Files</span>
-          <div className="mt-2 text-2xl font-mono font-bold text-muted-foreground">
-            -{report?.removed_files?.length || 0}
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Generated</span>
+          <div className="mt-2 truncate font-mono text-sm font-semibold text-[var(--foreground)]">
+            {report?.generated_at ? new Date(report.generated_at).toLocaleString() : "Not checked"}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
@@ -121,33 +124,41 @@ export function DriftView() {
           Drift Findings Feed ({totalViolations})
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
-          {totalViolations === 0 ? (
+          {!report ? (
             <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-              <CheckCircle2 className="size-10 text-emerald-400/60 mb-2" />
+              <XCircle className="mb-2 size-10 text-rose-400/60" />
+              <p className="text-sm font-medium">Drift report unavailable</p>
+              <p className="text-xs">Open a workspace before scanning architecture.</p>
+            </div>
+          ) : totalViolations === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+              <CheckCircle2 className="mb-2 size-10 text-emerald-400/60" />
               <p className="text-sm font-medium">Architecture is consistent with active baseline</p>
               <p className="text-xs">No forbidden layer accesses or circular imports detected.</p>
             </div>
           ) : (
-            report?.findings?.map((f, i) => (
+            report.findings.map((f, i) => (
               <div
-                key={i}
+                key={`${f.code}-${f.path}-${i}`}
                 className="flex items-start justify-between rounded-md border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-3 text-xs"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`px-1.5 py-0.5 font-mono text-[10px] uppercase font-bold rounded ${
-                        f.severity === "high"
-                          ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                          : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                      className={`rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                        f.severity === "error"
+                          ? "border-rose-500/30 bg-rose-500/20 text-rose-400"
+                          : f.severity === "warning"
+                            ? "border-amber-500/30 bg-amber-500/20 text-amber-400"
+                            : "border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
                       }`}
                     >
                       {f.severity}
                     </span>
-                    <span className="font-mono text-muted-foreground">{f.kind}</span>
+                    <span className="font-mono text-muted-foreground">{f.code}</span>
                   </div>
                   <p className="font-medium text-[var(--foreground)]">{f.message}</p>
-                  <p className="font-mono text-[11px] text-[var(--mn-cyan)]">{f.file}</p>
+                  {f.path && <p className="font-mono text-[11px] text-[var(--mn-cyan)]">{f.path}</p>}
                 </div>
               </div>
             ))

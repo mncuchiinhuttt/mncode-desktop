@@ -52,94 +52,130 @@ export interface DesktopFilePreview {
   binary: boolean;
 }
 export interface DriftFinding {
-  kind: string;
-  severity: "high" | "medium" | "low";
-  file: string;
-  symbol?: string;
+  severity: "info" | "warning" | "error";
+  code: string;
+  path: string;
   message: string;
+  before?: unknown;
+  after?: unknown;
 }
 
 export interface DriftReport {
   schema_version: number;
-  workspace_id: string;
-  checked_at: string;
   baseline_id: string;
+  workspace_root: string;
+  generated_at: string;
+  changed_files: number;
+  fail_on?: string[];
   findings: DriftFinding[];
-  added_files: string[];
-  removed_files: string[];
-  changed_files: string[];
+  drifted: boolean;
 }
 
 export interface DriftBaseline {
+  schema_version: number;
   id: string;
+  workspace_root: string;
   workspace_id: string;
+  tool_version: string;
   created_at: string;
-  files: Record<string, unknown>;
+  policy: unknown;
+  files: Array<{
+    path: string;
+    sha256: string;
+    size: number;
+    symbols?: unknown[];
+    imports?: string[];
+  }>;
 }
 
 export interface SandboxFixture {
+  schema_version: number;
   id: string;
   name: string;
+  description?: string;
   root: string;
   command: string[];
+  env?: Record<string, string>;
   timeout_seconds: number;
+  max_output_bytes?: number;
 }
 
 export interface SandboxRunResult {
+  schema_version: number;
   id: string;
   fixture_id: string;
+  workspace: string;
+  started_at: string;
+  ended_at: string;
   exit_code: number;
   stdout: string;
   stderr: string;
   error?: string;
   timed_out: boolean;
   truncated: boolean;
-  duration_ms: number;
 }
 
 export interface CodeIndexHit {
-  id: string;
   path: string;
   language: string;
   score: number;
   symbol?: string;
   kind?: string;
-  snippet?: string;
+  signature?: string;
+  line?: number;
+}
+
+export interface ArenaSource {
+  base?: string;
+  head?: string;
+  diff_sha256: string;
+  changed_files: string[];
+  repo_root: string;
 }
 
 export interface ArenaFinding {
-  role: string;
+  id: string;
+  role?: string;
+  roles?: string[];
   severity: "high" | "medium" | "low";
   category: string;
   file: string;
   line: number;
   evidence: string;
-  impact?: string;
-  recommendation?: string;
+  impact: string;
+  recommendation: string;
+  confidence: number;
 }
 
 export interface ArenaReport {
   schema_version: number;
-  workspace_id: string;
-  created_at: string;
-  verdict: "BLOCK" | "WARN" | "PASS";
+  id: string;
+  source: ArenaSource;
   findings: ArenaFinding[];
+  verdict: "block" | "warn" | "pass";
+  started_at: string;
+  ended_at: string;
 }
 
 export interface ReplayEvent {
   seq: number;
-  turn: number;
   kind: string;
-  timestamp: string;
+  at: string;
+  turn: number;
   data: unknown;
 }
 
 export interface ReplayTrace {
+  schema_version: number;
   id: string;
   session_id: string;
+  workspace_root: string;
+  workspace_id: string;
   started_at: string;
+  ended_at?: string;
   events: number;
   complete: boolean;
+  checksum?: string;
   model?: string;
   provider?: string;
 }
@@ -153,40 +189,46 @@ export interface SpecCase {
   id: string;
   name: string;
   kind: "command" | "file_exists" | "file_contains" | "invariant";
-  input: unknown;
-  expected: unknown;
+  input?: unknown;
+  expected?: unknown;
+  command?: string[];
+  tags?: string[];
 }
 
 export interface SpecInvariant {
   id: string;
   description: string;
   kind: string;
+  value?: unknown;
 }
 
 export interface SpecContract {
+  schema_version: number;
   id: string;
   title: string;
   description: string;
   version: number;
   invariants: SpecInvariant[];
   cases: SpecCase[];
+  created_at: string;
 }
 
 export interface SpecCaseResult {
   case_id: string;
-  passed: boolean;
-  status: "PASS" | "FAIL" | "SKIPPED" | "INVALID";
-  output?: string;
-  error?: string;
-  duration_ms: number;
+  status: "pass" | "fail" | "skipped" | "invalid";
+  duration: number;
+  actual?: string;
+  message?: string;
 }
 
 export interface SpecMatrix {
-  schema_version: number;
   contract_id: string;
-  evaluated_at: string;
-  passed: boolean;
+  generated_at: string;
   results: SpecCaseResult[];
+  passed: number;
+  failed: number;
+  skipped: number;
+  invalid: number;
 }
 
 export interface ChatMessage {

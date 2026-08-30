@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Binary, Search, RefreshCw, Code2, FileCode, CheckCircle2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Binary, Search, RefreshCw, Code2, FileCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { desktop } from "@/lib/desktop";
 import type { CodeIndexHit } from "@/types";
@@ -12,20 +12,31 @@ export function IndexView() {
   const [rebuilding, setRebuilding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const searchRequest = useRef(0);
+  const queryRef = useRef("");
+  const kindRef = useRef("");
   const handleSearch = async (text: string, selectedKind: string = kind) => {
+    const requestID = ++searchRequest.current;
     if (!text.trim()) {
       setHits([]);
+      setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
     try {
       const res = await desktop.queryCodeIndex(text, selectedKind, "", 15);
-      setHits(res || []);
+      if (requestID === searchRequest.current) {
+        setHits(res || []);
+      }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Search failed");
+      if (requestID === searchRequest.current) {
+        setError(err instanceof Error ? err.message : "Search failed");
+      }
     } finally {
-      setLoading(false);
+      if (requestID === searchRequest.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -34,8 +45,8 @@ export function IndexView() {
     setError(null);
     try {
       await desktop.rebuildCodeIndex();
-      if (query.trim()) {
-        await handleSearch(query);
+      if (queryRef.current.trim()) {
+        await handleSearch(queryRef.current, kindRef.current);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Rebuild failed");
@@ -43,6 +54,14 @@ export function IndexView() {
       setRebuilding(false);
     }
   };
+
+  const kindFilters = [
+    { value: "", label: "All Symbols" },
+    { value: "func", label: "Functions" },
+    { value: "struct", label: "Structs" },
+    { value: "interface", label: "Interfaces" },
+    { value: "type", label: "Types" },
+  ];
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--background)] p-6 text-[var(--foreground)]">
@@ -79,8 +98,9 @@ export function IndexView() {
             type="text"
             value={query}
             onChange={(e) => {
+              queryRef.current = e.target.value;
               setQuery(e.target.value);
-              handleSearch(e.target.value);
+              void handleSearch(e.target.value);
             }}
             placeholder="Search symbols, functions, types (e.g. Session.ProcessUserInput)..."
             className="h-11 w-full rounded-lg border border-[var(--mn-line)] bg-[var(--card)] pl-10 pr-4 font-mono text-sm focus:border-[var(--mn-accent)] focus:outline-none"
@@ -89,20 +109,21 @@ export function IndexView() {
 
         {/* Filter Chips */}
         <div className="flex items-center gap-2">
-          {["", "function", "struct", "interface", "type"].map((k) => (
+          {kindFilters.map((filter) => (
             <button
-              key={k}
+              key={filter.value}
               onClick={() => {
-                setKind(k);
-                handleSearch(query, k);
+                kindRef.current = filter.value;
+                setKind(filter.value);
+                void handleSearch(query, filter.value);
               }}
               className={`rounded-md px-3 py-1 font-mono text-xs transition-colors ${
-                kind === k
+                kind === filter.value
                   ? "bg-[var(--mn-accent)] text-white font-semibold"
                   : "border border-[var(--mn-line)] bg-[var(--card)] text-muted-foreground hover:text-foreground"
               }`}
             >
-              {k === "" ? "All Symbols" : k}
+              {filter.label}
             </button>
           ))}
         </div>
@@ -145,8 +166,11 @@ export function IndexView() {
                       {hit.symbol}
                     </div>
                   )}
-                  {hit.snippet && (
-                    <p className="font-mono text-[11px] text-muted-foreground truncate">{hit.snippet}</p>
+                  {hit.signature && (
+                    <p className="font-mono text-[11px] text-muted-foreground truncate">
+                      {hit.signature}
+                      {hit.line ? `:${hit.line}` : ""}
+                    </p>
                   )}
                 </div>
                 <div className="ml-4 shrink-0 font-mono text-xs text-muted-foreground">

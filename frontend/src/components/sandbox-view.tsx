@@ -44,19 +44,21 @@ export function SandboxView() {
   }, []);
 
   const activeFixture = fixtures.find((f) => f.id === selectedId);
+  const runFailed =
+    result !== null &&
+    (result.exit_code !== 0 || result.timed_out || result.truncated || Boolean(result.error));
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--background)] p-6 text-[var(--foreground)]">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-[var(--mn-line)] pb-4">
         <div className="flex items-center gap-3">
           <div className="grid size-10 place-items-center rounded-lg border border-[var(--mn-line)] bg-[var(--card)] text-[var(--mn-accent)]">
             <FlaskConical className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Isolated Sandbox Studio</h1>
+            <h1 className="text-xl font-bold tracking-tight">Sandbox Fixture Runner</h1>
             <p className="text-xs text-muted-foreground">
-              Run test fixtures in temporary isolated environments without host mutation.
+              Copy isolation protects the workspace tree. Commands retain local OS and network permissions.
             </p>
           </div>
         </div>
@@ -88,9 +90,7 @@ export function SandboxView() {
         </div>
       )}
 
-      {/* Main Split Body */}
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-12 gap-6">
-        {/* Left: Fixtures List */}
         <div className="col-span-4 flex flex-col rounded-lg border border-[var(--mn-line)] bg-[var(--card)]">
           <div className="border-b border-[var(--mn-line)] px-4 py-3 text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
             Available Fixtures ({fixtures.length})
@@ -121,7 +121,6 @@ export function SandboxView() {
           </div>
         </div>
 
-        {/* Right: Console Output */}
         <div className="col-span-8 flex flex-col rounded-lg border border-[var(--mn-line)] bg-[var(--card)]">
           <div className="flex items-center justify-between border-b border-[var(--mn-line)] px-4 py-3">
             <div className="flex items-center gap-2">
@@ -132,18 +131,30 @@ export function SandboxView() {
             </div>
             {result && (
               <div className="flex items-center gap-2 font-mono text-xs">
-                {result.exit_code === 0 ? (
+                {!runFailed ? (
                   <span className="flex items-center gap-1 text-emerald-400">
                     <CheckCircle2 className="size-3.5" /> Exit 0
                   </span>
                 ) : (
                   <span className="flex items-center gap-1 text-rose-400">
-                    <XCircle className="size-3.5" /> Exit {result.exit_code}
+                    <XCircle className="size-3.5" />{" "}
+                    {result.error
+                      ? "ERROR"
+                      : result.timed_out
+                        ? "TIMED OUT"
+                        : result.truncated
+                          ? "OUTPUT LIMIT"
+                          : `Exit ${result.exit_code}`}
                   </span>
                 )}
                 {result.timed_out && (
-                  <span className="bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded text-[10px]">
+                  <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-400">
                     TIMED OUT
+                  </span>
+                )}
+                {result.truncated && (
+                  <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-400">
+                    TRUNCATED
                   </span>
                 )}
               </div>
@@ -152,20 +163,25 @@ export function SandboxView() {
           <div className="min-h-0 flex-1 overflow-y-auto bg-black p-4 font-mono text-xs leading-relaxed text-zinc-300">
             {running ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
-                <RefreshCw className="size-5 animate-spin mr-2" />
-                Executing fixture in isolated copy workspace...
+                <RefreshCw className="mr-2 size-5 animate-spin" />
+                Executing fixture in a temporary copy workspace...
               </div>
             ) : result ? (
               <div className="space-y-3">
+                {result.error && (
+                  <div className="rounded border border-rose-500/30 bg-rose-500/10 p-2 text-rose-300">
+                    {result.error}
+                  </div>
+                )}
                 {result.stdout && (
                   <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">STDOUT</div>
+                    <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">STDOUT</div>
                     <pre className="whitespace-pre-wrap">{result.stdout}</pre>
                   </div>
                 )}
                 {result.stderr && (
                   <div>
-                    <div className="text-[10px] uppercase tracking-wider text-rose-400 mb-1">STDERR</div>
+                    <div className="mb-1 text-[10px] uppercase tracking-wider text-rose-400">STDERR</div>
                     <pre className="whitespace-pre-wrap text-rose-300">{result.stderr}</pre>
                   </div>
                 )}

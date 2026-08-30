@@ -8,11 +8,12 @@ export function ArenaView() {
   const [report, setReport] = useState<ArenaReport | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [rounds, setRounds] = useState(1);
+  const rounds = 1;
 
   const handleReview = async () => {
     setRunning(true);
     setError(null);
+    setReport(null);
     try {
       const res = await desktop.runArenaReview("", "", "", rounds);
       setReport(res);
@@ -23,9 +24,11 @@ export function ArenaView() {
     }
   };
 
-  const securityFindings = report?.findings?.filter((f) => f.role.includes("security")) || [];
-  const correctnessFindings = report?.findings?.filter((f) => f.role.includes("correctness")) || [];
-  const maintainabilityFindings = report?.findings?.filter((f) => f.role.includes("maintainability")) || [];
+  const roleMatches = (finding: ArenaFinding, role: string) =>
+    `${finding.role ?? ""} ${(finding.roles ?? []).join(" ")}`.toLowerCase().includes(role);
+  const securityFindings = report?.findings?.filter((f) => roleMatches(f, "security")) || [];
+  const correctnessFindings = report?.findings?.filter((f) => roleMatches(f, "correctness")) || [];
+  const maintainabilityFindings = report?.findings?.filter((f) => roleMatches(f, "maintainability")) || [];
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--background)] p-6 text-[var(--foreground)]">
@@ -65,17 +68,17 @@ export function ArenaView() {
       {report && (
         <div
           className={`mt-4 flex items-center justify-between rounded-lg border p-4 ${
-            report.verdict === "BLOCK"
+            report.verdict === "block"
               ? "border-rose-500/40 bg-rose-950/30 text-rose-300"
-              : report.verdict === "WARN"
-              ? "border-amber-500/40 bg-amber-950/30 text-amber-300"
-              : "border-emerald-500/40 bg-emerald-950/30 text-emerald-300"
+              : report.verdict === "warn"
+                ? "border-amber-500/40 bg-amber-950/30 text-amber-300"
+                : "border-emerald-500/40 bg-emerald-950/30 text-emerald-300"
           }`}
         >
           <div className="flex items-center gap-3">
-            {report.verdict === "BLOCK" ? (
+            {report.verdict === "block" ? (
               <AlertOctagon className="size-6 text-rose-400" />
-            ) : report.verdict === "WARN" ? (
+            ) : report.verdict === "warn" ? (
               <AlertTriangle className="size-6 text-amber-400" />
             ) : (
               <CheckCircle2 className="size-6 text-emerald-400" />
@@ -85,11 +88,11 @@ export function ArenaView() {
                 VERDICT: {report.verdict}
               </span>
               <p className="text-xs opacity-80">
-                {report.verdict === "BLOCK"
+                {report.verdict === "block"
                   ? "Merge blocked due to high severity findings."
-                  : report.verdict === "WARN"
-                  ? "Warnings detected. Review before merging."
-                  : "All clear across security, logic, and maintainability checks."}
+                  : report.verdict === "warn"
+                    ? "Warnings detected. Review before merging."
+                    : "All clear across security, logic, and maintainability checks."}
               </p>
             </div>
           </div>
