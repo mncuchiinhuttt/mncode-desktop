@@ -26,8 +26,8 @@ mncode Desktop is a **Wails v2** application: a Go process hosting a native webv
 
 ### 1. Frontend (`frontend/src`)
 
-- **`App.tsx`** — root shell. Owns view routing (`workspace`, `insights`, `settings`, `skills`, `automations`, `mcp`), chat history persistence (localStorage, debounced with an immediate save on run completion), keyboard shortcuts, toast notifications, and all Wails event subscriptions.
-- **`components/`** — one file per surface: `app-sidebar`, `top-bar` (HUD strip), `workspace-view` (composer + transcript), `right-sidebar` (inspector sidecar), `terminal-panel`, `settings-view` (+ `skills-marketplace`, `mcp-providers`, `models-settings-view`, `usage-heatmap`), `onboarding-flow`, `app-boot-screen`, dialogs, and shadcn-style primitives under `ui/`.
+- **`App.tsx`** — root shell. Owns view routing (`workspace`, `insights`, `settings`, `skills`, `automations`, `mcp`, `drift`, `sandbox`, `index`, `arena`, `replay`, `spec`), chat history persistence (localStorage, debounced with an immediate save on run completion), keyboard shortcuts, toast notifications, and all Wails event subscriptions.
+- **`components/`** — one file per surface: `app-sidebar`, `top-bar` (HUD strip), `workspace-view` (composer + transcript), `right-sidebar` (inspector sidecar), `terminal-panel`, `settings-view` (+ `skills-marketplace`, `mcp-providers`, `models-settings-view`, `usage-heatmap`), Power Tools views (`drift-view`, `sandbox-view`, `index-view`, `arena-view`, `replay-view`, `spec-view`), `onboarding-flow`, `app-boot-screen`, dialogs, and shadcn-style primitives under `ui/`.
 - **`style.css`** — design tokens (`--mn-*`) for light/dark plus RMIT utility classes (`eyebrow-badge`, `pulse-beacon`, `hairline-grid-*`, `hud-stat`, …). Tailwind v4 reads the tokens via `@theme inline`.
 
 ### 2. Go facade (`package main`)
@@ -50,6 +50,9 @@ Every public method on `App` is a Wails binding callable from the frontend. File
 | `version.go`          | App info and update checks                            |
 | `workspace-tree.go`   | File-tree scan for the inspector                      |
 | `app-types.go`        | All JSON wire types (the TS contract in `types.ts` mirrors these) |
+| `desktop-tools.go`        | Drift, Sandbox, and local Index bindings                |
+| `desktop-tools-runner.go` | Arena review and Spec Matrix bindings                  |
+| `desktop-replay.go`       | Replay listing, recording, trace inspection, and forking |
 
 ### 3. Agent core (`mncode-cli`)
 
@@ -61,8 +64,8 @@ agent:tool-start · agent:tool-result
 agent:subagent-start · agent:subagent-complete
 agent:goal-done · agent:done · agent:cancelled · agent:error
 agent:permission · agent:question
+session:forked
 terminal:ready/command/output/exit/closed · remote:closed
-```
 
 ## Data flow of one agent turn
 
@@ -77,6 +80,9 @@ terminal:ready/command/output/exit/closed · remote:closed
 ## Security posture
 
 - Workspace MCP servers are only auto-started for **trusted workspaces**; the child-process environment is sanitized (whitelist) so API keys never leak into MCP servers.
+- Desktop workspace sessions use `LoadConfigWithoutWorkspaceEnv`; a selected repository's `.env` cannot override provider endpoints or inject credentials into the process environment.
+- Power Tools path readers reject traversal, symlink escapes, malformed replay IDs, and special preview files. Arena diffs and replay payloads are scrubbed before model/display boundaries.
+- Sandbox and Spec execution are **copy-based**, not OS-level sandboxes. Bounded argv, environment, output, file count, and timeout limits protect the runner, but fixture code retains local filesystem and network permissions. Run only trusted fixtures.
 - Provider/API, telemetry, and optional Brave/Tavily search credentials are persisted in `~/.mncode/config.json`; the config directory is `0700` and the file is `0600`. Search keys enter through UI password fields and settings responses expose only configured flags. OS keychain storage remains a future hardening option.
 - Remote companion sessions require explicit pairing; the pairing URL carries the secret in the URL fragment, never the query string.
 

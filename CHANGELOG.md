@@ -5,6 +5,24 @@ All notable changes to **mncode Desktop** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+- Desktop Power Tools views for Drift, Sandbox, Code Index, Red Team Arena, Flight Recorder, and Spec Contracts.
+- Wails bindings for replay recording controls, trace inspection, and session forking.
+
+### Fixed
+- Corrected Desktop wire types for drift, arena, replay, index, sandbox, and spec responses.
+- Prevented stale Power Tools results from surviving workspace changes or failed reruns.
+- Serialized replay recording and workspace transitions to avoid cross-workspace session races.
+
+### Security
+- Desktop workspace sessions no longer execute repository `.env` files during provider setup.
+- Virtual artifact and scratchpad URIs now enforce store and workspace boundaries.
+- Workspace scanning and file preview reject symlinks, special files, and oversized reads.
+- Arena redaction covers quoted and generic credential assignments.
+- Sandbox copy isolation is now labeled accurately; fixture commands retain host OS and network permissions.
+
 ## [0.1.4-beta] — 2026-08-29
 
 ### Added

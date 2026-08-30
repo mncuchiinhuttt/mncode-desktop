@@ -16,6 +16,8 @@ Native desktop cockpit for the [mncode](https://github.com/mncuchiinhuttt/mncode
 - **Remote companion** — pair a phone to steer runs from the couch
 - **Personalization** — custom instructions, personality modes (including Brainrot 🧠), and local memories
 - **RMIT-inspired design system** — dark-void surfaces, hairline grids, bracket eyebrows, pink/cyan HUD accents, light & dark themes
+- **Power Tools cockpit** - Drift Sentinel, Sandbox Fixture Runner, local Code Index, Red Team Arena, Flight Recorder, and Spec Contract Matrix views.
+- **Replay controls** - Start and stop redacted lifecycle recording from Desktop, inspect traces, and fork completed traces into a new chat.
 
 ## Stack
 
