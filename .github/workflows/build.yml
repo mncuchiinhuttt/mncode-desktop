@@ -143,7 +143,7 @@ jobs:
         if: matrix.name == 'darwin-universal'
         shell: bash
         run: >
-          ditto -c -k --sequesterRsrc --keepParent build/bin/mncode-desktop.app
+          ditto -c -k --sequesterRsrc --keepParent "build/bin/mncode Desktop.app"
           build/bin/mncode-desktop-${{ github.ref_name }}-darwin-universal.zip
       - name: Package (Windows)
         if: runner.os == 'Windows'
