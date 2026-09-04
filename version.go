@@ -21,7 +21,7 @@ import (
 	"mncode/pkg/config"
 )
 
-const desktopVersion = "v0.1.4-beta"
+const desktopVersion = "v0.1.6-beta"
 const desktopReleaseEndpoint = "/api/releases/desktop/latest"
 const desktopReleaseOrigin = "https://mncode.mncuchiinhuttt.dev"
 const desktopReleaseAssetOrigin = "https://github.com"
@@ -33,7 +33,7 @@ const desktopReleaseAssetCDNOrigin = "https://release-assets.githubusercontent.c
 // The root key is intentionally compiled into the desktop binary. Rotated keys
 // may only be introduced by metadata signed by this key.
 const pinnedReleaseRootKeyID = "mncode-release-2026"
-const pinnedReleaseRootKeyBase64 = "Ln/WP/P6PGgmNpwoO0waNBGllXtafV6YLels+cj7yMQ="
+const pinnedReleaseRootKeyBase64 = "gGqlI3Zg/KkfZEKIRcg7jPUQGep1YOfWHzTs855M8LA="
 
 var pinnedReleaseKeys = map[string]ed25519.PublicKey{
 	pinnedReleaseRootKeyID: mustReleasePublicKey(pinnedReleaseRootKeyBase64),

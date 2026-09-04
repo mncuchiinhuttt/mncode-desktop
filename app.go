@@ -20,6 +20,7 @@ import (
 	"mncode/pkg/provider"
 	"mncode/pkg/remote"
 )
+
 type App struct {
 	ctx context.Context
 
@@ -41,7 +42,8 @@ type App struct {
 	remoteMu            sync.Mutex
 	remote              *remote.RemoteManager
 	codexMu             sync.Mutex
-	codexClient        *codex.Client
+	codexClient         *codex.Client
+	powerToolsMu        sync.Mutex
 
 	persistenceOnce  sync.Once
 	persistenceStore *persistence.Store
@@ -130,6 +132,8 @@ func (a *App) ChooseAttachment() (string, error) {
 
 // OpenWorkspace mounts the directory at path as the active workspace.
 func (a *App) OpenWorkspace(path string) (WorkspaceInfo, error) {
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
 	a.closeRemote()
 	a.closeTerminal()
 	a.mu.Lock()
@@ -142,6 +146,11 @@ func (a *App) OpenWorkspace(path string) (WorkspaceInfo, error) {
 	oldSession := a.session
 	a.mu.Unlock()
 	if oldSession != nil && oldSession.session != nil {
+		if recorder := oldSession.session.DetachRecorder(); recorder != nil {
+			if closer, ok := recorder.(interface{ Close(bool) error }); ok {
+				_ = closer.Close(false)
+			}
+		}
 		if oldSession.session.MCP != nil {
 			oldSession.session.MCP.Close()
 		}
@@ -168,6 +177,8 @@ func (a *App) OpenWorkspace(path string) (WorkspaceInfo, error) {
 
 // OpenStandaloneChat detaches from any workspace for workspace-free chat.
 func (a *App) OpenStandaloneChat() (WorkspaceInfo, error) {
+	a.powerToolsMu.Lock()
+	defer a.powerToolsMu.Unlock()
 	a.closeRemote()
 	a.closeTerminal()
 	a.mu.Lock()
@@ -180,14 +191,19 @@ func (a *App) OpenStandaloneChat() (WorkspaceInfo, error) {
 	oldSession := a.session
 	a.mu.Unlock()
 	if oldSession != nil && oldSession.session != nil {
+		if recorder := oldSession.session.DetachRecorder(); recorder != nil {
+			if closer, ok := recorder.(interface{ Close(bool) error }); ok {
+				_ = closer.Close(false)
+			}
+		}
 		if oldSession.session.MCP != nil {
 			oldSession.session.MCP.Close()
 		}
 		if oldSession.session.Tools != nil {
 			_ = oldSession.session.Tools.Close()
 		}
-	}
 
+	}
 	runtimeState, err := a.buildSession("")
 	if err != nil {
 		return WorkspaceInfo{}, err
@@ -696,7 +712,9 @@ func decodeDesktopMigrationRecords(source []byte, workspace string) ([]persisten
 	if len(payload.Notes) != 0 {
 		var notes []json.RawMessage
 		if err := json.Unmarshal(payload.Notes, &notes); err != nil {
-			var envelope struct{ Notes []json.RawMessage `json:"notes"` }
+			var envelope struct {
+				Notes []json.RawMessage `json:"notes"`
+			}
 			if envelopeErr := json.Unmarshal(payload.Notes, &envelope); envelopeErr != nil {
 				return nil, fmt.Errorf("decode notes: %w", err)
 			}
@@ -720,7 +738,9 @@ func decodeDesktopMigrationRecords(source []byte, workspace string) ([]persisten
 		}
 	}
 	if len(payload.Automation) != 0 {
-		var envelope struct{ Automations []json.RawMessage `json:"automations"` }
+		var envelope struct {
+			Automations []json.RawMessage `json:"automations"`
+		}
 		if err := json.Unmarshal(payload.Automation, &envelope); err != nil {
 			var automations []json.RawMessage
 			if arrayErr := json.Unmarshal(payload.Automation, &automations); arrayErr != nil {
@@ -730,9 +750,9 @@ func decodeDesktopMigrationRecords(source []byte, workspace string) ([]persisten
 		}
 		for _, raw := range envelope.Automations {
 			var automation struct {
-				ID string `json:"id"`
-				Name string `json:"name"`
-				Prompt string `json:"prompt"`
+				ID        string `json:"id"`
+				Name      string `json:"name"`
+				Prompt    string `json:"prompt"`
 				Workspace string `json:"workspace"`
 			}
 			if err := json.Unmarshal(raw, &automation); err != nil {

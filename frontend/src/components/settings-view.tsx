@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Globe2,
   Info,
+  Layers,
   Loader2,
   Monitor,
   PowerOff,
@@ -69,15 +70,18 @@ import { ModelsSettingsView } from "./models-settings-view";
 import { McpProviders } from "./mcp-providers";
 import { SkillsMarketplace } from "./skills-marketplace";
 import { UsageHeatmap } from "./usage-heatmap";
-
+import { CombosSettingsView } from "./combos-settings-view";
+import { MemorySettingsView } from "./memory-settings-view";
 export type SettingsSection =
   | "general"
   | "notifications"
   | "models"
+  | "combos"
   | "appearance"
   | "account"
   | "token-saving"
   | "personalization"
+  | "memory"
   | "browser"
   | "mcp"
   | "skills"
@@ -144,6 +148,14 @@ const sectionMeta: Record<SettingsSection, { label: string; description: string 
   models: {
     label: "Models",
     description: "Providers, accounts, API keys, and model catalogs.",
+  },
+  combos: {
+    label: "Combos & Swarms",
+    description: "Group multiple specialized subagents into sequential pipelines, debate swarms, or parallel teams.",
+  },
+  memory: {
+    label: "Shared Memory & Reflection",
+    description: "Manage cross-session workspace memories and Hermes self-reflection rules.",
   },
   appearance: {
     label: "Appearance",
@@ -264,6 +276,12 @@ export function SettingsView({
             onClick={() => setSection("models")}
           />
           <SettingsNavItem
+            active={section === "combos"}
+            icon={Layers}
+            label="Combos & Swarms"
+            onClick={() => setSection("combos")}
+          />
+          <SettingsNavItem
             active={section === "appearance"}
             icon={Sun}
             label="Appearance"
@@ -286,6 +304,12 @@ export function SettingsView({
             icon={Sparkles}
             label="Personalization"
             onClick={() => setSection("personalization")}
+          />
+          <SettingsNavItem
+            active={section === "memory"}
+            icon={BrainCircuit}
+            label="Memory & Reflection"
+            onClick={() => setSection("memory")}
           />
           <SettingsNavItem
             active={section === "browser"}
@@ -380,6 +404,9 @@ export function SettingsView({
               onDeleteCustom={onDeleteCustomProvider}
             />
           )}
+          {section === "combos" && (
+            <CombosSettingsView />
+          )}
           {section === "appearance" && (
             <AppearanceSection
               theme={settings.theme}
@@ -404,6 +431,9 @@ export function SettingsView({
               onSave={onSavePersonalization}
               onDeleteMemories={onDeleteLocalMemories}
             />
+          )}
+          {section === "memory" && (
+            <MemorySettingsView settings={settings} onSettingsChange={onSettingsChange} />
           )}
           {section === "browser" && (
             <BrowserSection

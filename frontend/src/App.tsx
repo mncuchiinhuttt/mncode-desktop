@@ -58,6 +58,12 @@ import { RemoteCompanionDialog } from "./components/remote-companion-dialog";
 import { OnboardingFlow, type OnboardingPhase } from "./components/onboarding-flow";
 import { WorkspaceView } from "./components/workspace-view";
 import { AutomationsView } from "./components/automations-view";
+import { DriftView } from "./components/drift-view";
+import { SandboxView } from "./components/sandbox-view";
+import { IndexView } from "./components/index-view";
+import { ArenaView } from "./components/arena-view";
+import { ReplayView } from "./components/replay-view";
+import { SpecView } from "./components/spec-view";
 import "./style.css";
 
 type UpdatePhase = "idle" | "downloading" | "ready";
@@ -161,7 +167,7 @@ const emptyCatalog: DesktopCatalog = {
   prompt: emptyPromptCatalog,
 };
 const defaultAppInfo: AppInfo = {
-  version: "v0.1.4-beta",
+  version: "v0.1.6-beta",
   channel: "beta",
   description: "A local-first AI workspace for building with your code.",
   repository: "https://github.com/mncuchiinhuttt/mncode",
@@ -1288,6 +1294,44 @@ export default function App() {
       listen<{ provider: string }>("provider:configured", ({ provider }) =>
         notify(`${provider} connected for this session`, "success"),
       ),
+      listen<{
+        sessionID: string;
+        history: Array<{ role: string; content?: string }>;
+      }>("session:forked", ({ sessionID, history }) => {
+        const forkMessages: ChatMessage[] = history
+          .filter(
+            (message) =>
+              (message.role === "user" || message.role === "assistant" || message.role === "system") &&
+              Boolean(message.content?.trim()),
+          )
+          .map((message, index) => ({
+            id: `fork-${sessionID}-${index}`,
+            role: message.role as ChatMessage["role"],
+            content: message.content ?? "",
+            timestamp: "replay",
+          }));
+        clearActiveRunID();
+        setRunning(false);
+        setPermission(undefined);
+        setQuestion(undefined);
+        setActiveChatId(sessionID);
+        setMessages(forkMessages);
+        setActivities([]);
+        setRunSummary(undefined);
+        setRunUsage({ ...emptyRunUsage });
+        setRunStartedAt(undefined);
+        setPrompt("");
+        setChatSessions((current) =>
+          upsertChatHistory(current, sessionID, {
+            messages: forkMessages,
+            activities: [],
+            runUsage: { ...emptyRunUsage },
+          }),
+        );
+        setSettingsExiting(false);
+        setView("workspace");
+        notify("Forked replay into a new chat", "success");
+      }),
     ];
     async function hydrateWorkspace() {
       let observedWorkspaceState = false;
@@ -1434,7 +1478,7 @@ export default function App() {
   }
 
   function nextOnboardingStep() {
-    if (onboardingStep < 3) {
+    if (onboardingStep < 4) {
       setOnboardingStep((current) => current + 1);
       return;
     }
@@ -2118,6 +2162,12 @@ export default function App() {
                 onOpenURL={openExternalURL}
               />
             )}
+            {view === "drift" && <DriftView key={workspace.path} />}
+            {view === "sandbox" && <SandboxView key={workspace.path} />}
+            {view === "index" && <IndexView key={workspace.path} />}
+            {view === "arena" && <ArenaView key={workspace.path} />}
+            {view === "replay" && <ReplayView key={workspace.path} />}
+            {view === "spec" && <SpecView key={workspace.path} />}
           </div>
           {!standaloneSettings && terminalOpen && (
             <TerminalPanel

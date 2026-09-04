@@ -22,6 +22,12 @@ const viewMeta: Record<ViewName, { code: string; label: string }> = {
   skills: { code: "03", label: "Skills Marketplace" },
   automations: { code: "04", label: "Automations" },
   mcp: { code: "05", label: "MCP & Plugins" },
+  drift: { code: "06", label: "Drift Sentinel" },
+  sandbox: { code: "07", label: "Sandbox Studio" },
+  index: { code: "08", label: "Code Index" },
+  arena: { code: "09", label: "Review Arena" },
+  replay: { code: "10", label: "Flight Recorder" },
+  spec: { code: "11", label: "Spec Contracts" },
 };
 
 export function TopBar({

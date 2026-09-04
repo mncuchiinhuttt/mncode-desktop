@@ -26,6 +26,19 @@ import type {
   UpdateInfo,
   UsageStats,
   WorkspaceInfo,
+  DesktopCombo,
+  DesktopRoleMeta,
+  DesktopMemoryItem,
+  DriftReport,
+  DriftBaseline,
+  SandboxFixture,
+  SandboxRunResult,
+  CodeIndexHit,
+  ArenaReport,
+  ReplayTrace,
+  ReplayTraceDetail,
+  SpecContract,
+  SpecMatrix,
 } from "@/types";
 
 type WailsMethod = (...args: unknown[]) => unknown;
@@ -123,6 +136,33 @@ export const desktop = {
     call<DesktopSettings>("UpdateSettings", settings),
   resolvePermission: (id: string, allowed: boolean) => call<void>("ResolvePermission", id, allowed),
   answerQuestion: (id: string, answer: string) => call<void>("AnswerQuestion", id, answer),
+  getCombos: () => call<DesktopCombo[]>("GetCombos"),
+  saveCombo: (combo: DesktopCombo) => call<void>("SaveCombo", combo),
+  deleteCombo: (id: string) => call<void>("DeleteCombo", id),
+  getStandardRoles: () => call<DesktopRoleMeta[]>("GetStandardRoles"),
+  runCombo: (comboID: string, prompt: string) => call<void>("RunCombo", comboID, prompt),
+  getSharedMemories: () => call<DesktopMemoryItem[]>("GetSharedMemories"),
+  saveSharedMemory: (item: DesktopMemoryItem) => call<void>("SaveSharedMemory", item),
+  deleteSharedMemory: (id: string) => call<void>("DeleteSharedMemory", id),
+  getDriftReport: () => call<DriftReport>("GetDriftReport"),
+  acceptDriftBaseline: () => call<DriftBaseline>("AcceptDriftBaseline"),
+  listSandboxFixtures: () => call<SandboxFixture[]>("ListSandboxFixtures"),
+  runSandboxFixture: (id: string, args: string[] = [], keep: boolean = false) =>
+    call<SandboxRunResult>("RunSandboxFixture", id, args, keep),
+  queryCodeIndex: (query: string, kind: string = "", pathGlob: string = "", limit: number = 10) =>
+    call<CodeIndexHit[]>("QueryCodeIndex", query, kind, pathGlob, limit),
+  rebuildCodeIndex: () => call<void>("RebuildCodeIndex"),
+  runArenaReview: (baseRef: string = "", headRef: string = "", model: string = "", rounds: number = 1) =>
+    call<ArenaReport>("RunArenaReview", baseRef, headRef, model, rounds),
+  listReplayTraces: () => call<ReplayTrace[]>("ListReplayTraces"),
+  getReplayTrace: (traceID: string) => call<ReplayTraceDetail>("GetReplayTrace", traceID),
+  getReplayRecordingID: () => call<string>("GetReplayRecordingID"),
+  startReplayRecording: () => call<string>("StartReplayRecording"),
+  stopReplayRecording: () => call<void>("StopReplayRecording"),
+  forkReplaySession: (traceID: string, atStep: number, newID: string) =>
+    call<void>("ForkReplaySession", traceID, atStep, newID),
+  listSpecContracts: () => call<SpecContract[]>("ListSpecContracts"),
+  runSpecMatrix: (id: string) => call<SpecMatrix>("RunSpecMatrix", id),
 };
 
 export function listen<T>(eventName: string, handler: (payload: T) => void) {

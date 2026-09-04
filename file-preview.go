@@ -48,8 +48,8 @@ func (a *App) ReadWorkspaceFile(path string) (DesktopFilePreview, error) {
 	if err != nil {
 		return DesktopFilePreview{}, fmt.Errorf("failed to read file: %w", err)
 	}
-	if info.IsDir() {
-		return DesktopFilePreview{}, fmt.Errorf("%s is a directory, not a file", path)
+	if !info.Mode().IsRegular() {
+		return DesktopFilePreview{}, fmt.Errorf("%s is not a regular file", path)
 	}
 
 	displayPath := path
@@ -62,6 +62,11 @@ func (a *App) ReadWorkspaceFile(path string) (DesktopFilePreview, error) {
 	if err != nil {
 		return DesktopFilePreview{}, fmt.Errorf("failed to open file: %w", err)
 	}
+	openedInfo, err := file.Stat()
+	if err != nil || !openedInfo.Mode().IsRegular() || !os.SameFile(info, openedInfo) {
+		return DesktopFilePreview{}, fmt.Errorf("workspace file changed during open")
+	}
+	info = openedInfo
 	defer file.Close()
 
 	buf := make([]byte, maxPreviewBytes+1)
