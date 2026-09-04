@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workspace scanning and file preview reject symlinks, special files, and oversized reads.
 - Arena redaction covers quoted and generic credential assignments.
 - Sandbox copy isolation is labeled accurately; fixture commands retain host OS and network permissions.
+- Rotated the release verification root key; private signing material remains outside the repository in GitHub Actions secrets.
 
 ### Changed
 - Bumped the Desktop release to v0.1.6-beta.
