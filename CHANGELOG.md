@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.6-beta] - 2026-09-04
+
+### Added
+- Power Tools cockpit for Drift, Sandbox, Code Index, Red Team Arena, Flight Recorder, and Spec Contracts.
+- Replay recording controls with trace inspection and completed-trace session forking.
+
+### Fixed
+- Corrected Power Tools wire types and prevented stale results across workspace changes and failed reruns.
+- Persisted Drift Sentinel baselines before refreshing the report.
+- Added explicit loading, empty, error, and busy states across the Power Tools UI.
+- Added keyboard and screen-reader state announcements for searches, matrix results, alerts, and replay controls.
+
+### Security
+- Desktop workspace sessions no longer execute repository `.env` files during provider setup.
+- Virtual artifact and scratchpad URIs enforce store and workspace boundaries.
+- Workspace scanning and file preview reject symlinks, special files, and oversized reads.
+- Arena redaction covers quoted and generic credential assignments.
+- Sandbox copy isolation is labeled accurately; fixture commands retain host OS and network permissions.
+
+### Changed
+- Bumped the Desktop release to v0.1.6-beta.
+
 ## [0.1.5-beta] - 2026-09-04
 
 ### Added
@@ -123,7 +145,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update checks against the mncode-web release feed
 - Secure workspace MCP trust flow and sanitized child-process environment
 
-[unreleased]: https://github.com/mncuchiinhuttt/mncode-desktop/compare/0.1.5-beta...HEAD
+[unreleased]: https://github.com/mncuchiinhuttt/mncode-desktop/compare/0.1.6-beta...HEAD
+[0.1.6-beta]: https://github.com/mncuchiinhuttt/mncode-desktop/releases/tag/v0.1.6-beta
 [0.1.5-beta]: https://github.com/mncuchiinhuttt/mncode-desktop/releases/tag/v0.1.5-beta
 [0.1.4-beta]: https://github.com/mncuchiinhuttt/mncode-desktop/releases/tag/v0.1.4-beta
 [0.1.0-beta]: https://github.com/mncuchiinhuttt/mncode-desktop/releases/tag/v0.1.0-beta

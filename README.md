@@ -2,7 +2,7 @@
 
 Native desktop cockpit for the [mncode](https://github.com/mncuchiinhuttt/mncode) Go agent core — visual subagent swarms, PTY multi-terminal, sidecar chat, and real-time quota HUD, wrapped in a Wails v2 shell.
 
-![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![version](https://img.shields.io/badge/version-v0.1.5--beta-pink)
+![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![version](https://img.shields.io/badge/version-v0.1.6--beta-pink)
 
 ## Highlights
 

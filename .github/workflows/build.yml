@@ -1,4 +1,4 @@
-# Build mncode Desktop for Windows and Linux (amd64 + arm64).
+# Build mncode Desktop for macOS, Windows, and Linux (amd64 + arm64).
 #
 # The Go module uses `replace mncode => ../mncode-cli`, so the public agent-core
 # repository (mncuchiinhuttt/mncode) is checked out as a sibling directory.
@@ -7,8 +7,7 @@
 # - manually from the Actions tab (workflow_dispatch)
 # - pushing a tag like v0.1-beta (also publishes a GitHub release)
 #
-# macOS builds are produced locally (wails build -platform darwin/universal)
-# and attached to the release afterwards.
+# Release tags use the matching CLI tag so Desktop and CLI ship the same core.
 
 name: Build Desktop
 
@@ -27,6 +26,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - os: macos-latest
+            name: darwin-universal
+            platform: darwin/universal
           - os: windows-latest
             name: windows-amd64
             platform: windows/amd64
@@ -50,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: mncuchiinhuttt/mncode
-          ref: main
+          ref: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'main' }}
           path: mncode-cli
 
       - name: Relocate agent core next to the app
@@ -137,6 +139,12 @@ jobs:
             go build -tags desktop,production -ldflags "-w -s -H windowsgui" \
             -o build/bin/mncode-desktop.exe
 
+      - name: Package (macOS universal)
+        if: matrix.name == 'darwin-universal'
+        shell: bash
+        run: >
+          ditto -c -k --sequesterRsrc --keepParent build/bin/mncode-desktop.app
+          build/bin/mncode-desktop-${{ github.ref_name }}-darwin-universal.zip
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
