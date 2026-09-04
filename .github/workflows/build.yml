@@ -329,4 +329,5 @@ jobs:
             artifacts/**/*.tar.gz
             desktop-release-manifest.json
           generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
           fail_on_unmatched_files: true
