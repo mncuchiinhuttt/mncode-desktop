@@ -21,7 +21,7 @@ import (
 	"mncode/pkg/config"
 )
 
-const desktopVersion = "v0.1.4-beta"
+const desktopVersion = "v0.1.5-beta"
 const desktopReleaseEndpoint = "/api/releases/desktop/latest"
 const desktopReleaseOrigin = "https://mncode.mncuchiinhuttt.dev"
 const desktopReleaseAssetOrigin = "https://github.com"

@@ -167,7 +167,7 @@ const emptyCatalog: DesktopCatalog = {
   prompt: emptyPromptCatalog,
 };
 const defaultAppInfo: AppInfo = {
-  version: "v0.1.4-beta",
+  version: "v0.1.5-beta",
   channel: "beta",
   description: "A local-first AI workspace for building with your code.",
   repository: "https://github.com/mncuchiinhuttt/mncode",

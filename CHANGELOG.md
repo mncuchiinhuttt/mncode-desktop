@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.5-beta] - 2026-09-04
+
 ### Added
 - Desktop Power Tools views for Drift, Sandbox, Code Index, Red Team Arena, Flight Recorder, and Spec Contracts.
 - Wails bindings for replay recording controls, trace inspection, and session forking.
@@ -15,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected Desktop wire types for drift, arena, replay, index, sandbox, and spec responses.
 - Prevented stale Power Tools results from surviving workspace changes or failed reruns.
 - Serialized replay recording and workspace transitions to avoid cross-workspace session races.
+- Made the Drift Sentinel baseline action persist before refreshing its report.
+- Clarified loading, empty, and error states across the Power Tools cockpit.
 
 ### Security
 - Desktop workspace sessions no longer execute repository `.env` files during provider setup.
@@ -22,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workspace scanning and file preview reject symlinks, special files, and oversized reads.
 - Arena redaction covers quoted and generic credential assignments.
 - Sandbox copy isolation is now labeled accurately; fixture commands retain host OS and network permissions.
+
+### Changed
+- Bumped the Desktop release to v0.1.5-beta.
 
 ## [0.1.4-beta] — 2026-08-29
 
@@ -116,5 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update checks against the mncode-web release feed
 - Secure workspace MCP trust flow and sanitized child-process environment
 
-[unreleased]: https://github.com/mncuchiinhuttt/mncode-desktop/compare/0.1.0-beta...HEAD
+[unreleased]: https://github.com/mncuchiinhuttt/mncode-desktop/compare/0.1.5-beta...HEAD
+[0.1.5-beta]: https://github.com/mncuchiinhuttt/mncode-desktop/releases/tag/v0.1.5-beta
+[0.1.4-beta]: https://github.com/mncuchiinhuttt/mncode-desktop/releases/tag/v0.1.4-beta
 [0.1.0-beta]: https://github.com/mncuchiinhuttt/mncode-desktop/releases/tag/v0.1.0-beta
