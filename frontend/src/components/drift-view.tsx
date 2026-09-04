@@ -6,7 +6,7 @@ import type { DriftReport } from "@/types";
 
 export function DriftView() {
   const [report, setReport] = useState<DriftReport | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
 
@@ -25,10 +25,11 @@ export function DriftView() {
   };
 
   const handleAccept = async () => {
+    if (accepting || loading) return;
     setAccepting(true);
     setError(null);
-    setReport(null);
     try {
+      await desktop.acceptDriftBaseline();
       await fetchReport();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to accept baseline");
@@ -62,7 +63,7 @@ export function DriftView() {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchReport} disabled={loading || accepting}>
             <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
-            Re-Scan
+            {loading ? "Scanning…" : "Re-Scan"}
           </Button>
           <Button
             size="sm"
@@ -71,29 +72,36 @@ export function DriftView() {
             className="bg-[var(--mn-accent)] text-white hover:bg-[var(--mn-accent-strong)]"
           >
             <CheckCircle2 className="size-3.5" />
-            Accept Baseline
+            {accepting ? "Saving…" : "Accept Baseline"}
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+        <div role="alert" aria-live="polite" className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-300">
           {error}
         </div>
       )}
 
-      {/* Metric Cards */}
       <div className="mt-6 grid grid-cols-4 gap-4">
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
           <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Status</span>
           <div className="mt-2 flex items-center gap-2">
-            {statusHealthy ? (
-              <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
+            {loading ? (
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-[var(--mn-cyan)]">
+                <RefreshCw className="size-4 animate-spin" /> Scanning…
+              </span>
+            ) : statusHealthy ? (
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="size-4" /> Healthy
               </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-sm font-semibold text-rose-400">
+            ) : report ? (
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-rose-700 dark:text-rose-400">
                 <XCircle className="size-4" /> {totalViolations} Findings
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
+                <XCircle className="size-4" /> Unavailable
               </span>
             )}
           </div>
@@ -101,30 +109,39 @@ export function DriftView() {
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
           <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Changed Files</span>
           <div className="mt-2 text-2xl font-mono font-bold text-[var(--mn-cyan)]">
-            {report?.changed_files ?? 0}
+            {loading ? "…" : report ? report.changed_files : "Not checked"}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
           <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Generated</span>
           <div className="mt-2 truncate font-mono text-sm font-semibold text-[var(--foreground)]">
-            {report?.generated_at ? new Date(report.generated_at).toLocaleString() : "Not checked"}
+            {loading
+              ? "Checking…"
+              : report?.generated_at
+                ? new Date(report.generated_at).toLocaleString()
+                : "Not checked"}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--mn-line)] bg-[var(--card)] p-4">
           <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Baseline ID</span>
           <div className="mt-2 truncate font-mono text-sm font-semibold text-[var(--foreground)]">
-            {report?.baseline_id || "None"}
+            {loading ? "Checking…" : report?.baseline_id || "None"}
           </div>
         </div>
       </div>
 
-      {/* Findings List */}
       <div className="mt-6 flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--mn-line)] bg-[var(--card)]">
         <div className="border-b border-[var(--mn-line)] px-4 py-3 text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
           Drift Findings Feed ({totalViolations})
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
-          {!report ? (
+          {loading ? (
+            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+              <RefreshCw className="mb-2 size-8 animate-spin text-[var(--mn-accent)]" />
+              <p className="text-sm font-medium">Scanning workspace architecture…</p>
+              <p className="text-xs">Comparing imports and layer boundaries.</p>
+            </div>
+          ) : !report ? (
             <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
               <XCircle className="mb-2 size-10 text-rose-400/60" />
               <p className="text-sm font-medium">Drift report unavailable</p>
@@ -147,10 +164,10 @@ export function DriftView() {
                     <span
                       className={`rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase ${
                         f.severity === "error"
-                          ? "border-rose-500/30 bg-rose-500/20 text-rose-400"
+                          ? "border-rose-500/30 bg-rose-500/20 text-rose-700 dark:text-rose-400"
                           : f.severity === "warning"
-                            ? "border-amber-500/30 bg-amber-500/20 text-amber-400"
-                            : "border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
+                            ? "border-amber-500/30 bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                            : "border-cyan-500/30 bg-cyan-500/20 text-cyan-700 dark:text-cyan-400"
                       }`}
                     >
                       {f.severity}

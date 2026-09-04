@@ -45,7 +45,7 @@ export function ReplayView() {
   };
 
   const handleFork = async () => {
-    if (!selectedId || !detail) return;
+    if (!selectedId || !detail || !detail.trace.complete || detail.events.length === 0) return;
     setForking(true);
     setError(null);
     setForkSuccess(null);
@@ -105,7 +105,7 @@ export function ReplayView() {
       )}
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+        <div role="alert" aria-live="polite" className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-300">
           {error}
         </div>
       )}
@@ -158,7 +158,8 @@ export function ReplayView() {
                   max={Math.max(0, detail.events.length - 1)}
                   value={stepIndex}
                   onChange={(e) => setStepIndex(Number(e.target.value))}
-                  className="w-64 accent-[var(--mn-accent)] cursor-pointer"
+                  aria-label="Trace event step"
+                  className="w-64 cursor-pointer accent-[var(--mn-accent)]"
                 />
               </div>
 
@@ -171,7 +172,7 @@ export function ReplayView() {
                       </span>
                       <span className="text-muted-foreground">Turn #{activeEvent.turn}</span>
                     </div>
-                    <pre className="max-h-96 overflow-y-auto rounded-md bg-black p-3.5 text-zinc-300 whitespace-pre-wrap">
+                    <pre className="max-h-96 overflow-y-auto rounded-md bg-zinc-950 p-3.5 text-zinc-300 whitespace-pre-wrap">
                       {typeof activeEvent.data === "string"
                         ? activeEvent.data
                         : JSON.stringify(activeEvent.data, null, 2)}

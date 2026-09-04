@@ -50,16 +50,17 @@ export function ArenaView() {
             size="sm"
             onClick={handleReview}
             disabled={running}
+            aria-busy={running}
             className="bg-[var(--mn-accent)] text-white hover:bg-[var(--mn-accent-strong)]"
           >
             <Play className={`size-3.5 ${running ? "animate-spin" : ""}`} />
-            Run Red Team Review
+            {running ? "Reviewing…" : "Run Red Team Review"}
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+        <div role="alert" aria-live="polite" className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-300">
           {error}
         </div>
       )}
@@ -67,6 +68,8 @@ export function ArenaView() {
       {/* Verdict Banner */}
       {report && (
         <div
+          role="status"
+          aria-live="polite"
           className={`mt-4 flex items-center justify-between rounded-lg border p-4 ${
             report.verdict === "block"
               ? "border-rose-500/40 bg-rose-950/30 text-rose-300"
@@ -102,28 +105,27 @@ export function ArenaView() {
         </div>
       )}
 
-      {/* 3-Column Adversary Grid */}
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-3 gap-4">
-        {/* Security Column */}
         <AdversaryColumn
           title="Security Adversary"
           icon={Shield}
           color="rose"
           findings={securityFindings}
+          reportReady={report !== null}
         />
-        {/* Correctness Column */}
         <AdversaryColumn
           title="Correctness Adversary"
           icon={Bug}
           color="cyan"
           findings={correctnessFindings}
+          reportReady={report !== null}
         />
-        {/* Maintainability Column */}
         <AdversaryColumn
           title="Maintainability"
           icon={Wrench}
           color="emerald"
           findings={maintainabilityFindings}
+          reportReady={report !== null}
         />
       </div>
     </div>
@@ -135,12 +137,15 @@ function AdversaryColumn({
   icon: Icon,
   color,
   findings,
+  reportReady,
 }: {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   color: "rose" | "cyan" | "emerald";
   findings: ArenaFinding[];
+  reportReady: boolean;
 }) {
+
   return (
     <div className="flex flex-col rounded-lg border border-[var(--mn-line)] bg-[var(--card)]">
       <div className="flex items-center justify-between border-b border-[var(--mn-line)] px-4 py-3">
@@ -152,7 +157,9 @@ function AdversaryColumn({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3 space-y-2.5">
         {findings.length === 0 ? (
-          <p className="p-4 text-center text-xs text-muted-foreground">No violations reported.</p>
+          <p className="p-4 text-center text-xs text-muted-foreground">
+            {reportReady ? "No violations reported." : "Run a review to populate this lane."}
+          </p>
         ) : (
           findings.map((f, i) => (
             <div
@@ -163,15 +170,15 @@ function AdversaryColumn({
                 <span
                   className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase ${
                     f.severity === "high"
-                      ? "bg-rose-500/20 text-rose-400"
+                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-400"
                       : f.severity === "medium"
-                      ? "bg-amber-500/20 text-amber-400"
-                      : "bg-zinc-500/20 text-zinc-400"
+                        ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                        : "bg-zinc-500/20 text-zinc-700 dark:text-zinc-400"
                   }`}
                 >
                   {f.severity}
                 </span>
-                <span className="font-mono text-[10px] text-muted-foreground truncate max-w-[140px]">
+                <span className="max-w-[140px] truncate font-mono text-[10px] text-muted-foreground">
                   {f.file}:{f.line}
                 </span>
               </div>

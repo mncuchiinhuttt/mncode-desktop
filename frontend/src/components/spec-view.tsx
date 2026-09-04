@@ -71,12 +71,14 @@ export function SpecView() {
           className="bg-[var(--mn-accent)] text-white hover:bg-[var(--mn-accent-strong)]"
         >
           <Play className={`size-3.5 ${running ? "animate-spin" : ""}`} />
-          Run Matrix Check
+          {running ? "Running…" : "Run Matrix Check"}
         </Button>
       </div>
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">{error}</div>
+        <div role="alert" aria-live="polite" className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-300">
+          {error}
+        </div>
       )}
 
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-12 gap-6">
@@ -91,7 +93,9 @@ export function SpecView() {
               contracts.map((contract) => (
                 <button
                   key={contract.id}
+                  type="button"
                   disabled={running}
+                  aria-pressed={selectedId === contract.id}
                   onClick={() => {
                     matrixRequest.current++;
                     setSelectedId(contract.id);
@@ -120,12 +124,14 @@ export function SpecView() {
             </span>
             {matrix && (
               <span
+                role="status"
+                aria-live="polite"
                 className={`rounded px-2 py-0.5 font-mono text-xs font-bold ${
                   matrix.failed > 0 || matrix.invalid > 0
-                    ? "bg-rose-500/20 text-rose-400"
+                    ? "bg-rose-500/20 text-rose-700 dark:text-rose-400"
                     : matrix.skipped > 0
-                      ? "bg-amber-500/20 text-amber-400"
-                      : "bg-emerald-500/20 text-emerald-400"
+                      ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                      : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
                 }`}
               >
                 {matrixHealthy
@@ -138,7 +144,6 @@ export function SpecView() {
               </span>
             )}
           </div>
-
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 font-mono text-xs">
             {activeContract && (
               <div>
@@ -165,17 +170,17 @@ export function SpecView() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-[var(--foreground)]">{testCase.name || testCase.id}</span>
-                          <span className="rounded bg-black/40 px-1.5 py-0.5 text-[10px] text-muted-foreground">{testCase.kind}</span>
+                          <span className="rounded bg-[var(--mn-line)] px-1.5 py-0.5 text-[10px] text-muted-foreground">{testCase.kind}</span>
                         </div>
-                        {result?.message && <p className="text-rose-400 text-[11px]">{result.message}</p>}
+                        {result?.message && <p className="text-[11px] text-rose-700 dark:text-rose-400">{result.message}</p>}
                       </div>
                       <div className="ml-4 shrink-0">
                         {result?.status === "pass" ? (
-                          <span className="flex items-center gap-1 font-bold text-emerald-400"><CheckCircle2 className="size-3.5" /> PASS</span>
+                          <span className="flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="size-3.5" /> PASS</span>
                         ) : result?.status === "skipped" ? (
-                          <span className="font-bold text-amber-400">SKIPPED</span>
+                          <span className="font-bold text-amber-700 dark:text-amber-400">SKIPPED</span>
                         ) : result ? (
-                          <span className="flex items-center gap-1 font-bold text-rose-400"><XCircle className="size-3.5" /> {result.status.toUpperCase()}</span>
+                          <span className="flex items-center gap-1 font-bold text-rose-700 dark:text-rose-400"><XCircle className="size-3.5" /> {result.status.toUpperCase()}</span>
                         ) : (
                           <span className="text-muted-foreground">Ready</span>
                         )}

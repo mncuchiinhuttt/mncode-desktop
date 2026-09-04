@@ -19,6 +19,7 @@ export function IndexView() {
     const requestID = ++searchRequest.current;
     if (!text.trim()) {
       setHits([]);
+      setError(null);
       setLoading(false);
       return;
     }
@@ -31,6 +32,7 @@ export function IndexView() {
       }
     } catch (err: unknown) {
       if (requestID === searchRequest.current) {
+        setHits([]);
         setError(err instanceof Error ? err.message : "Search failed");
       }
     } finally {
@@ -85,7 +87,7 @@ export function IndexView() {
       </div>
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+        <div role="alert" aria-live="polite" className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-300">
           {error}
         </div>
       )}
@@ -95,23 +97,27 @@ export function IndexView() {
         <div className="relative flex items-center">
           <Search className="absolute left-3.5 size-4 text-muted-foreground" />
           <input
-            type="text"
+            type="search"
             value={query}
             onChange={(e) => {
               queryRef.current = e.target.value;
               setQuery(e.target.value);
               void handleSearch(e.target.value);
             }}
-            placeholder="Search symbols, functions, types (e.g. Session.ProcessUserInput)..."
+            aria-label="Search local code symbols"
+            autoComplete="off"
+            placeholder="Search symbols, functions, types, for example Session.ProcessUserInput…"
             className="h-11 w-full rounded-lg border border-[var(--mn-line)] bg-[var(--card)] pl-10 pr-4 font-mono text-sm focus:border-[var(--mn-accent)] focus:outline-none"
           />
         </div>
 
         {/* Filter Chips */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {kindFilters.map((filter) => (
             <button
               key={filter.value}
+              type="button"
+              aria-pressed={kind === filter.value}
               onClick={() => {
                 kindRef.current = filter.value;
                 setKind(filter.value);
@@ -137,17 +143,19 @@ export function IndexView() {
         <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
           {loading ? (
             <div className="flex h-full items-center justify-center text-muted-foreground">
-              <RefreshCw className="size-5 animate-spin mr-2" /> Searching index...
+              <RefreshCw className="mr-2 size-5 animate-spin" /> Searching index…
             </div>
           ) : hits.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
               <Search className="size-8 text-muted-foreground/40 mb-2" />
-              <p className="text-sm">Type a query above to explore local symbols</p>
+              <p className="text-sm">
+                {query.trim() ? "No symbols match this query" : "Type a query above to explore local symbols"}
+              </p>
             </div>
           ) : (
             hits.map((hit, idx) => (
               <div
-                key={idx}
+                key={`${hit.path}-${hit.symbol}-${hit.line}-${idx}`}
                 className="flex items-start justify-between rounded-md border border-[var(--mn-line)] bg-[var(--mn-surface-muted)] p-3.5 text-xs transition-colors hover:border-[var(--mn-accent)]"
               >
                 <div className="space-y-1 min-w-0 flex-1">
@@ -156,7 +164,7 @@ export function IndexView() {
                     <span className="font-mono text-xs font-semibold text-[var(--foreground)] truncate">
                       {hit.path}
                     </span>
-                    <span className="rounded bg-black/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                    <span className="rounded bg-[var(--mn-line)] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
                       {hit.language}
                     </span>
                   </div>

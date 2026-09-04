@@ -57,17 +57,33 @@ export function ReplayRecordingControls({ onComplete }: { onComplete: () => void
     <div className="flex items-center gap-2">
       {recordingID ? (
         <>
-          <span className="font-mono text-[10px] text-rose-400">REC {recordingID}</span>
-          <Button variant="outline" size="sm" onClick={() => void stop()} disabled={busy}>
-            <Square className="size-3.5 fill-current" /> Stop
+          <span className="font-mono text-[10px] text-rose-700 dark:text-rose-400">REC {recordingID}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void stop()}
+            disabled={busy}
+            aria-busy={busy}
+          >
+            <Square className="size-3.5 fill-current" /> {busy ? "Stopping…" : "Stop"}
           </Button>
         </>
       ) : (
-        <Button variant="outline" size="sm" onClick={() => void start()} disabled={busy}>
-          <Circle className="size-3.5 fill-rose-400 text-rose-400" /> Record
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void start()}
+          disabled={busy}
+          aria-busy={busy}
+        >
+          <Circle className="size-3.5 fill-rose-400 text-rose-400" /> {busy ? "Checking…" : "Record"}
         </Button>
       )}
-      {error && <span className="max-w-48 truncate text-[10px] text-rose-400">{error}</span>}
+      {error && (
+        <span role="alert" aria-live="polite" className="max-w-48 truncate text-[10px] text-rose-700 dark:text-rose-400">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

@@ -63,10 +63,11 @@ export function SandboxView() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs font-mono text-muted-foreground cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2 text-xs font-mono text-muted-foreground">
             <input
               type="checkbox"
               checked={keep}
+              disabled={running}
               onChange={(e) => setKeep(e.target.checked)}
               className="rounded border-[var(--mn-line)] bg-[var(--card)] text-[var(--mn-accent)]"
             />
@@ -83,9 +84,8 @@ export function SandboxView() {
           </Button>
         </div>
       </div>
-
       {error && (
-        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+        <div role="alert" aria-live="polite" className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-300">
           {error}
         </div>
       )}
@@ -103,6 +103,7 @@ export function SandboxView() {
             ) : (
               fixtures.map((f) => (
                 <button
+                  type="button"
                   key={f.id}
                   onClick={() => setSelectedId(f.id)}
                   className={`flex w-full flex-col rounded-md px-3 py-2.5 text-left transition-colors ${
@@ -130,7 +131,7 @@ export function SandboxView() {
               </span>
             </div>
             {result && (
-              <div className="flex items-center gap-2 font-mono text-xs">
+              <div aria-live="polite" className="flex items-center gap-2 font-mono text-xs">
                 {!runFailed ? (
                   <span className="flex items-center gap-1 text-emerald-400">
                     <CheckCircle2 className="size-3.5" /> Exit 0
@@ -160,11 +161,11 @@ export function SandboxView() {
               </div>
             )}
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto bg-black p-4 font-mono text-xs leading-relaxed text-zinc-300">
+          <div className="min-h-0 flex-1 overflow-y-auto bg-zinc-950 p-4 font-mono text-xs leading-relaxed text-zinc-300">
             {running ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 <RefreshCw className="mr-2 size-5 animate-spin" />
-                Executing fixture in a temporary copy workspace...
+                Executing fixture in a temporary copy workspace…
               </div>
             ) : result ? (
               <div className="space-y-3">
